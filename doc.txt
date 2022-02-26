@@ -9,3 +9,20 @@ django-admin startapp api
 python .\manage.py makemigrations
 python .\manage.py migrate
 python .\manage.py runserver
+
+
+django-admin startapp frontend
+cd .\frontend
+mkdir src src\components
+mkdir templates
+mkdir static static\frontend static\css static\images
+npm init -y
+npm i webpack webpack-cli --save-dev
+npm i @babel/core babel-loader @babel/preset-env @babel/preset-react --save-dev
+npm i react react-dom --save-dev
+npm i @material-ui/core
+npm i @babel/plugin-proposal-class-properties
+npm i react-router-dom
+npm i @material-ui/icons
+
+npm run dev
