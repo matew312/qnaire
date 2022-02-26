@@ -1,0 +1,11 @@
+python -m venv venv
+.\venv\Scripts\activate
+pip install django djangorestframework django-polymorphic django-rest-polymorphic
+
+django-admin startproject qnaire
+cd .\qnaire
+django-admin startapp api
+
+python .\manage.py makemigrations
+python .\manage.py migrate
+python .\manage.py runserver
