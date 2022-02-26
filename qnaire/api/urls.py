@@ -1,6 +1,6 @@
-from django.urls import path, include
-from .views import test_view
+from django.urls import path
+from .views import QuestionnaireView
 
 urlpatterns = [
-    path('', test_view),
+    path('', QuestionnaireView.as_view()),
 ]

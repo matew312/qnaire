@@ -1,6 +1,11 @@
 from django.shortcuts import render
-from django.http import HttpResponse, response
+from rest_framework import generics
+from .models import Questionnaire
+from .serializers import QuestionnaireSerializer
 
 # Create your views here.
-def test_view(request):
-    return HttpResponse('Test')
+
+class QuestionnaireView(generics.ListAPIView):
+    queryset = Questionnaire.objects.all()
+    serializer_class = QuestionnaireSerializer
+
