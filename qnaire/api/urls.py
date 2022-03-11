@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import QuestionnaireView
+from .views import QuestionnaireView, QuestionView
 
 urlpatterns = [
-    path('', QuestionnaireView.as_view()),
+    path('questionnaire', QuestionnaireView.as_view()),
+    path('question', QuestionView.as_view()),
 ]
