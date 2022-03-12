@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import QuestionnaireView, QuestionView
+from .views import QuestionnaireCreationView, QuestionnaireView, QuestionView
 
 urlpatterns = [
-    path('questionnaire', QuestionnaireView.as_view()),
-    path('question', QuestionView.as_view()),
+    path('questionnaires/', QuestionnaireView.as_view()),
+    path('questionnaires/<int:pk>/', QuestionnaireCreationView.as_view()),
+    path('questions/', QuestionView.as_view()),
 ]

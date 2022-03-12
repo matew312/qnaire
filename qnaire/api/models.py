@@ -39,10 +39,12 @@ class MultipleChoiceQuestion(Question):
     min_answers = models.IntegerField()
     max_answers = models.IntegerField()
     other_choice = models.BooleanField(default=False)
+    random_order = models.BooleanField(default=False)
 
 class Choice(models.Model):
     question = models.ForeignKey(MultipleChoiceQuestion, on_delete=models.CASCADE)
     text = models.CharField(max_length=100)
+    order_num = models.IntegerField()
 
 
 class Answer(models.Model):
@@ -61,17 +63,17 @@ class Component(models.Model):
 
 
 PRIVATE_QNAIRE_ID_LENGTH = 32
-
-class PrivateQnaireId(models.Model):
-    id = models.CharField(max_length=PRIVATE_QNAIRE_ID_LENGTH, primary_key=True)
-    qnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE)
-
 def generate_qnaire_private_id():
     while True:
         id = token_urlsafe(PRIVATE_QNAIRE_ID_LENGTH)
         if PrivateQnaireId.objects.filter(id=id).count() == 0:
             break
     return id
+
+class PrivateQnaireId(models.Model):
+    id = models.CharField(max_length=PRIVATE_QNAIRE_ID_LENGTH, primary_key=True, default=generate_qnaire_private_id)
+    qnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE)
+
 
 
 

@@ -19,32 +19,41 @@ from .models import (
 class QuestionnaireSerializer(serializers.ModelSerializer):
     class Meta:
         model = Questionnaire
-        fields = '__all__'
+        fields = ('id', 'name', 'anonymous', 'created_at')
+
+class CreateQuestionnaireSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Questionnaire
+        fields = ('name', 'anonymous')
 
 
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
-        fields = '__all__'
-
+        fields = ('id', 'text', 'mandatory', 'order_num')
 
 class OpenQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = OpenQuestion
-        fields = '__all__'
-
+        fields = ('id', 'text', 'mandatory', 'order_num')
 
 class RangeQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = RangeQuestion
-        fields = '__all__'
+        fields = ('id', 'text', 'mandatory', 'order_num', 'type', 'min', 'max', 'step')
 
+
+class ChoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Choice
+        fields = ('text', 'order_num')
 
 class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
+    choices = ChoiceSerializer(many=True, source='choice_set')
+
     class Meta:
         model = MultipleChoiceQuestion
-        fields = '__all__'
-
+        fields = ('id', 'text', 'mandatory', 'order_num', 'min_answers', 'max_answers', 'other_choice', 'random_order', 'choices')
 
 class QuestionPolymorphicSerializer(PolymorphicSerializer):
     model_serializer_mapping = {
@@ -55,32 +64,38 @@ class QuestionPolymorphicSerializer(PolymorphicSerializer):
     }
 
 
-class ChoiceSerializer(serializers.ModelSerializer):
+class SectionSerializer(serializers.ModelSerializer):
+    questions = QuestionPolymorphicSerializer(many=True, source='question_set')
+
     class Meta:
-        model = Choice
-        fields = '__all__'
+        model = Section
+        fields = ('id', 'name', 'order_num', 'questions')
+
+class QuestionnaireCreationSerializer(serializers.ModelSerializer):
+    sections = SectionSerializer(many=True, source='section_set')
+
+    class Meta:
+        model = Questionnaire
+        fields = ('name', 'anonymous', 'created_at', 'sections')
+
+
 
 # class PrivateQnaireIdSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = PrivateQnaireId
 #         fields = '__all__'
 
-class SectionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Section
-        fields = '__all__'
+# class AnswerSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Answer
+#         fields = '__all__'
 
-class AnswerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Answer
-        fields = '__all__'
+# class RespondentSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Respondent
+#         fields = '__all__'
 
-class RespondentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Respondent
-        fields = '__all__'
-
-class ComponentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Component
-        fields = '__all__'
+# class ComponentSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Component
+#         fields = '__all__'

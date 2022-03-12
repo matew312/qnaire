@@ -1,17 +1,22 @@
-import React, {Component} from "react";
+import * as React from "react";
 import { render } from "react-dom";
-import Nav from "./Nav";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
 
-export default class App extends Component {
-    constructor(props) {
-        super(props);
-    }
+import { QnairesPage } from "./pages/QnairesPage";
+import { ResponsePage } from "./pages/ResponsePage";
+import { CreationPage } from "./pages/CreationPage";
 
-    render() {
-        return <Nav />;
-    }
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="questionnaires" element={<QnairesPage />} />
+        <Route path="questionnaires/:id" element={<CreationPage />} />
+        <Route path="questionnaires/:id/respond" element={<ResponsePage />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-const appDiv = document.getElementById('app');
+const appDiv = document.getElementById("app");
 render(<App />, appDiv);
-
