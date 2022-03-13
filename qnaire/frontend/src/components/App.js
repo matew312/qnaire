@@ -18,5 +18,4 @@ function App() {
   );
 }
 
-const appDiv = document.getElementById("app");
-render(<App />, appDiv);
+render(<App />, document.getElementById("root"));

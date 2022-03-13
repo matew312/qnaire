@@ -20,9 +20,11 @@ export function CreationPage() {
       <Typography variant="h2">Creation page</Typography>
       <EditableText value="This text is editable" />
       <Choice value="This is an editable choice" />
+      <Choice value="This is an editable choice" checkbox={true} />
       <Typography variant="h3">Potential range question display:</Typography>
       <SmileyRating />
       <InputSlider />
+      <InputSlider step={0.1} max={1.1} />
       <NumField />
 
     </div>
