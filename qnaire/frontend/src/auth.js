@@ -1,14 +1,44 @@
+import React, { useEffect, useState } from "react";
 import Cookies from "universal-cookie";
 
+const cookies = new Cookies();
+
+const AUTH_COOKIE = "token";
+
+export function useAuth() {
+  const [isAuthenticated, setIsAuthenticated] = useState(getToken());
+
+  function authenticate(data) {
+    setToken(data.token);
+    setIsAuthenticated(true);
+  }
+
+  function annulAuthentication() {
+    removeToken();
+    setIsAuthenticated(false);
+  }
+
+  const auth = {
+    isAuthenticated,
+    authenticate,
+    annulAuthentication,
+  };
+
+  return auth;
+}
+
 export function getAuthHeader() {
-  const cookies = new Cookies();
-  return `Token ${cookies.get("token")}`;
+  return `Token ${cookies.get(AUTH_COOKIE)}`;
 }
-export function setToken(value) {
-  const cookies = new Cookies();
-  cookies.set("token", value);
-}
+
 export function getToken() {
-  const cookies = new Cookies();
-  return cookies.get("token");
+  return Boolean(cookies.get(AUTH_COOKIE));
+}
+
+export function setToken(token) {
+  cookies.set(AUTH_COOKIE, token);
+}
+
+export function removeToken() {
+  cookies.remove(AUTH_COOKIE);
 }

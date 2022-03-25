@@ -1,39 +1,34 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as yup from "yup";
-import { Button, TextField, Grid, Box } from "@mui/material";
-import { getToken, setToken } from "../../auth";
-import { handleErrors } from "../../network";
+import { Button, TextField, Grid, Box, Typography } from "@mui/material";
+import { POST } from "../../network";
 
 const validationSchema = yup.object({
-  username: yup.string("Enter your username").required("username is required"),
+  username: yup
+    .string("Zadejte uživatelské jméno")
+    .required("Uživatelské jméno nesmí být prázdné"),
   password: yup
-    .string("Enter your password")
+    .string("Zadejte heslo")
     //.min(8, 'Password should be of minimum 8 characters length')
-    .required("Password is required"),
+    .required("Heslo nesmí být prázdné"),
 });
 
-export function LoginPage(props) {
+export function LoginPage({ auth }) {
+  const [errorText, setErrorText] = useState("");
   const navigate = useNavigate();
 
   function login(values) {
-    fetch("/api/auth/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(values),
-    })
-      .then(handleErrors)
-      .then((response) => response.json())
-      .then((data) => {
-        setToken(data.token);
-        navigate("/");
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    const callback = (data) => {
+      auth.authenticate(data);
+      navigate("/");
+    };
+    const errorCallback = (err) => {
+      setErrorText("Nesprávné údaje.");
+    };
+
+    POST("auth", values, callback, false, errorCallback);
   }
 
   const formik = useFormik({
@@ -43,6 +38,12 @@ export function LoginPage(props) {
     },
     validationSchema: validationSchema,
     onSubmit: login,
+  });
+
+  useEffect(() => {
+    if (auth.isAuthenticated) {
+      navigate("/");
+    }
   });
 
   return (
@@ -55,7 +56,7 @@ export function LoginPage(props) {
               fullWidth
               id="username"
               name="username"
-              label="Username"
+              label="Uživatelské jméno"
               value={formik.values.username}
               onChange={formik.handleChange}
               error={formik.touched.username && Boolean(formik.errors.username)}
@@ -63,32 +64,31 @@ export function LoginPage(props) {
             />
           </Grid>
           <Box width="100%"></Box>
-          <Grid item xs={12} sm={8} lg={4}>
+          <Grid item xs={12} sm={8} lg={4} mt={2}>
             <TextField
               fullWidth
               id="password"
               name="password"
-              label="Password"
+              label="Heslo"
               type="password"
               value={formik.values.password}
               onChange={formik.handleChange}
               error={formik.touched.password && Boolean(formik.errors.password)}
               helperText={formik.touched.password && formik.errors.password}
-              sx={{ mt: 2 }}
             />
           </Grid>
           <Box width="100%"></Box>
-          <Grid item xs={12} sm={8} lg={4}>
+          <Grid item xs={12} sm={8} lg={4} mt={2}>
             {" "}
-            <Button
-              color="primary"
-              variant="contained"
-              fullWidth
-              type="submit"
-              sx={{ mt: 2 }}
-            >
-              Submit
+            <Button color="primary" variant="contained" fullWidth type="submit">
+              Přihlásit se
             </Button>
+          </Grid>
+          <Box width="100%"></Box>
+          <Grid item xs={12} sm={8} lg={4} mt={2}>
+            <Typography color="error" textAlign="center">
+              {errorText}
+            </Typography>
           </Grid>
           <Box width="100%"></Box>
         </Grid>

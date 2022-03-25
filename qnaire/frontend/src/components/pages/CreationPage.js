@@ -10,12 +10,12 @@ import { MultipleChoiceQuestionOptions } from "../MultipleChoiceQuestionOptions"
 import { Question } from "../Question";
 import { Questionnaire } from "../Questionnaire";
 
-export function CreationPage() {
+export function CreationPage({ auth }) {
+
   const [data, setData] = useState(null);
   const [v, setV] = useState("");
 
   let { id } = useParams();
-
 
   return (
     <div>

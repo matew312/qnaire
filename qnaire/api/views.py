@@ -35,6 +35,6 @@ class CreateQuestionnaireView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
 
-class QuestionView(generics.ListAPIView):
-    queryset = Question.objects.all()
-    serializer_class = QuestionPolymorphicSerializer
+# class QuestionView(generics.ListAPIView):
+#     queryset = Question.objects.all()
+#     serializer_class = QuestionPolymorphicSerializer

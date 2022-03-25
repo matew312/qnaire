@@ -6,29 +6,20 @@ import { SelectableType, Selected } from "../SelectableType";
 import { dictToArraySortedByOrderNum } from "../qnaireUtils";
 
 import { reducer, ActionTypes } from "../reducers";
-import { handleErrors } from "../network";
+import { GET } from "../network";
 
 // export const QnaireDispatch = React.createContext(null);
 // export const QnaireState = React.createContext(null);
-
-function useFetchQnaire(id, callback) {
-  useEffect(() => {
-    fetch(`/api/questionnaires/${id}`)
-      .then(handleErrors)
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        callback(data);
-      });
-  }, [id]);
-}
 
 const initialState = null;
 
 export function Questionnaire({ id }) {
   const [state, dispatch] = useReducer(reducer, initialState);
-  useFetchQnaire(id, (data) => {
-    dispatch({ type: ActionTypes.SET, data });
+
+  useEffect(() => {
+    GET(`questionnaires/${id}`, (data) => {
+      dispatch({ type: ActionTypes.SET, data });
+    });
   });
 
   const {
