@@ -1,11 +1,14 @@
 from django.shortcuts import render
-from rest_framework import generics, permissions
+from django.contrib.auth import authenticate, login
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from rest_framework.views import APIView
 from .models import Question
-from .serializers import CreateQuestionnaireSerializer, QuestionnaireCreationSerializer, QuestionnaireSerializer, QuestionPolymorphicSerializer
+from .serializers import CreateQuestionnaireSerializer, QuestionnaireCreationSerializer, QuestionnaireSerializer, QuestionPolymorphicSerializer, LoginSerializer
 
-#import logging
-#logging.basicConfig(level=logging.DEBUG)
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 # Create your views here.
 
@@ -16,6 +19,7 @@ class QuestionnaireView(generics.ListAPIView):
 
     serializer_class = QuestionnaireSerializer
     permission_classes = [permissions.IsAuthenticated]
+
 
 class QuestionnaireCreationView(generics.RetrieveAPIView):
     def get_queryset(self):
@@ -30,7 +34,7 @@ class CreateQuestionnaireView(generics.CreateAPIView):
     serializer_class = CreateQuestionnaireSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+
 class QuestionView(generics.ListAPIView):
     queryset = Question.objects.all()
     serializer_class = QuestionPolymorphicSerializer
-

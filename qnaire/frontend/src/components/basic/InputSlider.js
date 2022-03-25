@@ -4,12 +4,13 @@ import Slider from "@mui/material/Slider";
 import Input from "@mui/material/Input";
 import { ensurePrecision } from "../../utils";
 
-export function InputSlider(props) {
-  const midValue = ensurePrecision(
-    props.min +
-      Math.round((props.max - props.min) / props.step / 2) * props.step,
-    props.step
-  );
+export function InputSlider({ min, max, ...props }) {
+  const isStep = Boolean(props.step);
+  // make slider use 2 decimal places when step isn't defined (but the step isn't enforced in the Input)
+  const step = isStep ? props.step : 0.01;
+  const midValue = isStep
+    ? ensurePrecision(min + Math.round((max - min) / step / 2) * step, step)
+    : min + (max - min) / 2;
   const defaultValue = props.defaultValue ? props.defaultValue : midValue;
   const [value, setValue] = useState(defaultValue);
 
@@ -23,45 +24,48 @@ export function InputSlider(props) {
   };
 
   const handleBlur = () => {
-    if (value < props.min) {
-      setValue(props.min);
-    } else if (value > props.max) {
-      setValue(props.max);
-    }
-    else {
-      //allow only multiples of step
-      setValue(ensurePrecision(value, props.step))
+    if (value < min) {
+      setValue(min);
+    } else if (value > max) {
+      setValue(max);
+    } else {
+      if (isStep) {
+        //allow only multiples of step
+        setValue(ensurePrecision(value, step));
+      }
     }
   };
 
   const marks = [
     {
-      value: props.min,
-      label: props.min.toString(),
+      value: min,
+      label: min.toString(),
     },
   ];
-  let mark_value = props.min;
-  while (mark_value < props.max) {
-    marks.push({
-      value: mark_value,
-    });
-    mark_value += props.step;
+  if (isStep) {
+    let mark_value = min;
+    while (mark_value < max) {
+      marks.push({
+        value: mark_value,
+      });
+      mark_value += step;
+    }
   }
   marks.push({
-    value: props.max,
-    label: props.max.toString(),
+    value: max,
+    label: max.toString(),
   });
 
   return (
     <Grid container spacing={4} alignItems="center">
       <Grid item xs>
         <Slider
-          value={typeof value === "number" ? value : props.min}
+          value={typeof value === "number" ? value : min}
           onChange={handleSliderChange}
-          step={props.step}
+          step={step}
           marks={marks}
-          min={props.min}
-          max={props.max}
+          min={min}
+          max={max}
           aria-labelledby="input-slider"
         />
       </Grid>
@@ -72,9 +76,9 @@ export function InputSlider(props) {
           onChange={handleInputChange}
           onBlur={handleBlur}
           inputProps={{
-            step: props.step,
-            min: props.min,
-            max: props.max,
+            step: step,
+            min: min,
+            max: max,
             type: "number",
             "aria-labelledby": "input-slider",
           }}

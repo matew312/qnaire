@@ -2,24 +2,49 @@ from rest_framework import serializers
 from rest_polymorphic.serializers import PolymorphicSerializer
 from .models import (
     Questionnaire,
-    Question, 
-    OpenQuestion, 
-    RangeQuestion, 
-    MultipleChoiceQuestion, 
-    Choice, 
-    Answer, 
-    Respondent, 
-    Component, 
-    Section, 
+    Question,
+    OpenQuestion,
+    RangeQuestion,
+    MultipleChoiceQuestion,
+    Choice,
+    Answer,
+    Respondent,
+    Component,
+    Section,
     # PrivateQnaireId
 )
-# from django.contrib.auth.models import User
+from accounts.models import User
 
+
+# http://concisecoder.io/2018/11/17/normalize-your-django-rest-serializers/
+class DictSerializer(serializers.ListSerializer):
+    dict_key = 'id'
+
+    @property
+    def data(self):
+        """
+        Overriden to return a ReturnDict instead of a ReturnList.
+        """
+        ret = super(serializers.ListSerializer, self).data
+        return serializers.ReturnDict(ret, serializer=self)
+
+    def to_representation(self, data):
+        """
+        Converts the data from a list to a dictionary.
+        """
+        items = super(DictSerializer, self).to_representation(data)
+        return {item[self.dict_key]: item for item in items}
+
+
+class LoginSerializer(serializers.Serializer):
+     email = serializers.EmailField()
+     password = serializers.CharField(max_length=128)
 
 class QuestionnaireSerializer(serializers.ModelSerializer):
     class Meta:
         model = Questionnaire
         fields = ('id', 'name', 'anonymous', 'created_at')
+
 
 class CreateQuestionnaireSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,33 +52,47 @@ class CreateQuestionnaireSerializer(serializers.ModelSerializer):
         fields = ('name', 'anonymous')
 
 
+# section_id works as well
+QUESTION_FIELDS = ('id', 'section', 'order_num', 'text', 'mandatory')
+
+
 class QuestionSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Question
-        fields = ('id', 'text', 'mandatory', 'order_num')
+        fields = QUESTION_FIELDS
+
 
 class OpenQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = OpenQuestion
-        fields = ('id', 'text', 'mandatory', 'order_num')
+        fields = QUESTION_FIELDS + ('min_length', 'max_length', )
+
 
 class RangeQuestionSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = RangeQuestion
-        fields = ('id', 'text', 'mandatory', 'order_num', 'type', 'min', 'max', 'step')
+        fields = QUESTION_FIELDS + ('type', 'min', 'max', 'step')
 
 
 class ChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Choice
-        fields = ('text', 'order_num')
+        fields = ('id', 'text', 'order_num')
+        list_serializer_class = DictSerializer
+        
+
 
 class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
-    choices = ChoiceSerializer(many=True, source='choice_set')
+    choices = ChoiceSerializer(
+        many=True, read_only=True, source='choice_set')
 
     class Meta:
         model = MultipleChoiceQuestion
-        fields = ('id', 'text', 'mandatory', 'order_num', 'min_answers', 'max_answers', 'other_choice', 'random_order', 'choices')
+        fields = QUESTION_FIELDS + \
+            ('min_answers', 'max_answers', 'other_choice', 'random_order', 'choices',)
+
 
 class QuestionPolymorphicSerializer(PolymorphicSerializer):
     model_serializer_mapping = {
@@ -63,21 +102,30 @@ class QuestionPolymorphicSerializer(PolymorphicSerializer):
         MultipleChoiceQuestion: MultipleChoiceQuestionSerializer
     }
 
+    class Meta:
+        list_serializer_class = DictSerializer
+
 
 class SectionSerializer(serializers.ModelSerializer):
-    questions = QuestionPolymorphicSerializer(many=True, source='question_set')
-
     class Meta:
         model = Section
-        fields = ('id', 'name', 'order_num', 'questions')
+        fields = ('id', 'name', 'order_num')
+        list_serializer_class = DictSerializer
+
 
 class QuestionnaireCreationSerializer(serializers.ModelSerializer):
     sections = SectionSerializer(many=True, source='section_set')
+    questions = serializers.SerializerMethodField()
 
     class Meta:
         model = Questionnaire
-        fields = ('name', 'anonymous', 'created_at', 'sections')
+        fields = ('id', 'name', 'anonymous',
+                  'created_at', 'sections', 'questions')
 
+    def get_questions(self, qnaire):
+        sections = Section.objects.filter(qnaire=qnaire)
+        questions = Question.objects.filter(section__in=sections)
+        return QuestionPolymorphicSerializer(questions, many=True).data
 
 
 # class PrivateQnaireIdSerializer(serializers.ModelSerializer):

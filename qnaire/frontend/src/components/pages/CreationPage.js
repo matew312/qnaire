@@ -6,17 +6,21 @@ import { InputSlider } from "../basic/InputSlider";
 import { NumField } from "../basic/NumField";
 import { SmileyRating } from "../basic/SmileyRating";
 import { Choice } from "../Choice";
+import { MultipleChoiceQuestionOptions } from "../MultipleChoiceQuestionOptions";
+import { Question } from "../Question";
+import { Questionnaire } from "../Questionnaire";
 
 export function CreationPage() {
+  const [data, setData] = useState(null);
+  const [v, setV] = useState("");
+
   let { id } = useParams();
-  useEffect(() => {
-    fetch(`/api/questionnaires/${id}`)
-      .then((response) => response.json())
-      .then((data) => console.log(data));
-  });
+
 
   return (
     <div>
+      <Questionnaire id={id} />
+      <br /> <br /> <hr />
       <Typography variant="h2">Creation page</Typography>
       <EditableText value="This text is editable" />
       <Choice value="This is an editable choice" />
@@ -25,8 +29,11 @@ export function CreationPage() {
       <SmileyRating />
       <InputSlider />
       <InputSlider step={0.1} max={1.1} />
+      <InputSlider step={null} max={10} />
       <NumField />
-
+      {/* <Question text="Jak se mas?" />
+      <Question text="Hej hej?" selected={true} type="OpenQuestion" /> */}
+      {/* <Question text="Hej hej?" selected={false} type="OpenQuestion" /> */}
     </div>
   );
 }

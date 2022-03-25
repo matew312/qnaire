@@ -2,30 +2,24 @@ import React, { useState } from "react";
 import { Typography, TextField } from "@mui/material";
 
 export function EditableText(props) {
-  const [value, setValue] = useState(props.value);
-  const [isFocused, setIsFocused] = useState(props.isFocused);
-
-  return !isFocused ? (
+  return !props.editable ? (
     <Typography
-      onClick={(e) => {
-        setIsFocused(true);
-      }}
-      display="inline"
+      {...props.typographyProps}
     >
-      {value}
+      {props.value}
     </Typography>
   ) : (
     <TextField
-      autoFocus
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      onBlur={(e) => setIsFocused(false)}
-      variant="standard"
+      value={props.value}
+      onChange={(e) => props.onChange(e.target.value)}
+      {...props.textFieldProps}
     />
   );
 }
 
 EditableText.defaultProps = {
   value: "",
-  isFocused: false,
+  editable: false,
+  textFieldProps: {},
+  typographyProps: {}
 };

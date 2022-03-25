@@ -26,6 +26,9 @@
     "@emotion/styled": "^11.8.1",
     "@mui/icons-material": "^5.5.0",
     "@mui/material": "^5.5.0",
-    "react-router-dom": "^6.2.1"
+    "formik": "^2.2.9",
+    "react-router-dom": "^6.2.1",
+    "universal-cookie": "^4.0.4",
+    "yup": "^0.32.11"
   }
 }

@@ -1,6 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import User # create a custom user if needed
 from polymorphic.models import PolymorphicModel
+from accounts.models import User
 from secrets import token_urlsafe
 
 # Create your models here.
@@ -27,25 +27,25 @@ class Question(PolymorphicModel):
     order_num = models.IntegerField()
 
 class OpenQuestion(Question):
-    pass
+    min_length = models.IntegerField(null=True)
+    max_length = models.IntegerField(null=True)
 
 class RangeQuestion(Question):
     type = models.CharField(max_length=20) # maybe create a model RangeQuestionType to normalize it
     min = models.FloatField() # maybe change these to DecimalField later (and num_value in Answer)
     max = models.FloatField()
-    step = models.FloatField()
+    step = models.FloatField(null=True)
 
 class MultipleChoiceQuestion(Question):
     min_answers = models.IntegerField()
-    max_answers = models.IntegerField()
+    max_answers = models.IntegerField(null=True)
     other_choice = models.BooleanField(default=False)
     random_order = models.BooleanField(default=False)
 
 class Choice(models.Model):
     question = models.ForeignKey(MultipleChoiceQuestion, on_delete=models.CASCADE)
     text = models.CharField(max_length=100)
-    order_num = models.IntegerField()
-
+    order_num = models.IntegerField() 
 
 class Answer(models.Model):
     respondent = models.ForeignKey(Respondent, on_delete=models.PROTECT)
