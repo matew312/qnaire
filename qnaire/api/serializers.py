@@ -1,3 +1,4 @@
+import abc
 from rest_framework import serializers
 from rest_polymorphic.serializers import PolymorphicSerializer
 from .models import (
@@ -36,23 +37,6 @@ class DictSerializer(serializers.ListSerializer):
         return {item[self.dict_key]: item for item in items}
 
 
-class LoginSerializer(serializers.Serializer):
-     email = serializers.EmailField()
-     password = serializers.CharField(max_length=128)
-
-class QuestionnaireSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Questionnaire
-        fields = ('id', 'name', 'anonymous', 'created_at')
-
-
-class CreateQuestionnaireSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Questionnaire
-        fields = ('name', 'anonymous')
-
-
-# section_id works as well
 QUESTION_FIELDS = ('id', 'section', 'order_num', 'text', 'mandatory')
 
 
@@ -62,14 +46,31 @@ class QuestionSerializer(serializers.ModelSerializer):
         model = Question
         fields = QUESTION_FIELDS
 
+    # def validate(self, data):
+    #     pass
 
-class OpenQuestionSerializer(serializers.ModelSerializer):
+    # #template method # this is redundant as I can just call super().validate()
+    # @abc.abstractmethod
+    # def do_validate(self, data):
+    #     pass
+
+# I inherit from QuestionSerializer so that base validation method can be potentially reused
+
+
+class OpenQuestionSerializer(QuestionSerializer):
     class Meta:
         model = OpenQuestion
         fields = QUESTION_FIELDS + ('min_length', 'max_length', )
 
+    def validate(self, data):
+        super().validate(data)
+        min_length = data['min_length']
+        max_length = data['max_length']
 
-class RangeQuestionSerializer(serializers.ModelSerializer):
+        return data
+
+
+class RangeQuestionSerializer(QuestionSerializer):
 
     class Meta:
         model = RangeQuestion
@@ -81,10 +82,9 @@ class ChoiceSerializer(serializers.ModelSerializer):
         model = Choice
         fields = ('id', 'text', 'order_num')
         list_serializer_class = DictSerializer
-        
 
 
-class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
+class MultipleChoiceQuestionSerializer(QuestionSerializer):
     choices = ChoiceSerializer(
         many=True, read_only=True, source='choice_set')
 
@@ -106,13 +106,60 @@ class QuestionPolymorphicSerializer(PolymorphicSerializer):
         list_serializer_class = DictSerializer
 
 
+SECTION_FIELDS = ('id', 'qnaire', 'name', 'order_num')
+
+
 class SectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Section
-        fields = ('id', 'name', 'order_num')
+        fields = SECTION_FIELDS
         list_serializer_class = DictSerializer
 
+    # def validate(self, data):
+        # I CAN'T VALIDATE ORDER_NUM WITHOUT BULK UPDATES (If I am changing order_num of a section, I am naturally changing order of some other ones)
 
+        # self.instance contains the model instance during updates and this Serializer isn't for creation, so it's always fine
+        # sections = self.instance.qnaire.section_set.exclude(pk=self.instance.pk)
+
+
+# extra_kwargs = {'qnaire': {'write_only': True}} <-- This wasn't enough, because I want qnaire only for CREATE requests.
+class CreateSectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Section
+        fields = SECTION_FIELDS + ('qnaire',)
+        list_serializer_class = DictSerializer
+
+    def validate(self, data):
+        request = self.context.get('request')
+        qnaire = data['qnaire']
+        # make sure the created section belongs to a qnaire owned by the current user
+        if qnaire.creator != request.user:
+            raise serializers.ValidationError(
+                f"User doesn't own the questionnaire '{qnaire}'")
+
+        return data
+
+
+class QuestionnaireSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Questionnaire
+        fields = ('id', 'name', 'anonymous', 'created_at')
+
+    def validate(self, data):
+        request = self.context.get('request')
+        if data['name']:
+            name = data['name']
+            qs = Questionnaire.objects.filter(
+                creator=request.user, name__iexact=name)
+            if self.instance:
+                qs = qs.exclude(id=self.instance.id)
+            if qs.exists():
+                raise serializers.ValidationError(
+                    f"Name '{name}' already exists within questionnaires of user '{request.user}'")
+        return data
+
+
+# serializer for the Creation Page
 class QuestionnaireCreationSerializer(serializers.ModelSerializer):
     sections = SectionSerializer(many=True, source='section_set')
     questions = serializers.SerializerMethodField()
