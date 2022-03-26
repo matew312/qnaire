@@ -6,7 +6,7 @@ import { SelectableType, Selected } from "../SelectableType";
 import { dictToArraySortedByOrderNum } from "../qnaireUtils";
 
 import { reducer, ActionTypes } from "../reducers";
-import { GET } from "../network";
+import { GET } from "../request";
 
 // export const QnaireDispatch = React.createContext(null);
 // export const QnaireState = React.createContext(null);

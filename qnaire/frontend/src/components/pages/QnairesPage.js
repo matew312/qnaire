@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useRequireAuth } from "../../auth";
-import { GET } from "../../network";
+import { GET } from "../../request";
 
 export function QnairesPage() {
 

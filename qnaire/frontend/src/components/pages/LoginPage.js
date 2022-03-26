@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { Button, TextField, Grid, Box, Typography } from "@mui/material";
-import { POST } from "../../network";
+import { POST } from "../../request";
 
 const validationSchema = yup.object({
   username: yup

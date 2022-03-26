@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { getAuthHeader, getToken } from "./auth";
 
+const BASE_PATH = "/api/";
+
 function handleErrors(response) {
   if (!response.ok) {
     throw Error(response.statusText);
@@ -27,7 +29,7 @@ function fetchWithoutContent(
     return;
   }
 
-  fetch(`/api/${endpoint}/`, {
+  fetch(`${BASE_PATH}${endpoint}`, {
     method,
     headers: {
       ...(auth && { Authorization: getAuthHeader() }),
@@ -90,7 +92,7 @@ function fetchWithContent(
     return;
   }
 
-  fetch(`/api/${endpoint}/`, {
+  fetch(`${BASE_PATH}${endpoint}`, {
     method,
     headers: {
       "Content-Type": "application/json",
