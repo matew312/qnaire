@@ -1,8 +1,11 @@
+from enum import Enum
 from django.db import models
 from django.core.validators import MinValueValidator
 from polymorphic.models import PolymorphicModel
 from accounts.models import User
 from secrets import token_urlsafe
+
+from .validators import GreaterThanValidator
 
 # Create your models here.
 
@@ -44,22 +47,39 @@ class Question(PolymorphicModel):
 
 
 class OpenQuestion(Question):
-    min_length = models.IntegerField(null=True, validators=[MinValueValidator(0)])
-    max_length = models.IntegerField(null=True, validators=[MinValueValidator(0)])
+    min_length = models.IntegerField(
+        null=True, validators=[MinValueValidator(0)])
+    max_length = models.IntegerField(
+        null=True, validators=[MinValueValidator(0)])
 
 
 class RangeQuestion(Question):
-    # maybe create a model RangeQuestionType to normalize it
-    type = models.CharField(max_length=20)
+    # IntegerField for type seems more reasonable than CharField
+    ENUMERATE = 1
+    SLIDER = 2
+    FIELD = 3
+    # later add 'rating'
+
+    TYPE_CHOICES = (
+        (ENUMERATE, 'Enumerate'),
+        (SLIDER, 'Slider'),
+        (FIELD, 'Field')
+    )
+
+    MAX_CHOICES_FOR_ENUMERATE = 100
+
+    type = models.IntegerField(choices=TYPE_CHOICES)
     # maybe change these to DecimalField later (and num_value in Answer)
     min = models.FloatField()
     max = models.FloatField()
-    step = models.FloatField(null=True)
+    step = models.FloatField(null=True, validators=[GreaterThanValidator(0)])
 
 
 class MultipleChoiceQuestion(Question):
-    min_answers = models.IntegerField(validators=[MinValueValidator(1)])
-    max_answers = models.IntegerField(null=True)
+    # I will allow 0 min_answers (it means the chosing nothing will be OK even if required=true)
+    min_answers = models.IntegerField(validators=[MinValueValidator(0)])
+    max_answers = models.IntegerField(
+        null=True, validators=[MinValueValidator(0)])
     other_choice = models.BooleanField(default=False)
     random_order = models.BooleanField(default=False)
 
@@ -75,10 +95,18 @@ class Choice(models.Model):
 
 
 class Answer(models.Model):
+    CHOICE = 1
+    TEXT = 2
+    DECIMAL = 3
+    VALUES_TYPES = (
+        (CHOICE, 'Choice'),
+        (TEXT, 'Text'),
+        (DECIMAL, 'Decimal')
+    )
+
     respondent = models.ForeignKey(Respondent, on_delete=models.PROTECT)
     question = models.ForeignKey(Question, on_delete=models.PROTECT)
-    # maybe create a model ValueType to normalize it
-    value_type = models.CharField(max_length=20)
+    value_type = models.IntegerField(choices=VALUES_TYPES)
     text_value = models.TextField(default='')
     num_value = models.FloatField(null=True)
     choices_value = models.ManyToManyField(Choice)

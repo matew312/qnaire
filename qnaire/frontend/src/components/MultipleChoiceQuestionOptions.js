@@ -21,7 +21,6 @@ export function MultipleChoiceQuestionOptions({
 }) {
   const checkbox = data.max_answers > 1;
   const totalChoices = Object.keys(data.choices).length;
-  const slider_min_answers = totalChoices > 0 ? 1 : 0;
 
   return (
     <div>
@@ -75,7 +74,7 @@ export function MultipleChoiceQuestionOptions({
                   data.min_answers,
                   data.max_answers ? data.max_answers : totalChoices,
                 ]}
-                min={slider_min_answers}
+                min={0}
                 max={totalChoices}
                 step={1}
                 onChange={(e) => {
@@ -87,8 +86,8 @@ export function MultipleChoiceQuestionOptions({
                 }}
                 marks={[
                   {
-                    value: slider_min_answers,
-                    label: slider_min_answers.toString(),
+                    value: 0,
+                    label: "0",
                   },
                   { value: totalChoices, label: totalChoices.toString() },
                 ]}

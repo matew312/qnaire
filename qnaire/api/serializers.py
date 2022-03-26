@@ -1,4 +1,5 @@
 import abc
+from random import choices
 from rest_framework import serializers
 from rest_polymorphic.serializers import PolymorphicSerializer
 from .models import (
@@ -37,6 +38,27 @@ class DictSerializer(serializers.ListSerializer):
         return {item[self.dict_key]: item for item in items}
 
 
+def get_latest_field_value(field, data, instance):
+    if field in data:
+        return data[field]
+    # returns None if instance is None or attr doesn't exist
+    return getattr(instance, field, None)
+
+
+def validate_less_than_or_equal(a, b, a_field, b_field):
+    if (a is None) or (b is None) or (a <= b):
+        return
+    raise serializers.ValidationError(
+        f'{a_field} must be less than or equal to {b_field}')
+
+
+def validate_less_than(a, b, a_field, b_field):
+    if (a is None) or (b is None) or (a < b):
+        return
+    raise serializers.ValidationError(
+        f'{a_field} must be less than {b_field}')
+
+
 QUESTION_FIELDS = ('id', 'section', 'order_num', 'text', 'mandatory')
 
 
@@ -46,9 +68,26 @@ class QuestionSerializer(serializers.ModelSerializer):
         model = Question
         fields = QUESTION_FIELDS
 
-    # def validate(self, data):
-    #     pass
+    def validate(self, data):
+        # on update (having two serializers would be fine as well)
+        if self.instance:
+            if 'section' in data:
+                # make sure the section is within the same qnaire as the previous one
+                new_section = data['section']
+                current_section = self.instance.section
+                if new_section.qnaire != current_section.qnaire:
+                    raise serializers.ValidationError(
+                        f"Section '{new_section}' is in a different questionnaire than the current section '{current_section}'")
+        # on create
+        else:
+            request = self.context.get('request')
+            section = data['section']
+            # make sure the created question belongs to a qnaire owned by the current user
+            if section.qnaire.creator != request.user:
+                raise serializers.ValidationError(
+                    f"Section '{section}' is in questionnaire '{section.qnaire}', which is not owned by the user")
 
+        return data
     # #template method # this is redundant as I can just call super().validate()
     # @abc.abstractmethod
     # def do_validate(self, data):
@@ -64,8 +103,10 @@ class OpenQuestionSerializer(QuestionSerializer):
 
     def validate(self, data):
         super().validate(data)
-        min_length = data['min_length']
-        max_length = data['max_length']
+        min_length = get_latest_field_value('min_length', data, self.instance)
+        max_length = get_latest_field_value('max_length', data, self.instance)
+        validate_less_than_or_equal(
+            min_length, max_length, 'min_length', 'max_length')
 
         return data
 
@@ -76,12 +117,55 @@ class RangeQuestionSerializer(QuestionSerializer):
         model = RangeQuestion
         fields = QUESTION_FIELDS + ('type', 'min', 'max', 'step')
 
+    def validate(self, data):
+        super().validate(data)
+
+        min = get_latest_field_value('min', data, self.instance)
+        max = get_latest_field_value('max', data, self.instance)
+        validate_less_than(min, max, 'min', 'max')
+
+        if 'type' in data:
+            type = data['type']
+            if type == RangeQuestion.ENUMERATE:
+                step = get_latest_field_value('step', data, self.instance)
+                if step is None:
+                    type_name = dict(RangeQuestion.TYPE_CHOICES)[
+                        RangeQuestion.ENUMERATE]
+                    raise serializers.ValidationError(
+                        f'step must be defined for type {type_name}')
+                if (max - min) / step >= RangeQuestion.MAX_CHOICES_FOR_ENUMERATE:
+                    raise serializers.ValidationError(
+                        f'Number of choices would exceed {RangeQuestion.MAX_CHOICES_FOR_ENUMERATE}')
+
+        return data
+
+
+CHOICE_FIELDS = ('id', 'text', 'order_num')
+
 
 class ChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Choice
-        fields = ('id', 'text', 'order_num')
+        fields = CHOICE_FIELDS
         list_serializer_class = DictSerializer
+
+
+class CreateChoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Choice
+        fields = CHOICE_FIELDS + ('question',)
+        list_serializer_class = DictSerializer
+
+    def validate(self, data):
+        request = self.context.get('request')
+        question = data['question']
+        qnaire = question.section.qnaire
+        # make sure the created choice belongs to a qnaire owned by the current user
+        if qnaire.creator != request.user:
+            raise serializers.ValidationError(
+                f"Question '{question}' belongs to questionnaire '{qnaire}', which is not owned by the user")
+
+        return data
 
 
 class MultipleChoiceQuestionSerializer(QuestionSerializer):
@@ -92,6 +176,30 @@ class MultipleChoiceQuestionSerializer(QuestionSerializer):
         model = MultipleChoiceQuestion
         fields = QUESTION_FIELDS + \
             ('min_answers', 'max_answers', 'other_choice', 'random_order', 'choices',)
+
+    def validate(self, data):
+        super().validate(data)
+        min_answers = get_latest_field_value(
+            'min_answers', data, self.instance)
+        max_answers = get_latest_field_value(
+            'max_answers', data, self.instance)
+        validate_less_than_or_equal(
+            min_answers, max_answers, 'min_answers', 'max_answers')
+
+        # make sure min_answers and max_answers doesn't exceed total number of choices
+        if self.instance is None:
+            validate_less_than_or_equal(
+                min_answers, 0, 'min_answers', 'total number of choices')
+        else:
+            total_choices = Choice.objects.filter(
+                question=self.instance).count()
+            validate_less_than_or_equal(
+                min_answers, 0, 'min_answers', 'total number of choices')
+            if max_answers is not None:
+                validate_less_than_or_equal(
+                    max_answers, total_choices, 'max_answers', 'total number of choices')
+
+        return data
 
 
 class QuestionPolymorphicSerializer(PolymorphicSerializer):
@@ -106,7 +214,7 @@ class QuestionPolymorphicSerializer(PolymorphicSerializer):
         list_serializer_class = DictSerializer
 
 
-SECTION_FIELDS = ('id', 'qnaire', 'name', 'order_num')
+SECTION_FIELDS = ('id', 'name', 'order_num')
 
 
 class SectionSerializer(serializers.ModelSerializer):
@@ -123,6 +231,7 @@ class SectionSerializer(serializers.ModelSerializer):
 
 
 # extra_kwargs = {'qnaire': {'write_only': True}} <-- This wasn't enough, because I want qnaire only for CREATE requests.
+# If there was just one Serializer I would need to check if 'qnaire' in data and self.instance is not None then data['qnaire'] == self.instance.qnaire
 class CreateSectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Section
@@ -147,7 +256,7 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         request = self.context.get('request')
-        if data['name']:
+        if 'name' in data:
             name = data['name']
             qs = Questionnaire.objects.filter(
                 creator=request.user, name__iexact=name)
@@ -178,19 +287,19 @@ class QuestionnaireCreationSerializer(serializers.ModelSerializer):
 # class PrivateQnaireIdSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = PrivateQnaireId
-#         fields = '__all__'
+#         fields = ()
 
 # class AnswerSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = Answer
-#         fields = '__all__'
+#         fields = ()
 
 # class RespondentSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = Respondent
-#         fields = '__all__'
+#         fields = ()
 
 # class ComponentSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = Component
-#         fields = '__all__'
+#         fields = ()

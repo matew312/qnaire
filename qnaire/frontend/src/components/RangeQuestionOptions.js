@@ -9,9 +9,9 @@ import {
 import React, { useState } from "react";
 
 const DISPLAY_TYPES = {
-  slider: "Posuvník",
-  enumerate: "Výběr z možností",
-  field: "Vstupní pole",
+  1: "Výběr z možností",
+  2: "Posuvník",
+  3: "Vstupní pole",
 };
 
 export function RangeQuestionOptions({
