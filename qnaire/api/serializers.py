@@ -3,15 +3,20 @@ from random import choices
 from rest_framework import serializers
 from rest_polymorphic.serializers import PolymorphicSerializer
 from .models import (
+    MultipleChoiceAnswer,
+    OpenAnswer,
+    PrivateQnaireId,
     Questionnaire,
     Question,
     OpenQuestion,
+    RangeAnswer,
     RangeQuestion,
     MultipleChoiceQuestion,
     Choice,
     Answer,
     Respondent,
     Component,
+    Response,
     Section,
     # PrivateQnaireId
 )
@@ -77,7 +82,7 @@ class QuestionSerializer(serializers.ModelSerializer):
                 current_section = self.instance.section
                 if new_section.qnaire != current_section.qnaire:
                     raise serializers.ValidationError(
-                        f"Section '{new_section}' is in a different questionnaire than the current section '{current_section}'")
+                        f"New section is in a different questionnaire than the current section")
         # on create
         else:
             request = self.context.get('request')
@@ -85,7 +90,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             # make sure the created question belongs to a qnaire owned by the current user
             if section.qnaire.creator != request.user:
                 raise serializers.ValidationError(
-                    f"Section '{section}' is in questionnaire '{section.qnaire}', which is not owned by the user")
+                    f"Section belongs to a questionnaire not owned by the user")
 
         return data
     # #template method # this is redundant as I can just call super().validate()
@@ -163,7 +168,7 @@ class CreateChoiceSerializer(serializers.ModelSerializer):
         # make sure the created choice belongs to a qnaire owned by the current user
         if qnaire.creator != request.user:
             raise serializers.ValidationError(
-                f"Question '{question}' belongs to questionnaire '{qnaire}', which is not owned by the user")
+                f"The question belongs to a questionnaire not owned by the user")
 
         return data
 
@@ -204,7 +209,7 @@ class MultipleChoiceQuestionSerializer(QuestionSerializer):
 
 class QuestionPolymorphicSerializer(PolymorphicSerializer):
     model_serializer_mapping = {
-        Question: QuestionSerializer,
+        # Question: QuestionSerializer, # instances of Question are not allowed
         OpenQuestion: OpenQuestionSerializer,
         RangeQuestion: RangeQuestionSerializer,
         MultipleChoiceQuestion: MultipleChoiceQuestionSerializer
@@ -244,7 +249,7 @@ class CreateSectionSerializer(serializers.ModelSerializer):
         # make sure the created section belongs to a qnaire owned by the current user
         if qnaire.creator != request.user:
             raise serializers.ValidationError(
-                f"User doesn't own the questionnaire '{qnaire}'")
+                f"User doesn't own the questionnaire")
 
         return data
 
@@ -279,20 +284,96 @@ class QuestionnaireCreationSerializer(serializers.ModelSerializer):
                   'created_at', 'sections', 'questions')
 
     def get_questions(self, qnaire):
-        sections = Section.objects.filter(qnaire=qnaire)
-        questions = Question.objects.filter(section__in=sections)
+        questions = Question.objects.filter(
+            section__in=qnaire.section_set.all())
         return QuestionPolymorphicSerializer(questions, many=True).data
 
 
-# class PrivateQnaireIdSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = PrivateQnaireId
-#         fields = ()
+ANSWER_FIELDS = ()
+ANSWER_READ_ONLY_FIELDS = ('respondent', )
 
-# class AnswerSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Answer
-#         fields = ()
+
+class AnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Answer
+        fields = ANSWER_FIELDS
+        read_only_fields = ANSWER_READ_ONLY_FIELDS
+
+
+class OpenAnswerSerializer(AnswerSerializer):
+    class Meta:
+        model = OpenAnswer
+        fields = ANSWER_FIELDS + ('question', 'text')
+        read_only_fields = ANSWER_READ_ONLY_FIELDS
+
+
+class RangeAnswerSerializer(AnswerSerializer):
+    class Meta:
+        model = RangeAnswer
+        fields = ANSWER_FIELDS + ('question', 'num')
+        read_only_fields = ANSWER_READ_ONLY_FIELDS
+
+
+class MultipleChoiceAnswerSerializer(AnswerSerializer):
+    class Meta:
+        model = MultipleChoiceAnswer
+        fields = ANSWER_FIELDS + ('question', 'choices', 'other_choice_text')
+        read_only_fields = ANSWER_READ_ONLY_FIELDS
+
+
+class AnswerPolymorhicSerializer(PolymorphicSerializer):
+    model_serializer_mapping = {
+        # Answer: AnswerSerializer,
+        OpenAnswer: OpenAnswerSerializer,
+        RangeAnswer: RangeAnswerSerializer,
+        MultipleChoiceAnswer: MultipleChoiceAnswerSerializer
+    }
+
+
+class ResponseSerializer(serializers.ModelSerializer):
+    answers = AnswerPolymorhicSerializer(many=True, source='answer_set')
+
+    class Meta:
+        model = Response
+        fields = ('answers', 'respondent')
+        extra_kwargs = {'respondent': {'required': False}}
+
+    def validate(self, data):
+        qnaire = self.context.get('qnaire')
+        questions = set(Question.objects.filter(section__qnaire=qnaire))
+        for answer in data['answer_set']:
+            if answer['question'] not in questions:
+                raise serializers.ValidationError(
+                    'Response contains an answer to a question which is not a part of the given questionnaire')
+            else:
+                questions.remove(answer['question'])
+        if len(questions) != 0:
+            raise serializers.ValidationError(
+                'Answers were not provide for every question of the questionnaire')
+
+        return data
+
+    # I need to make a custom create method for serializing relationships, and hence I also have to branch Answer based on type
+    def create(self, validated_data):
+        answers_data = validated_data.pop('answer_set')
+        response = Response.objects.create(**validated_data)
+        for answer_data in answers_data:  
+            type = answer_data.pop('resourcetype') # resourcetype has already been validated by the polymorphic serializer
+            answer_class = None
+            if type == 'OpenAnswer':
+                answer_class = OpenAnswer
+            elif type == 'RangeAnswer':
+                answer_class = RangeAnswer
+            elif type == 'MultipleChoiceAnswer':
+                answer_class = MultipleChoiceAnswer
+            answer_class.objects.create(response=response, **answer_data)
+        return response
+
+
+class PrivateQnaireIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PrivateQnaireId
+        fields = ('id',)
 
 # class RespondentSerializer(serializers.ModelSerializer):
 #     class Meta:

@@ -1,7 +1,8 @@
 from rest_framework import permissions, viewsets
 from .mixins import UserQuerySetMixin, MultiSerializerViewSetMixin
-from .models import Choice, Question, Questionnaire, Section
+from .models import Answer, Choice, Question, Questionnaire, Section
 from .serializers import (
+    AnswerPolymorhicSerializer,
     ChoiceSerializer,
     CreateChoiceSerializer,
     CreateSectionSerializer,
@@ -41,3 +42,8 @@ class ChoiceViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, viewsets.Mod
     # I'm not sure how much the performance will hurt from this.
     # And it's not like allowing users to GET Choices of other users would be terrible.
     user_field = 'question__section__qnaire__creator'
+
+
+class AnswerViewSet(viewsets.ModelViewSet):
+    queryset = Answer.objects.all()
+    serializer_class = AnswerPolymorhicSerializer

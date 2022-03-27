@@ -10,12 +10,12 @@ from .validators import GreaterThanValidator
 # Create your models here.
 
 
-class SpecialId(models.Model):
+class Respondent(models.Model):
     id = models.CharField(primary_key=True, max_length=64)
 
 
-class Respondent(models.Model):
-    special_id = models.ForeignKey(SpecialId, on_delete=models.SET_NULL, null=True)
+class Response(models.Model):
+    respondent = models.ForeignKey(Respondent, on_delete=models.SET_NULL, null=True)
     submit_timestamp = models.DateTimeField(auto_now_add=True)
 
 
@@ -98,7 +98,7 @@ class Choice(models.Model):
 
 
 class Answer(PolymorphicModel):
-    respondent = models.ForeignKey(Respondent, on_delete=models.PROTECT)
+    response = models.ForeignKey(Response, on_delete=models.PROTECT)
 
 
 class OpenAnswer(Answer):
