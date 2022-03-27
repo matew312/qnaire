@@ -13,21 +13,10 @@ from .models import Answer, PrivateQnaireId, Question, Questionnaire, Response, 
 
 # Create your views here.
 
-
-def forbidden_if_not_owning_qnaire(user, qnaire):
-    if user != qnaire.creator:
-        return response.Response(
-            {'detail': f"User {user} doesn't own the questionnaire"}, status=status.HTTP_403_FORBIDDEN)
-
-
 class ResponseView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, **kwargs):
         qnaire = get_object_or_404(Questionnaire, pk=kwargs['id'])
-        forbidden = forbidden_if_not_owning_qnaire(request.user, qnaire)
-        if forbidden is not None:
-            return forbidden
 
         private_qnaire_id = None
         if not qnaire.anonymous:
@@ -51,7 +40,7 @@ class ResponseView(APIView):
         response_serializer = ResponseSerializer(
             data=request.data, context={'qnaire': qnaire})
         if response_serializer.is_valid():
-            response_serializer.save()
+            response_serializer.save() # I could pass the qnaire to the save method if it was in the Response Model
             if private_qnaire_id is not None:
                 private_qnaire_id.delete()
             return response.Response(data=response_serializer.data, status=status.HTTP_200_OK)
@@ -64,9 +53,9 @@ class ResultView(APIView):
 
     def get(self, request, **kwargs):
         qnaire = get_object_or_404(Questionnaire, pk=kwargs['id'])
-        forbidden = forbidden_if_not_owning_qnaire(request.user, qnaire)
-        if forbidden is not None:
-            return forbidden
+        if request.user != qnaire.creator:
+            return response.Response(
+                {'detail': f"User {request.user} doesn't own the questionnaire"}, status=status.HTTP_403_FORBIDDEN)
         qnaire_serializer = QuestionnaireSerializer(qnaire)
 
         sections = qnaire.section_set.all()
@@ -82,12 +71,13 @@ class ResultView(APIView):
         #     Q(MultipleChoiceAnswer___question__in=questions))
         # answer_serializer = AnswerPolymorhicSerializer(answers, many=True)
 
-        # TODO: OPTIMIZE THIS TO RETRIEVE IT IN ONE GO. (select_related smh)
+        # TODO: OPTIMIZE THIS TO RETRIEVE IT IN ONE GO IF POSSIBLE (there are issues with select_related with polymorhic models)
+        # Alternative solution is to include field 'qnaire' in Response. Then I could just do Response.objects.filter(qnaire=qnaire)
         responses_pks = Answer.objects.filter(
             (Q(OpenAnswer___question__in=questions) |
              Q(RangeAnswer___question__in=questions) |
              Q(MultipleChoiceAnswer___question__in=questions))).values_list('response', flat=True).distinct()
-        responses = Response.objects.filter(pk__in=responses_pks)        
+        responses = Response.objects.filter(pk__in=responses_pks)
         response_serializer = ResponseSerializer(responses, many=True)
 
         return response.Response({**qnaire_serializer.data,
