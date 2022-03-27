@@ -10,9 +10,12 @@ from .validators import GreaterThanValidator
 # Create your models here.
 
 
+class SpecialId(models.Model):
+    id = models.CharField(primary_key=True, max_length=64)
+
+
 class Respondent(models.Model):
-    # will be modified later to fit requirements
-    special_id = models.CharField(max_length=64)
+    special_id = models.ForeignKey(SpecialId, on_delete=models.SET_NULL, null=True)
     submit_timestamp = models.DateTimeField(auto_now_add=True)
 
 
@@ -94,22 +97,26 @@ class Choice(models.Model):
         return f'{self.text}'
 
 
-class Answer(models.Model):
-    CHOICE = 1
-    TEXT = 2
-    DECIMAL = 3
-    VALUES_TYPES = (
-        (CHOICE, 'Choice'),
-        (TEXT, 'Text'),
-        (DECIMAL, 'Decimal')
-    )
-
+class Answer(PolymorphicModel):
     respondent = models.ForeignKey(Respondent, on_delete=models.PROTECT)
-    question = models.ForeignKey(Question, on_delete=models.PROTECT)
-    value_type = models.IntegerField(choices=VALUES_TYPES)
-    text_value = models.TextField(default='')
-    num_value = models.FloatField(null=True)
-    choices_value = models.ManyToManyField(Choice)
+
+
+class OpenAnswer(Answer):
+    question = models.ForeignKey(OpenQuestion, on_delete=models.PROTECT)
+    text = models.TextField()
+
+
+class RangeAnswer(Answer):
+    question = models.ForeignKey(RangeQuestion, on_delete=models.PROTECT)
+    num = models.FloatField()
+
+
+class MultipleChoiceAnswer(Answer):
+    question = models.ForeignKey(
+        MultipleChoiceQuestion, on_delete=models.PROTECT)
+    # saves me from having to create an "association table"
+    choices = models.ManyToManyField(Choice)
+    other_choice_text = models.TextField(blank=True)
 
 
 class Component(models.Model):
@@ -125,7 +132,7 @@ PRIVATE_QNAIRE_ID_LENGTH = 32
 def generate_qnaire_private_id():
     while True:
         id = token_urlsafe(PRIVATE_QNAIRE_ID_LENGTH)
-        if PrivateQnaireId.objects.filter(id=id).count() == 0:
+        if not PrivateQnaireId.objects.filter(id=id).exists():
             break
     return id
 
