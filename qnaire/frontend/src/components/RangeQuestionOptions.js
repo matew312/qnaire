@@ -12,6 +12,8 @@ const DISPLAY_TYPES = {
   1: "Výběr z možností",
   2: "Posuvník",
   3: "Vstupní pole",
+  4: "Hvězdičkové hodnocení",
+  5: "Smajlíkové hodnocení",
 };
 
 export function RangeQuestionOptions({

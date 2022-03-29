@@ -147,7 +147,7 @@ class RangeQuestionSerializer(QuestionSerializer):
 
         if 'type' in data:
             type = data['type']
-            if type == RangeQuestion.ENUMERATE:
+            if type in [RangeQuestion.ENUMERATE, RangeQuestion.STAR_RATING, RangeQuestion.SMILEY_RATING]:
                 if step is None:
                     type_name = dict(RangeQuestion.TYPE_CHOICES)[
                         RangeQuestion.ENUMERATE]
@@ -156,7 +156,10 @@ class RangeQuestionSerializer(QuestionSerializer):
                 if (max - min) / step >= RangeQuestion.MAX_CHOICES_FOR_ENUMERATE:
                     raise serializers.ValidationError(
                         f'Number of choices would exceed {RangeQuestion.MAX_CHOICES_FOR_ENUMERATE}')
-
+            if type == RangeQuestion.SMILEY_RATING:
+                if step != 1 or min != 1 or max > RangeQuestion.MAX_SMILEYS:
+                    raise serializers.ValidationError(
+                        f'For type {type_name} these constraints must be true: step=1; min=1; 1 < max <= {RangeQuestion.MAX_SMILEYS}')
         return data
 
 

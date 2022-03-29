@@ -1,4 +1,3 @@
-from enum import Enum
 from django.db import models
 from django.core.validators import MinValueValidator
 from polymorphic.models import PolymorphicModel
@@ -61,15 +60,19 @@ class RangeQuestion(Question):
     ENUMERATE = 1
     SLIDER = 2
     FIELD = 3
-    # later add 'rating'
+    STAR_RATING = 4
+    SMILEY_RATING = 5
 
     TYPE_CHOICES = (
         (ENUMERATE, 'Enumerate'),
         (SLIDER, 'Slider'),
-        (FIELD, 'Field')
+        (FIELD, 'Field'),
+        (STAR_RATING, 'Star rating'),
+        (SMILEY_RATING, 'Smiley rating'),
     )
 
     MAX_CHOICES_FOR_ENUMERATE = 100
+    MAX_SMILEYS = 5
 
     type = models.IntegerField(choices=TYPE_CHOICES)
     min = models.FloatField()
