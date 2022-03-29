@@ -51,9 +51,9 @@ class Question(PolymorphicModel):
 
 class OpenQuestion(Question):
     min_length = models.IntegerField(
-        null=True, validators=[MinValueValidator(0)])
+        null=True, validators=[MinValueValidator(1)])
     max_length = models.IntegerField(
-        null=True, validators=[MinValueValidator(0)])
+        null=True, validators=[MinValueValidator(1)])
 
 
 class RangeQuestion(Question):
@@ -72,10 +72,10 @@ class RangeQuestion(Question):
     MAX_CHOICES_FOR_ENUMERATE = 100
 
     type = models.IntegerField(choices=TYPE_CHOICES)
-    # maybe change these to DecimalField later (and num_value in Answer)
     min = models.FloatField()
     max = models.FloatField()
-    step = models.FloatField(null=True, validators=[GreaterThanValidator(0)])
+    # only integer step will be allowed (or I could make the fields decimal so that it would be possible to validate the step)
+    step = models.IntegerField(null=True, validators=[GreaterThanValidator(0)])
 
 
 class MultipleChoiceQuestion(Question):
@@ -103,12 +103,12 @@ class Answer(PolymorphicModel):
 
 class OpenAnswer(Answer):
     question = models.ForeignKey(OpenQuestion, on_delete=models.PROTECT)
-    text = models.TextField()
+    text = models.TextField(blank=True)
 
 
 class RangeAnswer(Answer):
     question = models.ForeignKey(RangeQuestion, on_delete=models.PROTECT)
-    num = models.FloatField()
+    num = models.FloatField(null=True)
 
 
 class MultipleChoiceAnswer(Answer):

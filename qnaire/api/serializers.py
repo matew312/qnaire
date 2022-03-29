@@ -64,6 +64,12 @@ def validate_less_than(a, b, a_field, b_field):
         f'{a_field} must be less than {b_field}')
 
 
+def raise_validation_error_if_mandatory(q):
+    if q.mandatory:
+        raise serializers.ValidationError(
+            f"Question '{q}' is mandatory, but no answer was provided")
+
+
 QUESTION_FIELDS = ('id', 'section', 'order_num', 'text', 'mandatory')
 
 
@@ -129,10 +135,19 @@ class RangeQuestionSerializer(QuestionSerializer):
         max = get_latest_field_value('max', data, self.instance)
         validate_less_than(min, max, 'min', 'max')
 
+        step = get_latest_field_value('step', data, self.instance)
+        if step is not None:
+            if not min.is_integer():
+                raise serializers.ValidationError(
+                    'min must be an integer when step is defined')
+            if not max.is_integer():
+                raise serializers.ValidationError(
+                    'max must be an integer when step is defined')
+            validate_less_than_or_equal(step, max - min, 'step', 'max - min')
+
         if 'type' in data:
             type = data['type']
             if type == RangeQuestion.ENUMERATE:
-                step = get_latest_field_value('step', data, self.instance)
                 if step is None:
                     type_name = dict(RangeQuestion.TYPE_CHOICES)[
                         RangeQuestion.ENUMERATE]
@@ -199,7 +214,7 @@ class MultipleChoiceQuestionSerializer(QuestionSerializer):
             total_choices = Choice.objects.filter(
                 question=self.instance).count()
             validate_less_than_or_equal(
-                min_answers, 0, 'min_answers', 'total number of choices')
+                min_answers, total_choices, 'min_answers', 'total number of choices')
             if max_answers is not None:
                 validate_less_than_or_equal(
                     max_answers, total_choices, 'max_answers', 'total number of choices')
@@ -290,35 +305,102 @@ class QuestionnaireCreationSerializer(serializers.ModelSerializer):
 
 
 ANSWER_FIELDS = ()
-ANSWER_READ_ONLY_FIELDS = ('respondent', )
 
 
 class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
         fields = ANSWER_FIELDS
-        read_only_fields = ANSWER_READ_ONLY_FIELDS
 
 
 class OpenAnswerSerializer(AnswerSerializer):
     class Meta:
         model = OpenAnswer
         fields = ANSWER_FIELDS + ('question', 'text')
-        read_only_fields = ANSWER_READ_ONLY_FIELDS
+
+    def validate(self, data):
+        q = data['question']
+        if 'text' not in data or len(data['text']) == 0:
+            raise_validation_error_if_mandatory(q)
+            return data
+
+        text = data['text']
+        if q.min_length is not None and len(text) < q.min_length:
+            raise serializers.ValidationError(
+                f"Answer to question '{q}' must be at least {q.min_length} characters long")
+        if q.max_length is not None and len(text) > q.max_length:
+            raise serializers.ValidationError(
+                f"Answer to question '{q}' must be shorter than {q.min_length} characters")
+        return data
 
 
 class RangeAnswerSerializer(AnswerSerializer):
     class Meta:
         model = RangeAnswer
         fields = ANSWER_FIELDS + ('question', 'num')
-        read_only_fields = ANSWER_READ_ONLY_FIELDS
+
+    def validate(self, data):
+        q = data['question']
+        if 'num' not in data:
+            raise_validation_error_if_mandatory(q)
+            return data
+
+        num = data['num']
+        if num < q.min:
+            raise serializers.ValidationError(
+                f"Answer to question '{q}' must be greater than or equal to {q.min}")
+        if num > q.max:
+            raise serializers.ValidationError(
+                f"Answer to question '{q}' must be less than or equal to {q.max}")
+        if q.step is not None and num % q.step != 0:
+            raise serializers.ValidationError(
+                f"Answer to question '{q}' must be divisible by {q.step}")
+        return data
 
 
 class MultipleChoiceAnswerSerializer(AnswerSerializer):
     class Meta:
         model = MultipleChoiceAnswer
         fields = ANSWER_FIELDS + ('question', 'choices', 'other_choice_text')
-        read_only_fields = ANSWER_READ_ONLY_FIELDS
+        extra_kwargs = {'choices': {'required': False}}
+
+    def validate(self, data):
+        q = data['question']
+        choice_pool = set(q.choice_set.all())
+        if 'choices' not in data:
+            selected_choices = []
+            total_selected_choices = 0
+        else:
+            selected_choices = data['choices']
+            total_selected_choices = len(selected_choices)
+
+        if 'other_choice_text' in data and len(data['other_choice_text']) > 0:
+            if not q.other_choice:
+                raise serializers.ValidationError(
+                    f"Other choice is not allowed for question '{q}'")
+            else:
+                total_selected_choices += 1
+
+        if total_selected_choices == 0 and q.min_answers > 0:
+            raise_validation_error_if_mandatory(q)
+            return data
+
+        if total_selected_choices < q.min_answers:
+            raise serializers.ValidationError(
+                f"Fewer choices were selected for question '{q}' than the allowed minimum of {q.min_answers}")
+
+        if total_selected_choices > q.max_answers:
+            raise serializers.ValidationError(
+                f"More choices were selected for question '{q}' than the allowed maximum of {q.max_answers}")
+
+        for choice in selected_choices:
+            if choice not in choice_pool:
+                raise serializers.ValidationError(
+                    f"Invalid choice was provided as answer to question '{q}'")
+            # remove the choice from pool to prevent duplicate choices
+            choice_pool.remove(choice)
+
+        return data
 
 
 class AnswerPolymorhicSerializer(PolymorphicSerializer):
@@ -335,8 +417,8 @@ class ResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Response
-        fields = ('answers', 'respondent')
-        extra_kwargs = {'respondent': {'required': False}}
+        fields = ('answers', 'respondent', 'submit_timestamp')
+        # extra_kwargs = {'respondent': {'required': False}} # this should be automatic by having the field be null=True
 
     def validate(self, data):
         qnaire = self.context.get('qnaire')
@@ -357,16 +439,23 @@ class ResponseSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         answers_data = validated_data.pop('answer_set')
         response = Response.objects.create(**validated_data)
-        for answer_data in answers_data:  
-            type = answer_data.pop('resourcetype') # resourcetype has already been validated by the polymorphic serializer
+        for answer_data in answers_data:
+            # resourcetype has already been validated by the polymorphic serializer
+            type = answer_data.pop('resourcetype')
             answer_class = None
+            choices = None
             if type == 'OpenAnswer':
                 answer_class = OpenAnswer
             elif type == 'RangeAnswer':
                 answer_class = RangeAnswer
             elif type == 'MultipleChoiceAnswer':
                 answer_class = MultipleChoiceAnswer
-            answer_class.objects.create(response=response, **answer_data)
+                if 'choices' in answer_data:
+                    choices = answer_data.pop('choices')
+            answer = answer_class.objects.create(
+                response=response, **answer_data)
+            if choices is not None:
+                answer.choices.set(choices)
         return response
 
 
