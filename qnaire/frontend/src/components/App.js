@@ -23,12 +23,16 @@ function App() {
             <Grid item xs={12}>
               <Routes>
                 <Route path="login" element={<LoginPage auth={auth} />} />
-                <Route path="/" element={<AuthOnlyOutlet auth={auth}/> }>
+                <Route path="/" element={<AuthOnlyOutlet auth={auth} />}>
                   <Route path="" element={<QnairesPage />} />
                   <Route path="questionnaires" element={<QnairesPage />} />
                   <Route path="questionnaires/:id" element={<CreationPage />} />
                   <Route
                     path="questionnaires/:id/respond"
+                    element={<ResponsePage />}
+                  />
+                  <Route
+                    path="questionnaires/:id/respond/:privateId"
                     element={<ResponsePage />}
                   />
                 </Route>
