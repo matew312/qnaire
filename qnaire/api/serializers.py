@@ -49,6 +49,14 @@ def get_latest_field_value(field, data, instance):
     # returns None if instance is None or attr doesn't exist
     return getattr(instance, field, None)
 
+# on update returns the old value, on create returns the new value
+
+
+def get_original_field_value(field, data, instance):
+    if instance:
+        return getattr(instance, field, None)
+    return data[field]
+
 
 def validate_less_than_or_equal(a, b, a_field, b_field):
     if (a is None) or (b is None) or (a <= b):
@@ -70,6 +78,12 @@ def raise_validation_error_if_mandatory(q):
             f"Question '{q}' is mandatory, but no answer was provided")
 
 
+def raise_validation_error_if_qnaire_published(qnaire):
+    if qnaire.published:
+        raise serializers.ValidationError(
+            f'Content of questionnaire {qnaire} cannot be modified, because the questionnaire is published')
+
+
 QUESTION_FIELDS = ('id', 'section', 'order_num', 'text', 'mandatory')
 
 
@@ -80,12 +94,14 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = QUESTION_FIELDS
 
     def validate(self, data):
+        section = get_original_field_value('section', data, self.instance)
+        raise_validation_error_if_qnaire_published(section.qnaire)
+
         # on update (having two serializers would be fine as well)
         if self.instance:
             if 'section' in data:
                 # make sure the section is within the same qnaire as the previous one
                 new_section = data['section']
-                current_section = self.instance.section
                 if new_section.qnaire != current_section.qnaire:
                     raise serializers.ValidationError(
                         f"New section is in a different questionnaire than the current section")
@@ -171,17 +187,19 @@ class ChoiceSerializer(serializers.ModelSerializer):
         list_serializer_class = DictSerializer
 
     def validate(self, data):
+        question = get_original_field_value('question', data, self.instance)
+        raise_validation_error_if_qnaire_published(question.section.qnaire)
+
         request = self.context.get('request')
         question = self.instance.question if self.instance else data['question']
         qnaire = question.section.qnaire
 
         data = self.do_validate(data, qnaire, request)
 
-        if 'skip_to_section' in data and data['skip_to_section'] is not None:
-            skip_to_section = data['skip_to_section']
-            if skip_to_section.qnaire != qnaire:
-                raise serializers.ValidationError(
-                    f"skip_to_section belong to a different questionnaire than the choice.")
+        skip_to_section = data.get('skip_to_section')
+        if skip_to_section is not None and skip_to_section.qnaire != qnaire:
+            raise serializers.ValidationError(
+                f"skip_to_section belong to a different questionnaire than the choice.")
         return data
 
     # template method
@@ -258,22 +276,30 @@ class SectionSerializer(serializers.ModelSerializer):
         fields = SECTION_FIELDS
         list_serializer_class = DictSerializer
 
-    # def validate(self, data):
-        # I CAN'T VALIDATE ORDER_NUM WITHOUT BULK UPDATES (If I am changing order_num of a section, I am naturally changing order of some other ones)
+    def validate(self, data):
+        qnaire = get_latest_field_value('qnaire')
+        raise_validation_error_if_qnaire_published(qnaire)
+        return self.do_validate(data)
 
+        # I CAN'T VALIDATE ORDER_NUM WITHOUT BULK UPDATES (If I am changing order_num of a section, I am naturally changing order of some other ones)
         # self.instance contains the model instance during updates and this Serializer isn't for creation, so it's always fine
         # sections = self.instance.qnaire.section_set.exclude(pk=self.instance.pk)
 
+        # extra_kwargs = {'qnaire': {'write_only': True}} <-- This wasn't enough, because I want qnaire only for CREATE requests.
+        # If there was just one Serializer I would need to check if 'qnaire' in data and self.instance is not None then data['qnaire'] == self.instance.qnaire
 
-# extra_kwargs = {'qnaire': {'write_only': True}} <-- This wasn't enough, because I want qnaire only for CREATE requests.
-# If there was just one Serializer I would need to check if 'qnaire' in data and self.instance is not None then data['qnaire'] == self.instance.qnaire
-class CreateSectionSerializer(serializers.ModelSerializer):
+    # template method
+    def do_validate(self, data):
+        return data
+
+
+class CreateSectionSerializer(SectionSerializer):
     class Meta:
         model = Section
         fields = SECTION_FIELDS + ('qnaire',)
         list_serializer_class = DictSerializer
 
-    def validate(self, data):
+    def do_validate(self, data):
         request = self.context.get('request')
         qnaire = data['qnaire']
         # make sure the created section belongs to a qnaire owned by the current user
@@ -284,12 +310,17 @@ class CreateSectionSerializer(serializers.ModelSerializer):
         return data
 
 
+QUESTIONNAIRE_FIELDS = ('id', 'name', 'anonymous',
+                        'private', 'published', 'created_at')
+
+
 class QuestionnaireSerializer(serializers.ModelSerializer):
     class Meta:
         model = Questionnaire
-        fields = ('id', 'name', 'anonymous', 'created_at')
+        fields = QUESTIONNAIRE_FIELDS
 
     def validate(self, data):
+        print(data)
         request = self.context.get('request')
         if 'name' in data:
             name = data['name']
@@ -310,8 +341,7 @@ class QuestionnaireCreationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Questionnaire
-        fields = ('id', 'name', 'anonymous',
-                  'created_at', 'sections', 'questions')
+        fields = QUESTIONNAIRE_FIELDS + ('sections', 'questions')
 
     def get_questions(self, qnaire):
         questions = Question.objects.filter(
@@ -437,6 +467,18 @@ class ResponseSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         qnaire = self.context.get('qnaire')
+        if not qnaire.published:
+            raise serializers.ValidationError(
+                'Response cannot be submited because questionnaire is not published')
+
+        respondent = data.get('respondent')
+        if qnaire.anonymous and respondent is not None:
+            raise serializers.ValidationError(
+                "Response can't contain a respondent because the questionnaire is anonymous")
+        elif not qnaire.anonymous and respondent is None:
+            raise serializers.ValidationError(
+                "Response must contain a respondent because the questionnaire is not anonymous")
+
         questions = set(Question.objects.filter(section__qnaire=qnaire))
         for answer in data['answer_set']:
             if answer['question'] not in questions:
@@ -477,7 +519,7 @@ class ResponseSerializer(serializers.ModelSerializer):
 class PrivateQnaireIdSerializer(serializers.ModelSerializer):
     class Meta:
         model = PrivateQnaireId
-        fields = ('id',)
+        fields = ('id', )
 
 # class RespondentSerializer(serializers.ModelSerializer):
 #     class Meta:

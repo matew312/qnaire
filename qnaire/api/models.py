@@ -19,10 +19,12 @@ class Response(models.Model):
 
 
 class Questionnaire(models.Model):
+    creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=100)
     desc = models.TextField(blank=True)
     anonymous = models.BooleanField(default=True)
-    creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    private = models.BooleanField(default=False)
+    published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:

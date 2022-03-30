@@ -7,6 +7,6 @@ router.register('questionnaires', QuestionnaireViewSet)
 router.register('questions', QuestionViewSet)
 router.register('sections', SectionViewSet)
 router.register('choices', ChoiceViewSet)
-router.register('answers', AnswerViewSet)
+#router.register('answers', AnswerViewSet)
 
 urlpatterns = router.urls

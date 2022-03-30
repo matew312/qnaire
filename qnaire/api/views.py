@@ -40,7 +40,8 @@ class ResponseView(APIView):
         response_serializer = ResponseSerializer(
             data=request.data, context={'qnaire': qnaire})
         if response_serializer.is_valid():
-            response_serializer.save() # I could pass the qnaire to the save method if it was in the Response Model
+            # I could pass the qnaire to the save method if it was in the Response Model
+            response_serializer.save()
             if private_qnaire_id is not None:
                 private_qnaire_id.delete()
             return response.Response(data=response_serializer.data, status=status.HTTP_200_OK)
@@ -48,14 +49,21 @@ class ResponseView(APIView):
             return response.Response(data={'detail': response_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
+def forbidden_if_not_owning_qnaire(qnaire, request):
+    if request.user != qnaire.creator:
+        return response.Response(
+            {'detail': f"User {request.user} doesn't own the questionnaire"}, status=status.HTTP_403_FORBIDDEN)
+
+
 class ResultView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, **kwargs):
         qnaire = get_object_or_404(Questionnaire, pk=kwargs['id'])
-        if request.user != qnaire.creator:
-            return response.Response(
-                {'detail': f"User {request.user} doesn't own the questionnaire"}, status=status.HTTP_403_FORBIDDEN)
+        forbidden = forbidden_if_not_owning_qnaire(qnaire, request)
+        if forbidden:
+            return forbidden
+
         qnaire_serializer = QuestionnaireSerializer(qnaire)
 
         sections = qnaire.section_set.all()
@@ -86,3 +94,18 @@ class ResultView(APIView):
                                   # 'answers': answer_serializer.data,
                                   'responses': response_serializer.data
                                   })
+
+
+class PrivateQnaireIdView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, **kwargs):
+        qnaire = get_object_or_404(Questionnaire, pk=kwargs['id'])
+        forbidden = forbidden_if_not_owning_qnaire(qnaire, request)
+        if forbidden:
+            return forbidden
+
+        private_qnaire_id = PrivateQnaireId.objects.create(qnaire=qnaire)
+        serializer = PrivateQnaireIdSerializer(private_qnaire_id)
+
+        return response.Response(data=serializer.data, status=status.HTTP_200_OK)
