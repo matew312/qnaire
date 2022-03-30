@@ -98,11 +98,12 @@ class QuestionSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     f"Section belongs to a questionnaire not owned by the user")
 
-        return data
-    # #template method # this is redundant as I can just call super().validate()
-    # @abc.abstractmethod
-    # def do_validate(self, data):
-    #     pass
+        return self.do_validate(data)
+
+    # template method
+    @abc.abstractmethod
+    def do_validate(self, data):
+        pass
 
 # I inherit from QuestionSerializer so that base validation method can be potentially reused
 
@@ -112,8 +113,7 @@ class OpenQuestionSerializer(QuestionSerializer):
         model = OpenQuestion
         fields = QUESTION_FIELDS + ('min_length', 'max_length', )
 
-    def validate(self, data):
-        super().validate(data)
+    def do_validate(self, data):
         min_length = get_latest_field_value('min_length', data, self.instance)
         max_length = get_latest_field_value('max_length', data, self.instance)
         validate_less_than_or_equal(
@@ -128,9 +128,7 @@ class RangeQuestionSerializer(QuestionSerializer):
         model = RangeQuestion
         fields = QUESTION_FIELDS + ('type', 'min', 'max', 'step')
 
-    def validate(self, data):
-        super().validate(data)
-
+    def do_validate(self, data):
         min = get_latest_field_value('min', data, self.instance)
         max = get_latest_field_value('max', data, self.instance)
         validate_less_than(min, max, 'min', 'max')
@@ -163,7 +161,7 @@ class RangeQuestionSerializer(QuestionSerializer):
         return data
 
 
-CHOICE_FIELDS = ('id', 'text', 'order_num')
+CHOICE_FIELDS = ('id', 'text', 'order_num', 'skip_to_section')
 
 
 class ChoiceSerializer(serializers.ModelSerializer):
@@ -172,17 +170,32 @@ class ChoiceSerializer(serializers.ModelSerializer):
         fields = CHOICE_FIELDS
         list_serializer_class = DictSerializer
 
+    def validate(self, data):
+        request = self.context.get('request')
+        question = self.instance.question if self.instance else data['question']
+        qnaire = question.section.qnaire
 
-class CreateChoiceSerializer(serializers.ModelSerializer):
+        data = self.do_validate(data, qnaire, request)
+
+        if 'skip_to_section' in data and data['skip_to_section'] is not None:
+            skip_to_section = data['skip_to_section']
+            if skip_to_section.qnaire != qnaire:
+                raise serializers.ValidationError(
+                    f"skip_to_section belong to a different questionnaire than the choice.")
+        return data
+
+    # template method
+    def do_validate(self, data, qnaire, request):
+        return data
+
+
+class CreateChoiceSerializer(ChoiceSerializer):
     class Meta:
         model = Choice
         fields = CHOICE_FIELDS + ('question',)
         list_serializer_class = DictSerializer
 
-    def validate(self, data):
-        request = self.context.get('request')
-        question = data['question']
-        qnaire = question.section.qnaire
+    def do_validate(self, data, qnaire, request):
         # make sure the created choice belongs to a qnaire owned by the current user
         if qnaire.creator != request.user:
             raise serializers.ValidationError(
@@ -200,8 +213,7 @@ class MultipleChoiceQuestionSerializer(QuestionSerializer):
         fields = QUESTION_FIELDS + \
             ('min_answers', 'max_answers', 'other_choice', 'random_order', 'choices',)
 
-    def validate(self, data):
-        super().validate(data)
+    def do_validate(self, data):
         min_answers = get_latest_field_value(
             'min_answers', data, self.instance)
         max_answers = get_latest_field_value(

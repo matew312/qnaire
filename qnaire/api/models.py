@@ -20,6 +20,7 @@ class Response(models.Model):
 
 class Questionnaire(models.Model):
     name = models.CharField(max_length=100)
+    desc = models.TextField(blank=True)
     anonymous = models.BooleanField(default=True)
     creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -31,6 +32,7 @@ class Questionnaire(models.Model):
 class Section(models.Model):
     qnaire = models.ForeignKey(Questionnaire, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
+    desc = models.TextField(blank=True)
     order_num = models.IntegerField(validators=[MinValueValidator(0)])
 
     def __str__(self) -> str:
@@ -56,7 +58,6 @@ class OpenQuestion(Question):
 
 
 class RangeQuestion(Question):
-    # IntegerField for type seems more reasonable than CharField
     ENUMERATE = 1
     SLIDER = 2
     FIELD = 3
@@ -77,12 +78,12 @@ class RangeQuestion(Question):
     type = models.IntegerField(choices=TYPE_CHOICES)
     min = models.FloatField()
     max = models.FloatField()
-    # only integer step will be allowed (or I could make the fields decimal so that it would be possible to validate the step)
+    # only integer step will be allowed (the alternative is make all field decimal so that it would be possible to validate the step)
     step = models.IntegerField(null=True, validators=[GreaterThanValidator(0)])
 
 
 class MultipleChoiceQuestion(Question):
-    # I will allow 0 min_answers (it means the chosing nothing will be OK even if required=true)
+    # min_answers=0 is allowed (it means that chosing nothing will be OK even if required=true)
     min_answers = models.IntegerField(validators=[MinValueValidator(0)])
     max_answers = models.IntegerField(
         null=True, validators=[MinValueValidator(0)])
@@ -95,6 +96,7 @@ class Choice(models.Model):
         MultipleChoiceQuestion, on_delete=models.CASCADE)
     text = models.CharField(max_length=100)
     order_num = models.IntegerField(validators=[MinValueValidator(0)])
+    skip_to_section = models.ForeignKey(Section, on_delete=models.SET_NULL, null=True)
 
     def __str__(self) -> str:
         return f'{self.text}'
