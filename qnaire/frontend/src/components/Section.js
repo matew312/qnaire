@@ -1,27 +1,31 @@
 import { Box, Grid, Typography } from "@mui/material";
-import React, { useContext, useState } from "react";
-import { SelectableType } from "../SelectableType";
+import React, { useContext, useMemo, useState } from "react";
 import { EditableText } from "./basic/EditableText";
 import { Question } from "./Question";
 import { ActionTypes } from "../reducers";
 import { sortArrayByOrderNum } from "../qnaireUtils";
+import { useQnaireContext } from "./QnaireContextProvider";
 
-export function Section({ data, selected, dispatch, questions }) {
-  const { id, name, desc, order_num } = data;
-  const isSelected = Boolean(
-    selected &&
-      selected.type === SelectableType.SECTION &&
-      selected.id === id
+export function Section({ id, name, desc, order_num }) {
+  const {
+    selected,
+    questions: allQuestions,
+    select,
+    updateSection,
+  } = useQnaireContext();
+  const isSelected = Boolean(selected && selected.isEqual(Section, id));
+
+  const questions = useMemo(
+    () =>
+      Object.keys(allQuestions).reduce((filtered, qId) => {
+        if (allQuestions[qId].section === id) {
+          filtered.push(allQuestions[qId]);
+        }
+        return filtered;
+      }, []),
+    [allQuestions]
   );
-
-  function dispatchSectionUpdate(updatedData) {
-    dispatch({
-      type: ActionTypes.UPDATE,
-      resource: 'sections',
-      id,
-      data: updatedData,
-    });
-  }
+  console.log(questions);
 
   const style = {
     display: "flex",
@@ -43,19 +47,14 @@ export function Section({ data, selected, dispatch, questions }) {
         xs={12}
         container
         spacing={1}
-        onClick={() =>
-          dispatch({
-            type: ActionTypes.SELECT,
-            data: { type: SelectableType.SECTION, id },
-          })
-        }
+        onClick={() => select(Section, id)}
       >
         <Grid item xs={12}>
           <EditableText
             editable={isSelected}
             value={name}
             onChange={(name) => {
-              dispatchSectionUpdate({ name });
+              updateSection(id, { name });
             }}
             typographyProps={{ variant: "h3" }}
             textFieldProps={{
@@ -71,7 +70,7 @@ export function Section({ data, selected, dispatch, questions }) {
             editable={isSelected}
             value={desc}
             onChange={(desc) => {
-              dispatchSectionUpdate({ desc });
+              updateSection(id, { desc });
             }}
             textFieldProps={{
               fullWidth: true,
@@ -88,7 +87,7 @@ export function Section({ data, selected, dispatch, questions }) {
           <Grid container spacing={2}>
             {sortArrayByOrderNum(questions).map((q) => (
               <Grid item xs={12} key={q.id}>
-                <Question data={q} selected={selected} dispatch={dispatch} />
+                <Question data={q} />
               </Grid>
             ))}
           </Grid>

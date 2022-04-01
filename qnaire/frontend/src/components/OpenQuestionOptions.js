@@ -1,12 +1,10 @@
 import { Grid, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
+import { useQnaireContext } from "./QnaireContextProvider";
 
-export function OpenQuestionOptions({
-  data,
-  isSelected,
-  updateQuestion,
-}) {
-  const { min_length, max_length } = data;
+export function OpenQuestionOptions({ data, isSelected }) {
+  const { id, min_length, max_length } = data;
+  const { updateQuestion } = useQnaireContext();
 
   return isSelected ? (
     <Grid container spacing={2}>
@@ -14,7 +12,7 @@ export function OpenQuestionOptions({
         <TextField
           value={min_length ? min_length : ""}
           onChange={(e) =>
-            updateQuestion({ min_length: parseInt(e.target.value) })
+            updateQuestion(id, { min_length: parseInt(e.target.value) })
           }
           fullWidth
           id="min-length"
@@ -28,7 +26,7 @@ export function OpenQuestionOptions({
         <TextField
           value={max_length ? max_length : ""}
           onChange={(e) =>
-            updateQuestion({ max_length: parseInt(e.target.value) })
+            updateQuestion(id, { max_length: parseInt(e.target.value) })
           }
           fullWidth
           id="max-length"

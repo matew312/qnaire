@@ -7,6 +7,7 @@ import {
   TextField,
 } from "@mui/material";
 import React, { useState } from "react";
+import { useQnaireContext } from "./QnaireContextProvider";
 
 const DISPLAY_TYPES = {
   1: "Výběr z možností",
@@ -17,16 +18,19 @@ const DISPLAY_TYPES = {
 };
 
 export function RangeQuestionOptions({
-  data: { min, max, step, type },
+  data: { id, min, max, step, type },
   isSelected,
-  updateQuestion,
 }) {
+  const { updateQuestion } = useQnaireContext();
+
   return isSelected ? (
     <Grid container spacing={2}>
       <Grid item xs={6} sm>
         <TextField
           value={min}
-          onChange={(e) => updateQuestion({ min: parseInt(e.target.value) })}
+          onChange={(e) =>
+            updateQuestion(id, { min: parseInt(e.target.value) })
+          }
           required
           label="Min"
           id="range-min"
@@ -38,7 +42,9 @@ export function RangeQuestionOptions({
       <Grid item xs={6} sm>
         <TextField
           value={max}
-          onChange={(e) => updateQuestion({ max: parseInt(e.target.value) })}
+          onChange={(e) =>
+            updateQuestion(id, { max: parseInt(e.target.value) })
+          }
           required
           label="Max"
           id="range-max"
@@ -50,7 +56,9 @@ export function RangeQuestionOptions({
       <Grid item xs={6} sm>
         <TextField
           value={step ? step : ""}
-          onChange={(e) => updateQuestion({ step: parseInt(e.target.value) })}
+          onChange={(e) =>
+            updateQuestion(id, { step: parseInt(e.target.value) })
+          }
           label="Skok"
           id="range-step"
           type="number"
@@ -63,7 +71,7 @@ export function RangeQuestionOptions({
           <InputLabel id="range-type-select-label">Způsob zobrazení</InputLabel>
           <Select
             value={type}
-            onChange={(e) => updateQuestion({ type: e.target.value })}
+            onChange={(e) => updateQuestion(id, { type: e.target.value })}
             label="Způsob zobrazení"
             id="range-type-select"
             labelId="range-type-select-label"

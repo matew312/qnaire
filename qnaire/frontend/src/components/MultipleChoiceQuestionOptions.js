@@ -11,40 +11,24 @@ import {
 import React, { useState } from "react";
 import { ChoiceIcon } from "./basic/ChoiceIcon";
 import { Choice } from "./Choice";
-import { ActionTypes } from "../reducers";
+import { useQnaireContext } from "./QnaireContextProvider";
 
-export function MultipleChoiceQuestionOptions({
-  data,
-  isSelected,
-  dispatch,
-  updateQuestion,
-}) {
-  const checkbox = data.max_answers > 1;
+export function MultipleChoiceQuestionOptions({ data, isSelected }) {
+  const { updateQuestion } = useQnaireContext();
   const totalChoices = Object.keys(data.choices).length;
 
   return (
-    <div>
+    <Grid container spacing={isSelected ? 1 : 0}>
       {Object.keys(data.choices).map((id) => (
-        <Choice
-          key={id}
-          value={data.choices[id].text}
-          checkbox={checkbox}
-          editable={isSelected}
-          onChange={(text) =>
-            dispatch({
-              type: ActionTypes.UPDATE_QUESTION_CHOICE,
-              id: data.id,
-              choiceId: id,
-              data: { text },
-            })
-          }
-        />
+        <Grid item xs={12} key={id}>
+          <Choice {...data.choices[id]} data={data} editable={isSelected} />
+        </Grid>
       ))}
       {isSelected ? (
-        <div>
+        <Grid item xs={12}>
           <Grid container alignItems="flex-end">
             <Grid item xs="auto">
-              <ChoiceIcon checkbox={checkbox} />
+              <ChoiceIcon checkbox={data.max_answers > 1} />
             </Grid>
             <Grid item xs>
               <Button variant="text">Přidat možnost</Button>
@@ -56,7 +40,7 @@ export function MultipleChoiceQuestionOptions({
                 <Switch
                   checked={data.other_choice}
                   onChange={(e) =>
-                    updateQuestion({ other_choice: e.target.checked })
+                    updateQuestion(data.id, { other_choice: e.target.checked })
                   }
                 />
               }
@@ -79,7 +63,7 @@ export function MultipleChoiceQuestionOptions({
                 step={1}
                 onChange={(e) => {
                   const [min, max] = e.target.value;
-                  updateQuestion({
+                  updateQuestion(data.id, {
                     min_answers: min,
                     max_answers: max,
                   });
@@ -91,8 +75,8 @@ export function MultipleChoiceQuestionOptions({
               />
             </Grid>
           </Grid>
-        </div>
+        </Grid>
       ) : null}
-    </div>
+    </Grid>
   );
 }

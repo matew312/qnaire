@@ -23,7 +23,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ContentCutIcon from "@mui/icons-material/ContentCut";
 import ContentPasteIcon from "@mui/icons-material/ContentPaste";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { SelectableType } from "../SelectableType";
+import { SelectableType } from "../ComponentId";
 import {
   OpenQuestionMenu,
   RangeQuestionMenu,
@@ -32,6 +32,7 @@ import {
 import { ActionTypes } from "../reducers";
 import { PATCH, GET } from "../request";
 import constants from "../constants";
+import { useQnaireContext } from "./QnaireContextProvider";
 
 const QUESTION_TYPES = {
   OpenQuestion: {
@@ -51,40 +52,30 @@ const QUESTION_TYPES = {
   },
 };
 
-export function Question({ data, selected, dispatch }) {
+export function Question({ data }) {
+  const { id, text, mandatory, order_num, resourcetype } = data;
+  const { selected, select, updateQuestion } = useQnaireContext();
   const updateTimeout = useRef(null);
   const [errorText, setErrorText] = useState("");
-  const { id, text, mandatory, order_num, resourcetype } = data;
-  const isSelected = Boolean(
-    selected && selected.type === SelectableType.QUESTION && selected.id === id
-  );
+  const isSelected = Boolean(selected && selected.isEqual(Question, id));
 
-  function dispatchQuestionUpdate(data) {
-    dispatch({
-      type: ActionTypes.UPDATE,
-      resource: "questions",
-      id,
-      data,
-    });
-  }
+  // function updateQuestion(updatedData) {
+  //   dispatchQuestionUpdate(updatedData);
 
-  function updateQuestion(updatedData) {
-    dispatchQuestionUpdate(updatedData);
+  //   if (updateTimeout.current) {
+  //     clearTimeout(updateTimeout.current);
+  //   }
 
-    if (updateTimeout.current) {
-      clearTimeout(updateTimeout.current);
-    }
-
-    updateTimeout.current = setTimeout(
-      () =>
-        PATCH(`questions/${id}`, { resourcetype, ...updatedData })
-          .then((data) => setErrorText(""))
-          .catch(
-            (err) => setErrorText(err.toString()) //show the error (most errors should be caught before its even sent to the server)
-          ),
-      constants.UPDATE_TIMEOUT
-    );
-  }
+  //   updateTimeout.current = setTimeout(
+  //     () =>
+  //       PATCH(`questions/${id}`, { resourcetype, ...updatedData })
+  //         .then((data) => setErrorText(""))
+  //         .catch(
+  //           (err) => setErrorText(err.toString()) //show the error (most errors should be caught before its even sent to the server)
+  //         ),
+  //     constants.UPDATE_TIMEOUT
+  //   );
+  // }
 
   const style = {
     bgcolor: "white",
@@ -104,20 +95,12 @@ export function Question({ data, selected, dispatch }) {
   const Menu = QUESTION_TYPES[resourcetype].menu;
 
   return (
-    <div
-      onClick={() => {
-        dispatch({
-          type: ActionTypes.SELECT,
-          name: "questions",
-          data: { type: SelectableType.QUESTION, id },
-        });
-      }}
-    >
+    <div onClick={() => select(Question, id)}>
       <Box sx={style}>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={8}>
             <EditableText
-              onChange={(text) => updateQuestion({ text })}
+              onChange={(text) => updateQuestion(id, { text })}
               editable={isSelected}
               value={text}
               typographyProps={{ variant: "h4" }}
@@ -136,15 +119,7 @@ export function Question({ data, selected, dispatch }) {
                 <Select
                   value={resourcetype}
                   label="Typ otázky"
-                  onChange={(e) =>
-                    dispatch({
-                      type: ActionTypes.UPDATE_QUESTION_TYPE,
-                      id,
-                      data: {
-                        resourcetype: e.target.value,
-                      },
-                    })
-                  }
+                  onChange={(e) => updateQuestionType(id, e.target.value)}
                   id="type-select"
                   labelId="type-select-label"
                   required
@@ -160,12 +135,7 @@ export function Question({ data, selected, dispatch }) {
           )}
 
           <Grid item xs={12}>
-            <Options
-              isSelected={isSelected}
-              data={data}
-              updateQuestion={updateQuestion} //I want to reuse this function
-              dispatch={dispatch} //I also pass dispatch for the case if something has its own action.type (updating choices)
-            />
+            <Options isSelected={isSelected} data={data} />
           </Grid>
 
           {isSelected && (
@@ -210,7 +180,7 @@ export function Question({ data, selected, dispatch }) {
                         <Switch
                           checked={mandatory}
                           onChange={(e) =>
-                            updateQuestion({
+                            updateQuestion(id, {
                               mandatory: e.target.checked,
                             })
                           }
@@ -221,7 +191,7 @@ export function Question({ data, selected, dispatch }) {
                   </FormGroup>
                 </Grid>
                 <Grid item xs="auto">
-                  <Menu data={data} updateQuestion={updateQuestion} />
+                  <Menu data={data} />
                 </Grid>
               </Grid>
             </Grid>

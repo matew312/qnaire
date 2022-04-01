@@ -6,17 +6,17 @@ import { InputSlider } from "../basic/InputSlider";
 import { NumField } from "../basic/NumField";
 import { SmileyRating } from "../basic/SmileyRating";
 import { Choice } from "../Choice";
+import { QnaireContextProvider } from "../QnaireContextProvider";
 import { Questionnaire } from "../Questionnaire";
 
 export function CreationPage({ auth }) {
-
   const [data, setData] = useState(null);
   const [v, setV] = useState("");
 
   let { id } = useParams();
 
   return (
-    <div>
+    <QnaireContextProvider>
       <Questionnaire id={id} />
       {/* <br /> <br /> <hr />
       <Typography variant="h2">Creation page</Typography>
@@ -29,6 +29,6 @@ export function CreationPage({ auth }) {
       <InputSlider step={0.1} max={1.1} />
       <InputSlider step={null} max={10} />
       <NumField /> */}
-    </div>
+    </QnaireContextProvider>
   );
 }
