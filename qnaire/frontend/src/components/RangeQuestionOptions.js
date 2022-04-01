@@ -19,14 +19,14 @@ const DISPLAY_TYPES = {
 export function RangeQuestionOptions({
   data: { min, max, step, type },
   isSelected,
-  dispatchQuestionUpdate,
+  updateQuestion,
 }) {
   return isSelected ? (
     <Grid container spacing={2}>
       <Grid item xs={6} sm>
         <TextField
           value={min}
-          onChange={(e) => dispatchQuestionUpdate({ min: parseInt(e.target.value) })}
+          onChange={(e) => updateQuestion({ min: parseInt(e.target.value) })}
           required
           label="Min"
           id="range-min"
@@ -38,7 +38,7 @@ export function RangeQuestionOptions({
       <Grid item xs={6} sm>
         <TextField
           value={max}
-          onChange={(e) => dispatchQuestionUpdate({ max: parseInt(e.target.value) })}
+          onChange={(e) => updateQuestion({ max: parseInt(e.target.value) })}
           required
           label="Max"
           id="range-max"
@@ -50,7 +50,7 @@ export function RangeQuestionOptions({
       <Grid item xs={6} sm>
         <TextField
           value={step ? step : ""}
-          onChange={(e) => dispatchQuestionUpdate({ step: parseInt(e.target.value) })}
+          onChange={(e) => updateQuestion({ step: parseInt(e.target.value) })}
           label="Skok"
           id="range-step"
           type="number"
@@ -63,7 +63,7 @@ export function RangeQuestionOptions({
           <InputLabel id="range-type-select-label">Způsob zobrazení</InputLabel>
           <Select
             value={type}
-            onChange={(e) => dispatchQuestionUpdate({ type: e.target.value })}
+            onChange={(e) => updateQuestion({ type: e.target.value })}
             label="Způsob zobrazení"
             id="range-type-select"
             labelId="range-type-select-label"

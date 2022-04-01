@@ -11,8 +11,9 @@ import {
   Box,
   IconButton,
   Tooltip,
+  Typography,
 } from "@mui/material";
-import React, { useContext, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import { OpenQuestionOptions } from "./OpenQuestionOptions";
 import { RangeQuestionOptions } from "./RangeQuestionOptions";
 import { MultipleChoiceQuestionOptions } from "./MultipleChoiceQuestionOptions";
@@ -29,6 +30,8 @@ import {
   MultipleChoiceQuestionMenu,
 } from "./QuestionMenu";
 import { ActionTypes } from "../reducers";
+import { PATCH, GET } from "../request";
+import constants from "../constants";
 
 const QUESTION_TYPES = {
   OpenQuestion: {
@@ -49,18 +52,38 @@ const QUESTION_TYPES = {
 };
 
 export function Question({ data, selected, dispatch }) {
+  const updateTimeout = useRef(null);
+  const [errorText, setErrorText] = useState("");
   const { id, text, mandatory, order_num, resourcetype } = data;
   const isSelected = Boolean(
     selected && selected.type === SelectableType.QUESTION && selected.id === id
   );
 
-  function dispatchQuestionUpdate(updatedData) {
+  function dispatchQuestionUpdate(data) {
     dispatch({
       type: ActionTypes.UPDATE,
-      resource: 'questions',
+      resource: "questions",
       id,
-      data: updatedData,
+      data,
     });
+  }
+
+  function updateQuestion(updatedData) {
+    dispatchQuestionUpdate(updatedData);
+
+    if (updateTimeout.current) {
+      clearTimeout(updateTimeout.current);
+    }
+
+    updateTimeout.current = setTimeout(
+      () =>
+        PATCH(`questions/${id}`, { resourcetype, ...updatedData })
+          .then((data) => setErrorText(""))
+          .catch(
+            (err) => setErrorText(err.toString()) //show the error (most errors should be caught before its even sent to the server)
+          ),
+      constants.UPDATE_TIMEOUT
+    );
   }
 
   const style = {
@@ -94,7 +117,7 @@ export function Question({ data, selected, dispatch }) {
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={8}>
             <EditableText
-              onChange={(text) => dispatchQuestionUpdate({ text })}
+              onChange={(text) => updateQuestion({ text })}
               editable={isSelected}
               value={text}
               typographyProps={{ variant: "h4" }}
@@ -140,7 +163,7 @@ export function Question({ data, selected, dispatch }) {
             <Options
               isSelected={isSelected}
               data={data}
-              dispatchQuestionUpdate={dispatchQuestionUpdate} //I want to reuse this function
+              updateQuestion={updateQuestion} //I want to reuse this function
               dispatch={dispatch} //I also pass dispatch for the case if something has its own action.type (updating choices)
             />
           </Grid>
@@ -187,7 +210,7 @@ export function Question({ data, selected, dispatch }) {
                         <Switch
                           checked={mandatory}
                           onChange={(e) =>
-                            dispatchQuestionUpdate({
+                            updateQuestion({
                               mandatory: e.target.checked,
                             })
                           }
@@ -198,11 +221,16 @@ export function Question({ data, selected, dispatch }) {
                   </FormGroup>
                 </Grid>
                 <Grid item xs="auto">
-                  <Menu data={data} />
+                  <Menu data={data} updateQuestion={updateQuestion} />
                 </Grid>
               </Grid>
             </Grid>
           )}
+          <Grid item xs={12}>
+            <Typography color="error" textAlign="center">
+              {errorText}
+            </Typography>
+          </Grid>
         </Grid>
       </Box>
     </div>

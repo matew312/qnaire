@@ -17,7 +17,7 @@ export function Questionnaire({ id }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
-    GET(`questionnaires/${id}`, (data) => {
+    GET(`questionnaires/${id}`).then((data) => {
       dispatch({ type: ActionTypes.SET, data });
     });
   }, []);
@@ -46,7 +46,7 @@ export function Questionnaire({ id }) {
   function dispatchQnaireUpdate(updatedData) {
     dispatch({
       type: ActionTypes.UPDATE,
-      resource: 'qnaire',
+      resource: "qnaire",
       data: updatedData,
     });
   }

@@ -20,15 +20,14 @@ export function LoginPage({ auth }) {
   const navigate = useNavigate();
 
   function login(values) {
-    const callback = (data) => {
-      auth.authenticate(data);
-      navigate("/");
-    };
-    const errorCallback = (err) => {
-      setErrorText("Nesprávné údaje.");
-    };
-
-    POST("auth", values, callback, false, errorCallback);
+    POST("auth", values, false)
+      .then((data) => {
+        auth.authenticate(data);
+        navigate("/");
+      })
+      .catch((err) => {
+        setErrorText("Nesprávné údaje.");
+      });
   }
 
   const formik = useFormik({

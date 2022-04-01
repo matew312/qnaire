@@ -4,7 +4,7 @@ import React, { useState } from "react";
 export function OpenQuestionOptions({
   data,
   isSelected,
-  dispatchQuestionUpdate,
+  updateQuestion,
 }) {
   const { min_length, max_length } = data;
 
@@ -14,7 +14,7 @@ export function OpenQuestionOptions({
         <TextField
           value={min_length ? min_length : ""}
           onChange={(e) =>
-            dispatchQuestionUpdate({ min_length: parseInt(e.target.value) })
+            updateQuestion({ min_length: parseInt(e.target.value) })
           }
           fullWidth
           id="min-length"
@@ -28,7 +28,7 @@ export function OpenQuestionOptions({
         <TextField
           value={max_length ? max_length : ""}
           onChange={(e) =>
-            dispatchQuestionUpdate({ max_length: parseInt(e.target.value) })
+            updateQuestion({ max_length: parseInt(e.target.value) })
           }
           fullWidth
           id="max-length"

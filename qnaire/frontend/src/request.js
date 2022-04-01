@@ -12,26 +12,16 @@ function handleErrors(response) {
   return response.text(); //not using response.json(), because it wouldn't work if no content was returned from server
 }
 
-export function GET(endpoint, callback, auth = true, errorCallback = null) {
-  fetchWithoutContent("GET", endpoint, callback, auth, errorCallback);
+export function GET(enpoint, auth = true) {
+  return fetchWithoutContent("GET", enpoint, auth);
 }
 
-export function DELETE(endpoint, callback, auth = true, errorCallback = null) {
-  fetchWithoutContent("DELETE", endpoint, callback, auth, errorCallback);
+export function DELETE(enpoint, auth = true) {
+  return fetchWithoutContent("DELETE", enpoint, auth);
 }
 
-function fetchWithoutContent(
-  method,
-  endpoint,
-  callback,
-  auth = true,
-  errorCallback = null
-) {
-  if (auth && !getToken()) {
-    return;
-  }
-
-  fetch(`${BASE_PATH}${endpoint}`, {
+function fetchWithoutContent(method, endpoint, auth = true) {
+  return fetch(`${BASE_PATH}${endpoint}/`, {
     method,
     headers: {
       ...(auth && { Authorization: getAuthHeader() }),
@@ -41,59 +31,28 @@ function fetchWithoutContent(
     .then((text) => (text.length ? JSON.parse(text) : {}))
     .then((data) => {
       console.log(data);
-      callback(data);
+      return data; //this will be the argument of the next .then()
     })
     .catch((err) => {
       console.log(err);
-      if (errorCallback) {
-        errorCallback(err);
-      }
+      throw err;
     });
 }
 
-export function POST(
-  endpoint,
-  values,
-  callback,
-  auth = true,
-  errorCallback = null
-) {
-  fetchWithContent("POST", endpoint, values, callback, auth, errorCallback);
+export function POST(endpoint, values, auth = true) {
+  return fetchWithContent("POST", endpoint, values, auth);
 }
 
-export function PATCH(
-  endpoint,
-  values,
-  callback,
-  auth = true,
-  errorCallback = null
-) {
-  fetchWithContent("PATCH", endpoint, values, callback, auth, errorCallback);
+export function PATCH(endpoint, values, auth = true) {
+  return fetchWithContent("PATCH", endpoint, values, auth);
 }
 
-export function PUT(
-  endpoint,
-  values,
-  callback,
-  auth = true,
-  errorCallback = null
-) {
-  fetchWithContent("PUT", endpoint, values, callback, auth, errorCallback);
+export function PUT(endpoint, values, auth = true) {
+  return fetchWithContent("PUT", endpoint, values, auth);
 }
 
-function fetchWithContent(
-  method,
-  endpoint,
-  values,
-  callback,
-  auth = true,
-  errorCallback = null
-) {
-  if (auth && !getToken()) {
-    return;
-  }
-
-  fetch(`${BASE_PATH}${endpoint}`, {
+function fetchWithContent(method, endpoint, values, auth = true) {
+  return fetch(`${BASE_PATH}${endpoint}/`, {
     method,
     headers: {
       "Content-Type": "application/json",
@@ -105,12 +64,10 @@ function fetchWithContent(
     .then((text) => (text.length ? JSON.parse(text) : {}))
     .then((data) => {
       console.log(data);
-      callback(data);
+      return data; //this will be the argument of the next .then()
     })
     .catch((err) => {
       console.log(err);
-      if (errorCallback) {
-        errorCallback(err);
-      }
+      throw err;
     });
 }

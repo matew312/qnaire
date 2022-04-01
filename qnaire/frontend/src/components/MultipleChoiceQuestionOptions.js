@@ -17,7 +17,7 @@ export function MultipleChoiceQuestionOptions({
   data,
   isSelected,
   dispatch,
-  dispatchQuestionUpdate,
+  updateQuestion,
 }) {
   const checkbox = data.max_answers > 1;
   const totalChoices = Object.keys(data.choices).length;
@@ -56,7 +56,7 @@ export function MultipleChoiceQuestionOptions({
                 <Switch
                   checked={data.other_choice}
                   onChange={(e) =>
-                    dispatchQuestionUpdate({ other_choice: e.target.checked })
+                    updateQuestion({ other_choice: e.target.checked })
                   }
                 />
               }
@@ -79,7 +79,7 @@ export function MultipleChoiceQuestionOptions({
                 step={1}
                 onChange={(e) => {
                   const [min, max] = e.target.value;
-                  dispatchQuestionUpdate({
+                  updateQuestion({
                     min_answers: min,
                     max_answers: max,
                   });

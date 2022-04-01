@@ -5,7 +5,7 @@ import { GET } from "../../request";
 
 export function QnairesPage() {
 
-  useEffect(() => GET("questionnaires", (data) => {}), []);
+  useEffect(() => GET("questionnaires"));
 
   return <h1>Qnaires page</h1>;
 }

@@ -3,17 +3,13 @@ import React from "react";
 import { OptionMenu } from "./basic/OptionMenu";
 import Check from "@mui/icons-material/Check";
 
-export function MultipleChoiceQuestionMenu(props) {
-  const data = props.data;
-
+export function MultipleChoiceQuestionMenu({ data, updateQuestion }) {
   return (
     <OptionMenu>
-      <MenuItem>
-        {props.data.random_order && (
-          <ListItemIcon>
-            <Check />
-          </ListItemIcon>
-        )}
+      <MenuItem
+        onClick={() => updateQuestion({ random_order: !data.random_order })}
+      >
+        <ListItemIcon>{data.random_order && <Check />}</ListItemIcon>
         Zobrazovat možnosti v náhodném pořadí
       </MenuItem>
     </OptionMenu>
