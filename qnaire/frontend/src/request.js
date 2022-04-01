@@ -5,9 +5,11 @@ const BASE_PATH = "/api/";
 
 function handleErrors(response) {
   if (!response.ok) {
-    throw Error(response.statusText);
+    return response.text().then((text) => {
+      throw new Error(text);
+    });
   }
-  return response;
+  return response.text(); //not using response.json(), because it wouldn't work if no content was returned from server
 }
 
 export function GET(endpoint, callback, auth = true, errorCallback = null) {
@@ -36,7 +38,6 @@ function fetchWithoutContent(
     },
   })
     .then(handleErrors)
-    .then((response) => response.text()) //not using response.json(), because it wouldn't work if no content was returned from server
     .then((text) => (text.length ? JSON.parse(text) : {}))
     .then((data) => {
       console.log(data);
@@ -101,7 +102,6 @@ function fetchWithContent(
     body: JSON.stringify(values),
   })
     .then(handleErrors)
-    .then((response) => response.text())
     .then((text) => (text.length ? JSON.parse(text) : {}))
     .then((data) => {
       console.log(data);

@@ -84,13 +84,9 @@ export function MultipleChoiceQuestionOptions({
                     max_answers: max,
                   });
                 }}
-                marks={[
-                  {
-                    value: 0,
-                    label: "0",
-                  },
-                  { value: totalChoices, label: totalChoices.toString() },
-                ]}
+                marks={[...Array(totalChoices + 1).keys()].map((i) => {
+                  return { value: i, label: i.toString() };
+                })}
                 valueLabelDisplay="auto"
               />
             </Grid>

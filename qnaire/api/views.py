@@ -1,12 +1,10 @@
-from http.client import responses
-from math import perm
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
 from rest_framework import response
 from rest_framework.views import APIView
 from django.db.models import Q
 
-from .serializers import AnswerPolymorhicSerializer, PrivateQnaireIdSerializer, QuestionPolymorphicSerializer, QuestionnaireSerializer, ResponseSerializer, SectionSerializer
+from .serializers import PrivateQnaireIdSerializer, QuestionPolymorphicSerializer, QuestionnaireSerializer, ResponseSerializer, SectionSerializer
 
 from .models import Answer, PrivateQnaireId, Question, Questionnaire, Response, Section
 

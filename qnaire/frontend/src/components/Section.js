@@ -7,11 +7,21 @@ import { ActionTypes } from "../reducers";
 import { sortArrayByOrderNum } from "../qnaireUtils";
 
 export function Section({ data, selected, dispatch, questions }) {
+  const { id, name, desc, order_num } = data;
   const isSelected = Boolean(
     selected &&
       selected.type === SelectableType.SECTION &&
-      selected.id === data.id
+      selected.id === id
   );
+
+  function dispatchSectionUpdate(updatedData) {
+    dispatch({
+      type: ActionTypes.UPDATE,
+      resource: 'sections',
+      id,
+      data: updatedData,
+    });
+  }
 
   const style = {
     display: "flex",
@@ -28,27 +38,50 @@ export function Section({ data, selected, dispatch, questions }) {
 
   return (
     <Grid container spacing={1}>
-      <Grid item xs={12}>
-        <div
-          onClick={() =>
-            dispatch({
-              type: ActionTypes.SELECT,
-              data: { type: SelectableType.SECTION, id: data.id },
-            })
-          }
-        >
+      <Grid
+        item
+        xs={12}
+        container
+        spacing={1}
+        onClick={() =>
+          dispatch({
+            type: ActionTypes.SELECT,
+            data: { type: SelectableType.SECTION, id },
+          })
+        }
+      >
+        <Grid item xs={12}>
           <EditableText
             editable={isSelected}
-            value={data.name}
+            value={name}
+            onChange={(name) => {
+              dispatchSectionUpdate({ name });
+            }}
             typographyProps={{ variant: "h3" }}
             textFieldProps={{
               fullWidth: true,
-              id: "section-text",
+              id: "section-name",
               label: "Sekce",
               required: true,
             }}
           />
-        </div>
+        </Grid>
+        <Grid item xs={12}>
+          <EditableText
+            editable={isSelected}
+            value={desc}
+            onChange={(desc) => {
+              dispatchSectionUpdate({ desc });
+            }}
+            textFieldProps={{
+              fullWidth: true,
+              id: "section-desc",
+              label: "Popis",
+              multiline: true,
+              minRows: 2,
+            }}
+          />
+        </Grid>
       </Grid>
       <Grid item xs={12}>
         <Box sx={style}>

@@ -26,7 +26,7 @@ export function RangeQuestionOptions({
       <Grid item xs={6} sm>
         <TextField
           value={min}
-          onChange={(e) => dispatchQuestionUpdate({ min: e.target.value })}
+          onChange={(e) => dispatchQuestionUpdate({ min: parseInt(e.target.value) })}
           required
           label="Min"
           id="range-min"
@@ -38,7 +38,7 @@ export function RangeQuestionOptions({
       <Grid item xs={6} sm>
         <TextField
           value={max}
-          onChange={(e) => dispatchQuestionUpdate({ max: e.target.value })}
+          onChange={(e) => dispatchQuestionUpdate({ max: parseInt(e.target.value) })}
           required
           label="Max"
           id="range-max"
@@ -49,8 +49,8 @@ export function RangeQuestionOptions({
       </Grid>
       <Grid item xs={6} sm>
         <TextField
-          value={step}
-          onChange={(e) => dispatchQuestionUpdate({ step: e.target.value })}
+          value={step ? step : ""}
+          onChange={(e) => dispatchQuestionUpdate({ step: parseInt(e.target.value) })}
           label="Skok"
           id="range-step"
           type="number"
@@ -71,7 +71,9 @@ export function RangeQuestionOptions({
             autoWidth
           >
             {Object.keys(DISPLAY_TYPES).map((type) => (
-              <MenuItem value={type}>{DISPLAY_TYPES[type]}</MenuItem>
+              <MenuItem value={type} key={type}>
+                {DISPLAY_TYPES[type]}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>

@@ -57,6 +57,7 @@ export function Question({ data, selected, dispatch }) {
   function dispatchQuestionUpdate(updatedData) {
     dispatch({
       type: ActionTypes.UPDATE,
+      resource: 'questions',
       id,
       data: updatedData,
     });
@@ -89,7 +90,7 @@ export function Question({ data, selected, dispatch }) {
         });
       }}
     >
-      <Box sx={style} onC>
+      <Box sx={style}>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={8}>
             <EditableText
@@ -126,7 +127,7 @@ export function Question({ data, selected, dispatch }) {
                   required
                 >
                   {Object.keys(QUESTION_TYPES).map((type) => (
-                    <MenuItem value={type}>
+                    <MenuItem value={type} key={type}>
                       {QUESTION_TYPES[type].desc}
                     </MenuItem>
                   ))}

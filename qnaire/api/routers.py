@@ -1,6 +1,6 @@
 from rest_framework import routers
 
-from .viewsets import AnswerViewSet, ChoiceViewSet, QuestionnaireViewSet, QuestionViewSet, SectionViewSet
+from .viewsets import ChoiceViewSet, QuestionnaireViewSet, QuestionViewSet, SectionViewSet
 
 router = routers.SimpleRouter()
 router.register('questionnaires', QuestionnaireViewSet)

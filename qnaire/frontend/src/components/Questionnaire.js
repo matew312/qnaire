@@ -20,7 +20,7 @@ export function Questionnaire({ id }) {
     GET(`questionnaires/${id}`, (data) => {
       dispatch({ type: ActionTypes.SET, data });
     });
-  });
+  }, []);
 
   const {
     qnaire,
@@ -30,6 +30,8 @@ export function Questionnaire({ id }) {
   const { selected } = qnaire || {}; //if data is null, an empty object will be used, so the destrured variables will be undefined
   const { sections } = sectionsState || {};
   const { questions } = questionsState || {}; //the questions state can contain other stuff like "copiedQuestion"
+
+  const isSelected = selected && selected.type == SelectableType.QUESTIONNAIRE;
 
   function findQuestionsForSection(id) {
     const qs = questions;
@@ -41,12 +43,21 @@ export function Questionnaire({ id }) {
     }, []);
   }
 
+  function dispatchQnaireUpdate(updatedData) {
+    dispatch({
+      type: ActionTypes.UPDATE,
+      resource: 'qnaire',
+      data: updatedData,
+    });
+  }
+
   return state ? (
     <Grid container spacing={4}>
       <Grid
         item
-        container
         xs={12}
+        container
+        spacing={1}
         onClick={() =>
           dispatch({
             type: ActionTypes.SELECT,
@@ -54,16 +65,35 @@ export function Questionnaire({ id }) {
           })
         }
       >
-        <Grid item xs>
+        <Grid item xs={12}>
           <EditableText
-            editable={selected && selected.type == SelectableType.QUESTIONNAIRE}
+            editable={isSelected}
             typographyProps={{ variant: "h2" }}
             value={qnaire.name}
+            onChange={(name) => {
+              dispatchQnaireUpdate({ name });
+            }}
             textFieldProps={{
               fullWidth: true,
               label: "Dotazník",
               id: "questionnaire-name",
               required: true,
+            }}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <EditableText
+            editable={isSelected}
+            value={qnaire.desc}
+            onChange={(desc) => {
+              dispatchQnaireUpdate({ desc });
+            }}
+            textFieldProps={{
+              fullWidth: true,
+              label: "Popis",
+              id: "questionnaire-desc",
+              multiline: true,
+              minRows: 3,
             }}
           />
         </Grid>

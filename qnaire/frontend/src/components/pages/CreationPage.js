@@ -18,7 +18,7 @@ export function CreationPage({ auth }) {
   return (
     <div>
       <Questionnaire id={id} />
-      <br /> <br /> <hr />
+      {/* <br /> <br /> <hr />
       <Typography variant="h2">Creation page</Typography>
       <EditableText value="This text is editable" />
       <Choice value="This is an editable choice" />
@@ -28,7 +28,7 @@ export function CreationPage({ auth }) {
       <InputSlider />
       <InputSlider step={0.1} max={1.1} />
       <InputSlider step={null} max={10} />
-      <NumField />
+      <NumField /> */}
     </div>
   );
 }

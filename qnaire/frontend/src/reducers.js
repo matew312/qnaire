@@ -3,35 +3,66 @@ import { combineReducers } from "./combineReducers";
 export const ActionTypes = {
   SET: "set",
   SELECT: "select",
-  UPDATE: "update_question",
+  UPDATE: "update",
   UPDATE_QUESTION_TYPE: "update_question_type",
   UPDATE_QUESTION_CHOICE: "update_question_choice",
 };
 
 //"SET" is not generic because I would need to post 3 dispatches to SET each (questions, sections, qnaire) instead of just one.
-const GenericActionTypes = (({ UPDATE }) => ({ UPDATE }))(ActionTypes); //this notation extracts the given properties from the object
-
+const GenericActionTypes = { [ActionTypes.UPDATE]: true };
 
 //NOTE: I keep the state immutable
 
-function handleGenericActions(state, action) {
-  const { name, data } = action;
+function baseReducer(name, reducer, genericHandler) {
+  return function (state, action) {
+    if (action.type in GenericActionTypes) {
+      if (action.resource === name) {
+        return genericHandler(state, action);
+      }
+      return state;
+    }
+    return reducer(state, action);
+  };
+}
 
-  function extractListAndObj() {
-    const list = state[name];
-    const obj = list[action.id];
-    return [list, obj];
-  }
+//base reducer for "dictionary reducers" (i.e. their part of state contains a property of the given name with dictionary value)
+function dictReducer(name, reducer) {
+  function handler(state, action) {
+    const { data } = action;
+    function extractDictAndObj() {
+      const dict = state[name];
+      const obj = dict[action.id];
+      return [dict, obj];
+    }
 
-  switch (action) {
-    case ActionTypes.UPDATE: {
-      const [list, obj] = extractListAndObj();
-      return {
-        ...state,
-        [name]: { ...list, obj: { ...obj, ...data } },
-      };
+    switch (action.type) {
+      case ActionTypes.UPDATE: {
+        const [dict, obj] = extractDictAndObj();
+        return {
+          ...state,
+          [name]: { ...dict, [action.id]: { ...obj, ...data } },
+        };
+      }
     }
   }
+
+  return baseReducer(name, reducer, handler);
+}
+
+//base reducer for "object reducers" (qnaire)
+function objectReducer(name, reducer) {
+  function handler(state, action) {
+    switch (action.type) {
+      case ActionTypes.UPDATE: {
+        return {
+          ...state,
+          ...action.data,
+        };
+      }
+    }
+  }
+
+  return baseReducer(name, reducer, handler);
 }
 
 function questionsReducer(state, action) {
@@ -40,10 +71,6 @@ function questionsReducer(state, action) {
     const { questions } = state;
     const question = questions[action.id];
     return [question, questions];
-  }
-
-  if (action.type in GenericActionTypes) {
-    return handleGenericActions(state, action);
   }
 
   switch (action.type) {
@@ -115,10 +142,6 @@ function questionsReducer(state, action) {
 }
 
 function sectionsReducer(state, action) {
-  if (action.type in GenericActionTypes) {
-    return handleGenericActions(state, action);
-  }
-
   switch (action.type) {
     case ActionTypes.SET: {
       return { sections: action.data.sections };
@@ -144,7 +167,7 @@ function qnaireReducer(state, action) {
 }
 
 export const reducer = combineReducers({
-  qnaire: qnaireReducer,
-  sections: sectionsReducer,
-  questions: questionsReducer,
+  qnaire: objectReducer("qnaire", qnaireReducer),
+  sections: dictReducer("sections", sectionsReducer),
+  questions: dictReducer("questions", questionsReducer),
 });

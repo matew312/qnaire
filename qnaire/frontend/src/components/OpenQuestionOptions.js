@@ -6,13 +6,15 @@ export function OpenQuestionOptions({
   isSelected,
   dispatchQuestionUpdate,
 }) {
+  const { min_length, max_length } = data;
+
   return isSelected ? (
     <Grid container spacing={2}>
       <Grid item xs={12} sm={6}>
         <TextField
-          value={data.min_length}
+          value={min_length ? min_length : ""}
           onChange={(e) =>
-            dispatchQuestionUpdate({ min_length: e.target.value })
+            dispatchQuestionUpdate({ min_length: parseInt(e.target.value) })
           }
           fullWidth
           id="min-length"
@@ -24,9 +26,9 @@ export function OpenQuestionOptions({
 
       <Grid item xs={12} sm={6}>
         <TextField
-          value={data.max_length}
+          value={max_length ? max_length : ""}
           onChange={(e) =>
-            dispatchQuestionUpdate({ max_length: e.target.value })
+            dispatchQuestionUpdate({ max_length: parseInt(e.target.value) })
           }
           fullWidth
           id="max-length"
