@@ -13,26 +13,25 @@ import ClearIcon from "@mui/icons-material/Clear";
 import { useQnaireContext } from "./QnaireContextProvider";
 
 export function Choice({
-  data,
   id,
   text,
   skip_to_section,
   editable,
+  checkbox,
   textFieldProps,
 }) {
-  const { sections, updateQuestionChoice } = useQnaireContext();
-  console.log(sections);
+  const { sections, updateChoice } = useQnaireContext();
 
   return (
     <Grid container alignItems="center">
       <Grid item xs="auto">
-        <ChoiceIcon checkbox={data.max_answers > 1} />
+        <ChoiceIcon checkbox={checkbox} />
       </Grid>
       <Grid item xs>
         <EditableText
           value={text}
           editable={editable}
-          onChange={(text) => updateQuestionChoice(data.id, id, { text })}
+          onChange={(text) => updateChoice(id, { text })}
           textFieldProps={{ ...textFieldProps }}
         />
       </Grid>
@@ -44,7 +43,9 @@ export function Choice({
               label="Přeskočit na"
               id="skip-to-section-select"
               labelId="skip-to-section-label"
-              defaultValue={skip_to_section ? skip_to_section.id.toString() : ""}
+              defaultValue={
+                skip_to_section ? skip_to_section.id.toString() : ""
+              }
             >
               {Object.keys(sections).map((id) => (
                 <MenuItem value={id} key={id}>

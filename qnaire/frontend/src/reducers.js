@@ -117,24 +117,15 @@ function questionsReducer(state, action) {
         questions: { ...qs, [q.id]: newQ },
       };
     }
-    case ActionTypes.UPDATE_QUESTION_CHOICE: {
-      const [q, qs] = extractQandQs();
-      return {
-        ...state,
-        questions: {
-          ...qs,
-          [q.id]: {
-            ...q,
-            choices: {
-              ...q.choices,
-              [action.choiceId]: {
-                ...q.choices[action.choiceId],
-                ...action.data,
-              },
-            },
-          },
-        },
-      };
+    default:
+      return state;
+  }
+}
+
+function choicesReducer(state, action) {
+  switch (action.type) {
+    case ActionTypes.SET: {
+      return { choices: action.data.choices };
     }
     default:
       return state;
@@ -170,4 +161,5 @@ export const reducer = combineReducers({
   qnaire: objectReducer("qnaire", qnaireReducer),
   sections: dictReducer("sections", sectionsReducer),
   questions: dictReducer("questions", questionsReducer),
+  choices: dictReducer("choices", choicesReducer),
 });

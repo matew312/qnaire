@@ -25,7 +25,6 @@ export function Section({ id, name, desc, order_num }) {
       }, []),
     [allQuestions]
   );
-  console.log(questions);
 
   const style = {
     display: "flex",

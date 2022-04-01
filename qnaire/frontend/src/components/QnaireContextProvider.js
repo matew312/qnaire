@@ -12,9 +12,11 @@ export function QnaireContextProvider({ children }) {
     qnaire,
     sections: sectionsState,
     questions: questionsState,
+    choices: choicesState,
   } = state || {};
   const { sections } = sectionsState || {};
   const { questions } = questionsState || {}; //the questions state can contain other stuff like "copiedQuestion"
+  const { choices } = choicesState || {};
 
   function setData(data) {
     dispatch({ type: ActionTypes.SET, data });
@@ -49,17 +51,24 @@ export function QnaireContextProvider({ children }) {
     update("questions", id, updatedData);
   }
 
+  function updateChoice(id, updatedData) {
+    update("choices", id, updatedData);
+  }
+
   function paste(type, id) {}
 
+  //no need to useMemo, because there is no parent component to QnaireContextProvider which could rerender it.
   const value = {
     ...qnaire,
     questions,
     sections,
+    choices,
     select,
     setData,
     updateQnaire,
     updateSection,
     updateQuestion,
+    updateChoice,
   };
 
   return (

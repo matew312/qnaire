@@ -8,27 +8,41 @@ import {
   Typography,
   Box,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { ChoiceIcon } from "./basic/ChoiceIcon";
 import { Choice } from "./Choice";
 import { useQnaireContext } from "./QnaireContextProvider";
 
-export function MultipleChoiceQuestionOptions({ data, isSelected }) {
-  const { updateQuestion } = useQnaireContext();
-  const totalChoices = Object.keys(data.choices).length;
+export function MultipleChoiceQuestionOptions({
+  data: { id, min_answers, max_answers, other_choice },
+  isSelected,
+}) {
+  const { choices: allChoices, updateQuestion } = useQnaireContext();
+  const choices = useMemo(
+    () =>
+      Object.keys(allChoices).reduce((filtered, choiceId) => {
+        if (allChoices[choiceId].question === id) {
+          filtered.push(allChoices[choiceId]);
+        }
+        return filtered;
+      }, []),
+    [allChoices]
+  );
+  const totalChoices = choices.length;
+  const checkbox = max_answers > 1;
 
   return (
     <Grid container spacing={isSelected ? 1 : 0}>
-      {Object.keys(data.choices).map((id) => (
-        <Grid item xs={12} key={id}>
-          <Choice {...data.choices[id]} data={data} editable={isSelected} />
+      {choices.map((choice) => (
+        <Grid item xs={12} key={choice.id}>
+          <Choice {...choice} editable={isSelected} checkbox={checkbox} />
         </Grid>
       ))}
       {isSelected ? (
         <Grid item xs={12}>
           <Grid container alignItems="flex-end">
             <Grid item xs="auto">
-              <ChoiceIcon checkbox={data.max_answers > 1} />
+              <ChoiceIcon checkbox={checkbox} />
             </Grid>
             <Grid item xs>
               <Button variant="text">Přidat možnost</Button>
@@ -38,9 +52,9 @@ export function MultipleChoiceQuestionOptions({ data, isSelected }) {
             <FormControlLabel
               control={
                 <Switch
-                  checked={data.other_choice}
+                  checked={other_choice}
                   onChange={(e) =>
-                    updateQuestion(data.id, { other_choice: e.target.checked })
+                    updateQuestion(id, { other_choice: e.target.checked })
                   }
                 />
               }
@@ -54,16 +68,13 @@ export function MultipleChoiceQuestionOptions({ data, isSelected }) {
             <Box width="100%" />
             <Grid item xs={12} sm={6} px={2} m="auto">
               <Slider
-                value={[
-                  data.min_answers,
-                  data.max_answers ? data.max_answers : totalChoices,
-                ]}
+                value={[min_answers, max_answers ? max_answers : totalChoices]}
                 min={0}
                 max={totalChoices}
                 step={1}
                 onChange={(e) => {
                   const [min, max] = e.target.value;
-                  updateQuestion(data.id, {
+                  updateQuestion(id, {
                     min_answers: min,
                     max_answers: max,
                   });

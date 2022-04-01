@@ -102,7 +102,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             if 'section' in data:
                 # make sure the section is within the same qnaire as the previous one
                 new_section = data['section']
-                if new_section.qnaire != current_section.qnaire:
+                if new_section.qnaire != section.qnaire:
                     raise serializers.ValidationError(
                         f"New section is in a different questionnaire than the current section")
         # on create
@@ -177,13 +177,14 @@ class RangeQuestionSerializer(QuestionSerializer):
         return data
 
 
-CHOICE_FIELDS = ('id', 'text', 'order_num', 'skip_to_section')
+CHOICE_FIELDS = ('id', 'text', 'order_num', 'skip_to_section', 'question')
 
 
 class ChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Choice
         fields = CHOICE_FIELDS
+        extra_kwargs = {'question': {'read_only': True}}
         list_serializer_class = DictSerializer
 
     def validate(self, data):
@@ -210,7 +211,7 @@ class ChoiceSerializer(serializers.ModelSerializer):
 class CreateChoiceSerializer(ChoiceSerializer):
     class Meta:
         model = Choice
-        fields = CHOICE_FIELDS + ('question',)
+        fields = CHOICE_FIELDS
         list_serializer_class = DictSerializer
 
     def do_validate(self, data, qnaire, request):
@@ -223,13 +224,13 @@ class CreateChoiceSerializer(ChoiceSerializer):
 
 
 class MultipleChoiceQuestionSerializer(QuestionSerializer):
-    choices = ChoiceSerializer(
-        many=True, read_only=True, source='choice_set')
+    # choices = ChoiceSerializer(
+    #     many=True, read_only=True, source='choice_set')
 
     class Meta:
         model = MultipleChoiceQuestion
         fields = QUESTION_FIELDS + \
-            ('min_answers', 'max_answers', 'other_choice', 'random_order', 'choices',)
+            ('min_answers', 'max_answers', 'other_choice', 'random_order', )
 
     def do_validate(self, data):
         min_answers = get_latest_field_value(
@@ -338,15 +339,21 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
 class QuestionnaireCreationSerializer(serializers.ModelSerializer):
     sections = SectionSerializer(many=True, source='section_set')
     questions = serializers.SerializerMethodField()
+    choices = serializers.SerializerMethodField()
 
     class Meta:
         model = Questionnaire
-        fields = QUESTIONNAIRE_FIELDS + ('sections', 'questions')
+        fields = QUESTIONNAIRE_FIELDS + ('sections', 'questions', 'choices')
 
     def get_questions(self, qnaire):
         questions = Question.objects.filter(
             section__in=qnaire.section_set.all())
         return QuestionPolymorphicSerializer(questions, many=True).data
+
+    def get_choices(self, qnaire):
+        choices = Choice.objects.filter(
+            question__section__in=qnaire.section_set.all())
+        return ChoiceSerializer(choices, many=True).data
 
 
 ANSWER_FIELDS = ()
