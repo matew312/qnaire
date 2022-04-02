@@ -7,7 +7,7 @@ import { QnairesPage } from "./pages/QnairesPage";
 import { ResponsePage } from "./pages/ResponsePage";
 import { CreationPage } from "./pages/CreationPage";
 import { LoginPage } from "./pages/LoginPage";
-import { AppBar } from "./AppBar";
+import { AppStructure } from "./AppStructure";
 import { useAuth } from "../auth";
 import { AuthOnlyOutlet } from "./AuthOnlyOutlet";
 
@@ -17,10 +17,10 @@ function App() {
   return (
     <div>
       <BrowserRouter>
-        <AppBar auth={auth} />
-        <Container>
-          <Grid container mt={4}>
-            <Grid item xs={12}>
+      <AppStructure auth={auth}>
+        {/* <Container> */}
+          <Grid container >
+            <Grid item xs={12} md={10} lg={8} m="auto">
               <Routes>
                 <Route path="login" element={<LoginPage auth={auth} />} />
                 <Route path="/" element={<AuthOnlyOutlet auth={auth} />}>
@@ -39,7 +39,8 @@ function App() {
               </Routes>
             </Grid>
           </Grid>
-        </Container>
+        {/* </Container> */}
+        </AppStructure>
       </BrowserRouter>
     </div>
   );
