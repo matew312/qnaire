@@ -4,12 +4,17 @@ import { getAuthHeader, getToken } from "./auth";
 const BASE_PATH = "/api/";
 
 function handleErrors(response) {
+  //not using response.json(), because it wouldn't work if no content was returned from server
+  let promise = response
+    .text()
+    .then((text) => (text.length ? JSON.parse(text) : {}));
+
   if (!response.ok) {
-    return response.text().then((text) => {
-      throw new Error(text);
+    promise = promise.then((data) => {
+      return Promise.reject(data); //I want to pass the data and new Error() accepts only a string message
     });
   }
-  return response.text(); //not using response.json(), because it wouldn't work if no content was returned from server
+  return promise;
 }
 
 export function GET(enpoint, auth = true) {
@@ -28,7 +33,6 @@ function fetchWithoutContent(method, endpoint, auth = true) {
     },
   })
     .then(handleErrors)
-    .then((text) => (text.length ? JSON.parse(text) : {}))
     .then((data) => {
       console.log(data);
       return data; //this will be the argument of the next .then()
@@ -61,13 +65,12 @@ function fetchWithContent(method, endpoint, values, auth = true) {
     body: JSON.stringify(values),
   })
     .then(handleErrors)
-    .then((text) => (text.length ? JSON.parse(text) : {}))
     .then((data) => {
       console.log(data);
       return data; //this will be the argument of the next .then()
     })
-    .catch((err) => {
-      console.log(err);
-      throw err;
+    .catch((data) => {
+      console.log(data);
+      return Promise.reject(data);
     });
 }

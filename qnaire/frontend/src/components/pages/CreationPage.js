@@ -16,8 +16,8 @@ export function CreationPage({ auth }) {
   let { id } = useParams();
 
   return (
-    <QnaireContextProvider>
-      <Questionnaire id={id} />
+    <QnaireContextProvider id={id}>
+      <Questionnaire/>
       {/* <br /> <br /> <hr />
       <Typography variant="h2">Creation page</Typography>
       <EditableText value="This text is editable" />

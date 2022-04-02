@@ -4,9 +4,9 @@ from rest_framework import response
 from rest_framework.views import APIView
 from django.db.models import Q
 
-from .serializers import PrivateQnaireIdSerializer, QuestionPolymorphicSerializer, QuestionnaireSerializer, ResponseSerializer, SectionSerializer
+from .serializers import ChoiceSerializer, PrivateQnaireIdSerializer, QuestionPolymorphicSerializer, QuestionnaireSerializer, ResponseSerializer, SectionSerializer
 
-from .models import Answer, PrivateQnaireId, Question, Questionnaire, Response, Section
+from .models import Answer, Choice, PrivateQnaireId, Question, Questionnaire, Response, Section
 
 
 # Create your views here.
@@ -71,6 +71,9 @@ class ResultView(APIView):
         question_serializer = QuestionPolymorphicSerializer(
             questions, many=True)
 
+        choices = Choice.objects.filter(question__in=questions)
+        choice_serializer = ChoiceSerializer(choices, many=True)
+
         # answers = Answer.objects.filter(
         #     Q(OpenAnswer___question__in=questions) |
         #     Q(RangeAnswer___question__in=questions) |
@@ -89,6 +92,7 @@ class ResultView(APIView):
         return response.Response({**qnaire_serializer.data,
                                   'sections': section_serializer.data,
                                   'questions': question_serializer.data,
+                                  'choices': choice_serializer.data,
                                   # 'answers': answer_serializer.data,
                                   'responses': response_serializer.data
                                   })

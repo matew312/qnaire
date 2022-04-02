@@ -13,7 +13,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import React, { useContext, useRef, useState } from "react";
+import React, { useState } from "react";
 import { OpenQuestionOptions } from "./OpenQuestionOptions";
 import { RangeQuestionOptions } from "./RangeQuestionOptions";
 import { MultipleChoiceQuestionOptions } from "./MultipleChoiceQuestionOptions";
@@ -23,15 +23,11 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ContentCutIcon from "@mui/icons-material/ContentCut";
 import ContentPasteIcon from "@mui/icons-material/ContentPaste";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { SelectableType } from "../ComponentId";
 import {
   OpenQuestionMenu,
   RangeQuestionMenu,
   MultipleChoiceQuestionMenu,
 } from "./QuestionMenu";
-import { ActionTypes } from "../reducers";
-import { PATCH, GET } from "../request";
-import constants from "../constants";
 import { useQnaireContext } from "./QnaireContextProvider";
 
 const QUESTION_TYPES = {
@@ -53,29 +49,10 @@ const QUESTION_TYPES = {
 };
 
 export function Question({ data }) {
-  const { id, text, mandatory, order_num, resourcetype } = data;
+  const { id, text, mandatory, order_num, resourcetype, error } = data;
   const { selected, select, updateQuestion } = useQnaireContext();
-  const updateTimeout = useRef(null);
-  const [errorText, setErrorText] = useState("");
+
   const isSelected = Boolean(selected && selected.isEqual(Question, id));
-
-  // function updateQuestion(updatedData) {
-  //   dispatchQuestionUpdate(updatedData);
-
-  //   if (updateTimeout.current) {
-  //     clearTimeout(updateTimeout.current);
-  //   }
-
-  //   updateTimeout.current = setTimeout(
-  //     () =>
-  //       PATCH(`questions/${id}`, { resourcetype, ...updatedData })
-  //         .then((data) => setErrorText(""))
-  //         .catch(
-  //           (err) => setErrorText(err.toString()) //show the error (most errors should be caught before its even sent to the server)
-  //         ),
-  //     constants.UPDATE_TIMEOUT
-  //   );
-  // }
 
   const style = {
     bgcolor: "white",
@@ -198,7 +175,7 @@ export function Question({ data }) {
           )}
           <Grid item xs={12}>
             <Typography color="error" textAlign="center">
-              {errorText}
+              {error}
             </Typography>
           </Grid>
         </Grid>

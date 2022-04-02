@@ -1,15 +1,20 @@
 import { combineReducers } from "./combineReducers";
+import { Resources } from "./Resources";
 
 export const ActionTypes = {
   SET: "set",
-  SELECT: "select",
   UPDATE: "update",
   UPDATE_QUESTION_TYPE: "update_question_type",
-  UPDATE_QUESTION_CHOICE: "update_question_choice",
+  SET_ERROR: "set_error",
+  CLEAR_ERROR: "clear_error",
 };
 
 //"SET" is not generic because I would need to post 3 dispatches to SET each (questions, sections, qnaire) instead of just one.
-const GenericActionTypes = { [ActionTypes.UPDATE]: true };
+const GenericActionTypes = {
+  [ActionTypes.UPDATE]: true,
+  [ActionTypes.SET_ERROR]: true,
+  [ActionTypes.CLEAR_ERROR]: true,
+};
 
 //NOTE: I keep the state immutable
 
@@ -29,20 +34,29 @@ function baseReducer(name, reducer, genericHandler) {
 function dictReducer(name, reducer) {
   function handler(state, action) {
     const { data } = action;
-    function extractDictAndObj() {
-      const dict = state[name];
-      const obj = dict[action.id];
-      return [dict, obj];
+
+    function getDict() {
+      return state[name];
+    }
+
+    function getObj() {
+      return getDict()[action.id];
+    }
+
+    function setObj(obj) {
+      return {
+        ...state,
+        [name]: { ...getDict(), [action.id]: obj },
+      };
+    }
+
+    function updateObj() {
+      return setObj({ ...getObj(), ...data });
     }
 
     switch (action.type) {
-      case ActionTypes.UPDATE: {
-        const [dict, obj] = extractDictAndObj();
-        return {
-          ...state,
-          [name]: { ...dict, [action.id]: { ...obj, ...data } },
-        };
-      }
+      case ActionTypes.UPDATE:
+        return updateObj();
     }
   }
 
@@ -148,18 +162,23 @@ function qnaireReducer(state, action) {
       const { id, name, anonymous, created_at } = action.data;
       return { id, name, anonymous, created_at };
     }
-    case ActionTypes.SELECT: {
-      return { ...state, selected: action.data };
-    }
     //...
     default:
       return state;
   }
 }
 
+function otherReducer(state, action) {
+  switch (action.type) {
+    default:
+      return state;
+  }
+}
+
 export const reducer = combineReducers({
-  qnaire: objectReducer("qnaire", qnaireReducer),
-  sections: dictReducer("sections", sectionsReducer),
-  questions: dictReducer("questions", questionsReducer),
-  choices: dictReducer("choices", choicesReducer),
+  [Resources.QNAIRES]: objectReducer(Resources.QNAIRES, qnaireReducer),
+  [Resources.SECTIONS]: dictReducer(Resources.SECTIONS, sectionsReducer),
+  [Resources.QUESTIONS]: dictReducer(Resources.QUESTIONS, questionsReducer),
+  [Resources.CHOICES]: dictReducer(Resources.CHOICES, choicesReducer),
+  [Resources.OTHER]: objectReducer(Resources.OTHER, otherReducer),
 });

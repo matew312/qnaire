@@ -6,16 +6,9 @@ import { dictToArraySortedByOrderNum } from "../qnaireUtils";
 import { GET } from "../request";
 import { useQnaireContext } from "./QnaireContextProvider";
 
-export function Questionnaire({ id }) {
-  const { name, desc, sections, selected, select, updateQnaire, setData } =
+export function Questionnaire() {
+  const { id, name, desc, sections, selected, select, updateQnaire } =
     useQnaireContext();
-
-  useEffect(() => {
-    GET(`questionnaires/${id}`).then((data) => {
-      setData(data);
-    });
-  }, []);
-
   const isSelected = Boolean(selected && selected.isEqual(Questionnaire, id));
 
   return name !== undefined ? (
