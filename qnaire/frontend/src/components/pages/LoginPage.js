@@ -19,11 +19,11 @@ export function LoginPage({ auth }) {
   const [errorText, setErrorText] = useState("");
   const navigate = useNavigate();
 
+
   function login(values) {
     POST("auth", values, false)
       .then((data) => {
         auth.authenticate(data);
-        navigate("/");
       })
       .catch((err) => {
         setErrorText("Nesprávné údaje.");

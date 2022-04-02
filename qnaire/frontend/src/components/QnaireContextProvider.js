@@ -1,8 +1,18 @@
-import React, { useReducer, useContext, useRef, useEffect } from "react";
+import React, {
+  useReducer,
+  useContext,
+  useRef,
+  useEffect,
+  useMemo,
+} from "react";
+import AddBoxIcon from "@mui/icons-material/AddBox";
+import AddIcon from "@mui/icons-material/Add";
 import { reducer, ActionTypes } from "../reducers";
 import { GET, PATCH, POST, DELETE } from "../request";
 import { ComponentId } from "../ComponentId";
 import { Resources } from "../Resources";
+import { useAppContext } from "./AppContextProvider";
+import { PageAction } from "../PageAction";
 
 const UPDATE_TIMEOUT = 750;
 
@@ -102,6 +112,12 @@ export function QnaireContextProvider({ id, children }) {
     update(Resources.CHOICES, id, updatedData);
   }
 
+  function createQuestion() {}
+
+  function createSection() {
+    console.log("create seciton");
+  }
+
   function paste(type, id) {}
 
   //no need to useMemo here, because there is no parent component to QnaireContextProvider which could rerender it.
@@ -118,6 +134,18 @@ export function QnaireContextProvider({ id, children }) {
     updateQuestion,
     updateChoice,
   };
+
+  const { setPageActions } = useAppContext();
+
+  //set page actions on initial render
+  useEffect(() => {
+    const pageActions = [
+      new PageAction("Přidat sekci", <AddBoxIcon />, createSection),
+      new PageAction("Přidat otázku", <AddIcon />, createQuestion),
+    ];
+    setPageActions(pageActions);
+    // return () => setPageActions([]);
+  }, []);
 
   return (
     <QnaireContext.Provider value={value}>{children}</QnaireContext.Provider>

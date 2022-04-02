@@ -10,23 +10,24 @@ import { LoginPage } from "./pages/LoginPage";
 import { AppStructure } from "./AppStructure";
 import { useAuth } from "../auth";
 import { AuthOnlyOutlet } from "./AuthOnlyOutlet";
+import { AppContextProvider } from "./AppContextProvider";
+import Cookies from "universal-cookie";
 
 function App() {
   const auth = useAuth();
 
+  console.log(auth.isAuthenticated);
+
   return (
     <div>
       <BrowserRouter>
-      <AppStructure auth={auth}>
-        {/* <Container> */}
-          <Grid container >
-            <Grid item xs={12} md={10} lg={8} m="auto">
-              <Routes>
-                <Route path="login" element={<LoginPage auth={auth} />} />
-                <Route path="/" element={<AuthOnlyOutlet auth={auth} />}>
-                  <Route path="" element={<QnairesPage />} />
-                  <Route path="questionnaires" element={<QnairesPage />} />
-                  <Route path="questionnaires/:id" element={<CreationPage />} />
+        <AppContextProvider>
+          <AppStructure auth={auth}>
+            {/* <Container> */}
+            <Grid container mt={2}>
+              <Grid item xs={12} md={10} lg={8} m="auto">
+                <Routes>
+                  <Route path="login" element={<LoginPage auth={auth} />} />
                   <Route
                     path="questionnaires/:id/respond"
                     element={<ResponsePage />}
@@ -35,12 +36,20 @@ function App() {
                     path="questionnaires/:id/respond/:privateId"
                     element={<ResponsePage />}
                   />
-                </Route>
-              </Routes>
+                  <Route path="/" element={<AuthOnlyOutlet auth={auth} />}>
+                    <Route path="" element={<QnairesPage />} />
+                    <Route path="questionnaires" element={<QnairesPage />} />
+                    <Route
+                      path="questionnaires/:id"
+                      element={<CreationPage />}
+                    />
+                  </Route>
+                </Routes>
+              </Grid>
             </Grid>
-          </Grid>
-        {/* </Container> */}
-        </AppStructure>
+            {/* </Container> */}
+          </AppStructure>
+        </AppContextProvider>
       </BrowserRouter>
     </div>
   );

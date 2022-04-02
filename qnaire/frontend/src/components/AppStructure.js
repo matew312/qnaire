@@ -21,6 +21,8 @@ import Button from "@mui/material/Button";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 import { IconMenu } from "./basic/IconMenu";
+import { useAppContext } from "./AppContextProvider";
+import { useNavigate } from "react-router-dom";
 
 const drawerWidth = 240;
 
@@ -83,11 +85,26 @@ export function AppStructure({ auth, children }) {
         path: "/login",
       };
 
-  const pages = [{ name: "Dotazníky", path: "/questionnaires" }];
+  function performAction(item) {
+    setOpen(false); //nav actions will close the drawer if it's open
+
+    if (!item) {
+      return;
+    }
+
+    if (item.path) {
+      return navigate(item.path);
+    } else if (item.callback) {
+      item.callback(navigate);
+    }
+  }
+  const navigate = useNavigate();
+  const navActions = [{ name: "Dotazníky", path: "/questionnaires" }];
   const settings = [loginOrLogoutItem];
+  const { pageActions } = useAppContext();
 
   const theme = useTheme();
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = React.useState(auth.isAuthenticated);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -102,15 +119,18 @@ export function AppStructure({ auth, children }) {
       {/* <CssBaseline /> */}
       <AppBar position="fixed" open={open}>
         <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            sx={{ mr: 2, ...(open && { display: "none" }) }}
-          >
-            <MenuIcon />
-          </IconButton>
+          {/* Allow toggle button only when authenticated */}
+          {auth.isAuthenticated && (
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={handleDrawerOpen}
+              edge="start"
+              sx={{ mr: 2, ...(open && { display: "none" }) }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
           <Typography
             variant="h6"
             noWrap
@@ -120,12 +140,20 @@ export function AppStructure({ auth, children }) {
           >
             APP
           </Typography>
-          {pages.map((page) => (
-            <Button color="inherit" key={page.name}>
-              {page.name}
+          {navActions.map((action) => (
+            <Button
+              color="inherit"
+              key={action.name}
+              onClick={() => performAction(action)}
+            >
+              {action.name}
             </Button>
           ))}
-          <IconMenu title="Můj účet" items={settings} iconElement={<AccountCircleIcon />} />
+          <IconMenu
+            title="Můj účet"
+            items={settings}
+            iconElement={<AccountCircleIcon fontSize="large" />}
+          />
         </Toolbar>
       </AppBar>
       <Drawer
@@ -152,16 +180,14 @@ export function AppStructure({ auth, children }) {
         </DrawerHeader>
         <Divider />
         <List>
-          {["Inbox", "Starred", "Send email", "Drafts"].map((text, index) => (
-            <ListItem button key={text}>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
+          {pageActions.map((action) => (
+            <ListItem button key={action.name} onClick={action.callback}>
+              <ListItemIcon>{action.icon}</ListItemIcon>
+              <ListItemText primary={action.name} />
             </ListItem>
           ))}
         </List>
-        <Divider />
+        {/* <Divider />
         <List>
           {["All mail", "Trash", "Spam"].map((text, index) => (
             <ListItem button key={text}>
@@ -171,7 +197,7 @@ export function AppStructure({ auth, children }) {
               <ListItemText primary={text} />
             </ListItem>
           ))}
-        </List>
+        </List> */}
       </Drawer>
       <Main open={open}>
         <DrawerHeader />
