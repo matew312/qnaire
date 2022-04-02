@@ -29,7 +29,7 @@ export function RangeQuestionOptions({
         <TextField
           value={min}
           onChange={(e) =>
-            updateQuestion(id, { min: parseInt(e.target.value) })
+            updateQuestion(id, { min: parseFloat(e.target.value) })
           }
           required
           label="Min"
@@ -43,7 +43,7 @@ export function RangeQuestionOptions({
         <TextField
           value={max}
           onChange={(e) =>
-            updateQuestion(id, { max: parseInt(e.target.value) })
+            updateQuestion(id, { max: parseFloat(e.target.value) })
           }
           required
           label="Max"

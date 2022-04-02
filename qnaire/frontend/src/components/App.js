@@ -16,8 +16,6 @@ import Cookies from "universal-cookie";
 function App() {
   const auth = useAuth();
 
-  console.log(auth.isAuthenticated);
-
   return (
     <div>
       <BrowserRouter>

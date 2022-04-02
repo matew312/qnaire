@@ -6,7 +6,7 @@ const cookies = new Cookies();
 const AUTH_COOKIE = "token";
 
 export function useAuth() {
-  const [isAuthenticated, setIsAuthenticated] = useState(getToken());
+  const [isAuthenticated, setIsAuthenticated] = useState(Boolean(getToken()));
 
   function authenticate(data) {
     setToken(data.token);
@@ -36,7 +36,7 @@ export function getToken() {
 }
 
 export function setToken(token) {
-  cookies.set(AUTH_COOKIE, token);
+  cookies.set(AUTH_COOKIE, token, { path: "/" });
 }
 
 export function removeToken() {

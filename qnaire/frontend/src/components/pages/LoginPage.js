@@ -19,7 +19,6 @@ export function LoginPage({ auth }) {
   const [errorText, setErrorText] = useState("");
   const navigate = useNavigate();
 
-
   function login(values) {
     POST("auth", values, false)
       .then((data) => {
@@ -43,7 +42,7 @@ export function LoginPage({ auth }) {
     if (auth.isAuthenticated) {
       navigate("/");
     }
-  });
+  }, [auth.isAuthenticated]);
 
   return (
     <div>

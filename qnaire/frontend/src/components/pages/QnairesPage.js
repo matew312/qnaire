@@ -6,10 +6,10 @@ import { useAppContext } from "../AppContextProvider";
 
 export function QnairesPage() {
 
-  useEffect(() => GET("questionnaires"));
+  useEffect(() => GET("questionnaires"), []);
 
   const {setPageActions} = useAppContext();
-  useEffect(() => setPageActions([]), [])
+  useEffect(() => setPageActions([]), []);
 
   return <h1>Qnaires page</h1>;
 }

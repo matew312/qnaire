@@ -104,7 +104,7 @@ export function AppStructure({ auth, children }) {
   const { pageActions } = useAppContext();
 
   const theme = useTheme();
-  const [open, setOpen] = React.useState(auth.isAuthenticated);
+  const [open, setOpen] = React.useState(false);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -119,18 +119,16 @@ export function AppStructure({ auth, children }) {
       {/* <CssBaseline /> */}
       <AppBar position="fixed" open={open}>
         <Toolbar>
-          {/* Allow toggle button only when authenticated */}
-          {auth.isAuthenticated && (
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={handleDrawerOpen}
-              edge="start"
-              sx={{ mr: 2, ...(open && { display: "none" }) }}
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            onClick={handleDrawerOpen}
+            edge="start"
+            sx={{ mr: 2, ...(open && { display: "none" }) }}
+          >
+            <MenuIcon />
+          </IconButton>
+
           <Typography
             variant="h6"
             noWrap
