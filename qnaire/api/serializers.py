@@ -268,7 +268,7 @@ class QuestionPolymorphicSerializer(PolymorphicSerializer):
         list_serializer_class = DictSerializer
 
 
-SECTION_FIELDS = ('id', 'name', 'order_num')
+SECTION_FIELDS = ('id', 'name', 'desc', 'order_num')
 
 
 class SectionSerializer(serializers.ModelSerializer):
@@ -311,7 +311,7 @@ class CreateSectionSerializer(SectionSerializer):
         return data
 
 
-QUESTIONNAIRE_FIELDS = ('id', 'name', 'anonymous',
+QUESTIONNAIRE_FIELDS = ('id', 'name', 'desc', 'anonymous',
                         'private', 'published', 'created_at')
 
 

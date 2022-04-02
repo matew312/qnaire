@@ -18,6 +18,7 @@ export function Questionnaire() {
         xs={12}
         container
         spacing={1}
+        className="clickable"
         onClick={() => select(Questionnaire, id)}
       >
         <Grid item xs={12}>

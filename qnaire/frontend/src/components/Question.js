@@ -12,6 +12,9 @@ import {
   IconButton,
   Tooltip,
   Typography,
+  Card,
+  CardContent,
+  CardActionArea,
 } from "@mui/material";
 import React, { useState } from "react";
 import { OpenQuestionOptions } from "./OpenQuestionOptions";
@@ -54,26 +57,19 @@ export function Question({ data }) {
 
   const isSelected = Boolean(selected && selected.isEqual(Question, id));
 
-  const style = {
-    bgcolor: "white",
-    borderRadius: 2,
-    display: "flex",
-    px: 2,
-    py: 2,
-  };
-  if (isSelected) {
-    Object.assign(style, {
-      border: 1,
-      borderColor: "primary.light",
-    });
-  }
+  const style = isSelected
+    ? {
+        border: 1,
+        borderColor: "primary.light",
+      }
+    : {};
 
   const Options = QUESTION_TYPES[resourcetype].component;
   const Menu = QUESTION_TYPES[resourcetype].menu;
 
   return (
-    <div onClick={() => select(Question, id)}>
-      <Box sx={style}>
+    <Card sx={style} className="clickable" onClick={() => select(Question, id)}>
+      <CardContent>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={8}>
             <EditableText
@@ -173,14 +169,17 @@ export function Question({ data }) {
               </Grid>
             </Grid>
           )}
-          <Grid item xs={12}>
-            <Typography color="error" textAlign="center">
-              {error}
-            </Typography>
-          </Grid>
+
+          {error && (
+            <Grid item xs={12}>
+              <Typography color="error" textAlign="center">
+                {error}
+              </Typography>
+            </Grid>
+          )}
         </Grid>
-      </Box>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 

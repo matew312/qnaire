@@ -1,4 +1,5 @@
 import { combineReducers } from "./combineReducers";
+import { DISPLAY_TYPES } from "./components/RangeQuestionOptions";
 import { Resources } from "./Resources";
 
 export const ActionTypes = {
@@ -94,7 +95,6 @@ function questionsReducer(state, action) {
       };
     }
     case ActionTypes.UPDATE_QUESTION_TYPE: {
-      //api call: delete old question and create a new one
       const [q, qs] = extractQandQs();
       const { id, section, text, mandatory, order_num } = q;
       let newQ = {
@@ -111,7 +111,7 @@ function questionsReducer(state, action) {
           break;
         }
         case "RangeQuestion": {
-          newQ = { ...newQ, min: 1, max: 5, step: 1, type: "slider" };
+          newQ = { ...newQ, min: 1, max: 5, step: 1, type: DISPLAY_TYPES[1] };
           break;
         }
         case "MultipleChoiceQuestion": {
@@ -159,8 +159,8 @@ function sectionsReducer(state, action) {
 function qnaireReducer(state, action) {
   switch (action.type) {
     case ActionTypes.SET: {
-      const { id, name, anonymous, created_at } = action.data;
-      return { id, name, anonymous, created_at };
+      const { question, sections, choices, ...data } = action.data;
+      return { ...data };
     }
     //...
     default:

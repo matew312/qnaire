@@ -9,7 +9,7 @@ import {
 import React, { useState } from "react";
 import { useQnaireContext } from "./QnaireContextProvider";
 
-const DISPLAY_TYPES = {
+export const DISPLAY_TYPES = {
   1: "Výběr z možností",
   2: "Posuvník",
   3: "Vstupní pole",

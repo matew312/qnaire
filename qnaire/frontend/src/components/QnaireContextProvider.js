@@ -85,7 +85,7 @@ export function QnaireContextProvider({ id, children }) {
     );
   }
 
-  function updateQnaire(id, updatedData) {
+  function updateQnaire(updatedData) {
     update(Resources.QNAIRES, id, updatedData);
   }
 

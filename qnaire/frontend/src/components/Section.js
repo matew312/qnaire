@@ -46,6 +46,7 @@ export function Section({ id, name, desc, order_num }) {
         xs={12}
         container
         spacing={1}
+        className="clickable"
         onClick={() => select(Section, id)}
       >
         <Grid item xs={12}>
