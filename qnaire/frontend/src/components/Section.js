@@ -1,33 +1,27 @@
 import { Box, Grid, Typography } from "@mui/material";
-import React, { useContext, useMemo, useState } from "react";
+import React, { useMemo, useEffect } from "react";
 import { EditableText } from "./basic/EditableText";
 import Question from "./Question";
 import { ActionTypes } from "../reducers";
 import { sortArrayByOrderNum } from "../qnaireUtils";
 import { useQnaireContext } from "./QnaireContextProvider";
 import { Resources } from "../Resources";
+import { useQnaireSource } from "./QnaireSourceProvider";
+import { useForceRender } from "../hooks";
 
-function Section({ id, name, desc, order_num }) {
-  const {
-    selected,
-    questions: allQuestions,
-    select,
-    updateSection,
-  } = useQnaireContext();
-  const isSelected = Boolean(
-    selected && selected.isEqual(Resources.SECTIONS, id)
-  );
+function Section({ id }) {
+  const forceRender = useForceRender();
+  const source = useQnaireSource();
+  const { name, desc, order_num } = source.getSection(id);
+  const isSelected = source.isSelected(Resources.SECTIONS, id);
+  const questions = source.getQuestionsForSection(id);
 
-  const questions = useMemo(
-    () =>
-      Object.keys(allQuestions).reduce((filtered, qId) => {
-        if (allQuestions[qId].section === id) {
-          filtered.push(allQuestions[qId]);
-        }
-        return filtered;
-      }, []),
-    [allQuestions]
-  );
+  useEffect(() => {
+    source.subscribeSection(id, forceRender);
+    return () => {
+      source.unsubscribeSection(id, forceRender);
+    };
+  }, []);
 
   const style = {
     display: "flex",
@@ -50,14 +44,17 @@ function Section({ id, name, desc, order_num }) {
         container
         spacing={1}
         className="clickable"
-        onClick={() => select(Resources.SECTIONS, id)}
+        onClick={() => {
+          source.select(Resources.SECTIONS, id, forceRender);
+          forceRender();
+        }}
       >
         <Grid item xs={12}>
           <EditableText
             editable={isSelected}
             value={name}
             onChange={(name) => {
-              updateSection(id, { name });
+              source.updateSection(id, { name });
             }}
             typographyProps={{ variant: "h3" }}
             textFieldProps={{
@@ -73,7 +70,7 @@ function Section({ id, name, desc, order_num }) {
             editable={isSelected}
             value={desc}
             onChange={(desc) => {
-              updateSection(id, { desc });
+              source.updateSection(id, { desc });
             }}
             textFieldProps={{
               fullWidth: true,
@@ -88,9 +85,9 @@ function Section({ id, name, desc, order_num }) {
       <Grid item xs={12}>
         <Box sx={style}>
           <Grid container spacing={2}>
-            {sortArrayByOrderNum(questions).map((q) => (
+            {questions.map((q) => (
               <Grid item xs={12} key={q.id}>
-                <Question data={q} />
+                <Question id={q.id} />
               </Grid>
             ))}
           </Grid>

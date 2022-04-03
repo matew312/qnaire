@@ -9,7 +9,6 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 import AddIcon from "@mui/icons-material/Add";
 import { reducer, ActionTypes } from "../reducers";
 import { GET, PATCH, POST, DELETE } from "../request";
-import { ResourceId } from "../ResourceId";
 import { Resources } from "../Resources";
 import { useAppContext } from "./AppContextProvider";
 import { PageAction } from "../PageAction";

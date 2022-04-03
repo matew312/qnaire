@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useEffect } from "react";
 import {
   Grid,
   IconButton,
@@ -11,16 +11,24 @@ import { EditableText } from "./basic/EditableText";
 import { ChoiceIcon } from "./basic/ChoiceIcon";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useQnaireContext } from "./QnaireContextProvider";
+import { useQnaireSource } from "./QnaireSourceProvider";
+import { useForceRender } from "../hooks";
 
-function Choice({
-  id,
-  text,
-  skip_to_section,
-  editable,
-  checkbox,
-  textFieldProps,
-}) {
-  const { sections, updateChoice } = useQnaireContext();
+export default function Choice({ id, editable, checkbox, textFieldProps }) {
+  const forceRender = useForceRender();
+  const source = useQnaireSource();
+  const { text, skip_to_section } = source.getChoice(id);
+  const sections = source.getSections();
+
+  useEffect(() => {
+    source.subscribeSections(forceRender);
+    source.subscribeChoice(id, forceRender); //not really needed
+
+    return () => {
+      source.unsubscribeSections(forceRender);
+      source.unsubscribeChoice(id, forceRender);
+    };
+  }, []);
 
   return (
     <Grid container alignItems="center">
@@ -31,7 +39,7 @@ function Choice({
         <EditableText
           value={text}
           editable={editable}
-          onChange={(text) => updateChoice(id, { text })}
+          onChange={(text) => source.updateChoice(id, { text })}
           textFieldProps={{ ...textFieldProps }}
         />
       </Grid>
@@ -78,5 +86,3 @@ Choice.defaultProps = {
     required: true,
   },
 };
-
-export default React.memo(Choice);

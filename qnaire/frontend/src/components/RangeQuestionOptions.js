@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { useQnaireContext } from "./QnaireContextProvider";
+import { useQnaireSource } from "./QnaireSourceProvider";
 
 export const DISPLAY_TYPES = {
   1: "Výběr z možností",
@@ -17,19 +18,19 @@ export const DISPLAY_TYPES = {
   5: "Smajlíkové hodnocení",
 };
 
-export function RangeQuestionOptions({
-  data: { id, min, max, step, type },
-  isSelected,
-}) {
-  const { updateQuestion } = useQnaireContext();
+export function RangeQuestionOptions({ id, isSelected }) {
+  const source = useQnaireSource();
+  const { min, max, step, type } = source.getQuestion(id);
 
   return isSelected ? (
     <Grid container spacing={2}>
       <Grid item xs={6} sm>
         <TextField
-          value={min}
+          value={min !== null ? min : ""}
           onChange={(e) =>
-            updateQuestion(id, { min: parseFloat(e.target.value) })
+            source.updateQuestion(id, {
+              min: e.target.value ? parseFloat(e.target.value) : null,
+            })
           }
           required
           label="Min"
@@ -41,9 +42,11 @@ export function RangeQuestionOptions({
       </Grid>
       <Grid item xs={6} sm>
         <TextField
-          value={max}
+          value={max !== null ? max : ""}
           onChange={(e) =>
-            updateQuestion(id, { max: parseFloat(e.target.value) })
+            source.updateQuestion(id, {
+              max: e.target.value ? parseFloat(e.target.value) : null,
+            })
           }
           required
           label="Max"
@@ -57,7 +60,9 @@ export function RangeQuestionOptions({
         <TextField
           value={step ? step : ""}
           onChange={(e) =>
-            updateQuestion(id, { step: parseInt(e.target.value) })
+            source.updateQuestion(id, {
+              step: e.target.value ? parseInt(e.target.value) : null,
+            })
           }
           label="Skok"
           id="range-step"
@@ -71,7 +76,9 @@ export function RangeQuestionOptions({
           <InputLabel id="range-type-select-label">Způsob zobrazení</InputLabel>
           <Select
             value={type}
-            onChange={(e) => updateQuestion(id, { type: e.target.value })}
+            onChange={(e) =>
+              source.updateQuestion(id, { type: e.target.value })
+            }
             label="Způsob zobrazení"
             id="range-type-select"
             labelId="range-type-select-label"

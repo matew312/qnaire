@@ -7,3 +7,10 @@ export function dictToArraySortedByOrderNum(dict) {
 export function sortArrayByOrderNum(array) {
   return array.sort(sortByOrderNum);
 }
+
+export function findMaxOrderNum(objects) {
+  return Object.keys(objects).reduce((max, id) => {
+    const order_num = objects[id].order_num;
+    return order_num > max ? order_num : max;
+  }, 0);
+}

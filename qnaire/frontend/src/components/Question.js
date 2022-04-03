@@ -16,7 +16,7 @@ import {
   CardContent,
   CardActionArea,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { OpenQuestionOptions } from "./OpenQuestionOptions";
 import { RangeQuestionOptions } from "./RangeQuestionOptions";
 import { MultipleChoiceQuestionOptions } from "./MultipleChoiceQuestionOptions";
@@ -33,6 +33,8 @@ import {
 } from "./QuestionMenu";
 import { useQnaireContext } from "./QnaireContextProvider";
 import { Resources } from "../Resources";
+import { useQnaireSource } from "./QnaireSourceProvider";
+import { useForceRender } from "../hooks";
 
 const QUESTION_TYPES = {
   OpenQuestion: {
@@ -52,13 +54,20 @@ const QUESTION_TYPES = {
   },
 };
 
-function Question({ data }) {
-  const { id, text, mandatory, order_num, resourcetype, error } = data;
-  const { selected, select, updateQuestion } = useQnaireContext();
+function Question({ id }) {
+  const forceRender = useForceRender();
+  const source = useQnaireSource();
+  const { text, mandatory, order_num, resourcetype, error } =
+    source.getQuestion(id);
 
-  const isSelected = Boolean(
-    selected && selected.isEqual(Resources.QUESTIONS, id)
-  );
+  const isSelected = source.isSelected(Resources.QUESTIONS, id);
+
+  useEffect(() => {
+    source.subscribeQuestion(id, forceRender);
+    return () => {
+      source.unsubscribeQuestion(id, forceRender);
+    };
+  }, []);
 
   const style = isSelected
     ? {
@@ -74,13 +83,16 @@ function Question({ data }) {
     <Card
       sx={style}
       className="clickable"
-      onClick={() => select(Resources.QUESTIONS, id)}
+      onClick={() => {
+        source.select(Resources.QUESTIONS, id, forceRender);
+        forceRender();
+      }}
     >
       <CardContent>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={8}>
             <EditableText
-              onChange={(text) => updateQuestion(id, { text })}
+              onChange={(text) => source.updateQuestion(id, { text })}
               editable={isSelected}
               value={text}
               typographyProps={{ variant: "h4" }}
@@ -99,7 +111,9 @@ function Question({ data }) {
                 <Select
                   value={resourcetype}
                   label="Typ otázky"
-                  onChange={(e) => updateQuestionType(id, e.target.value)}
+                  onChange={(e) =>
+                    source.updateQuestionType(id, e.target.value)
+                  }
                   id="type-select"
                   labelId="type-select-label"
                   required
@@ -115,7 +129,7 @@ function Question({ data }) {
           )}
 
           <Grid item xs={12}>
-            <Options isSelected={isSelected} data={data} />
+            <Options isSelected={isSelected} id={id} />
           </Grid>
 
           {isSelected && (
@@ -160,7 +174,7 @@ function Question({ data }) {
                         <Switch
                           checked={mandatory}
                           onChange={(e) =>
-                            updateQuestion(id, {
+                            source.updateQuestion(id, {
                               mandatory: e.target.checked,
                             })
                           }
@@ -171,7 +185,7 @@ function Question({ data }) {
                   </FormGroup>
                 </Grid>
                 <Grid item xs="auto">
-                  <Menu data={data} />
+                  <Menu id={id} />
                 </Grid>
               </Grid>
             </Grid>
@@ -193,6 +207,5 @@ function Question({ data }) {
 Question.defaultProps = {
   type: "MultipleChoiceQuestion",
 };
-
 
 export default React.memo(Question);
