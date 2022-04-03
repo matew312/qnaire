@@ -12,7 +12,7 @@ import { ChoiceIcon } from "./basic/ChoiceIcon";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useQnaireContext } from "./QnaireContextProvider";
 
-export function Choice({
+function Choice({
   id,
   text,
   skip_to_section,
@@ -78,3 +78,5 @@ Choice.defaultProps = {
     required: true,
   },
 };
+
+export default React.memo(Choice);

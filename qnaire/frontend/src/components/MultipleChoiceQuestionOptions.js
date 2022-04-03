@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import React, { useMemo, useState } from "react";
 import { ChoiceIcon } from "./basic/ChoiceIcon";
-import { Choice } from "./Choice";
+import Choice from "./Choice";
 import { useQnaireContext } from "./QnaireContextProvider";
 
 export function MultipleChoiceQuestionOptions({

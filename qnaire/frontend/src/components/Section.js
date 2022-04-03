@@ -1,19 +1,22 @@
 import { Box, Grid, Typography } from "@mui/material";
 import React, { useContext, useMemo, useState } from "react";
 import { EditableText } from "./basic/EditableText";
-import { Question } from "./Question";
+import Question from "./Question";
 import { ActionTypes } from "../reducers";
 import { sortArrayByOrderNum } from "../qnaireUtils";
 import { useQnaireContext } from "./QnaireContextProvider";
+import { Resources } from "../Resources";
 
-export function Section({ id, name, desc, order_num }) {
+function Section({ id, name, desc, order_num }) {
   const {
     selected,
     questions: allQuestions,
     select,
     updateSection,
   } = useQnaireContext();
-  const isSelected = Boolean(selected && selected.isEqual(Section, id));
+  const isSelected = Boolean(
+    selected && selected.isEqual(Resources.SECTIONS, id)
+  );
 
   const questions = useMemo(
     () =>
@@ -47,7 +50,7 @@ export function Section({ id, name, desc, order_num }) {
         container
         spacing={1}
         className="clickable"
-        onClick={() => select(Section, id)}
+        onClick={() => select(Resources.SECTIONS, id)}
       >
         <Grid item xs={12}>
           <EditableText
@@ -96,3 +99,5 @@ export function Section({ id, name, desc, order_num }) {
     </Grid>
   );
 }
+
+export default React.memo(Section);

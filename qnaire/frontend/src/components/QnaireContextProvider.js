@@ -9,7 +9,7 @@ import AddBoxIcon from "@mui/icons-material/AddBox";
 import AddIcon from "@mui/icons-material/Add";
 import { reducer, ActionTypes } from "../reducers";
 import { GET, PATCH, POST, DELETE } from "../request";
-import { ComponentId } from "../ComponentId";
+import { ResourceId } from "../ResourceId";
 import { Resources } from "../Resources";
 import { useAppContext } from "./AppContextProvider";
 import { PageAction } from "../PageAction";
@@ -46,17 +46,19 @@ export function QnaireContextProvider({ id, children }) {
   const { questions } = questionsState || {}; //the questions state can contain other stuff like "copiedQuestion"
   const { choices } = choicesState || {};
 
+  const { selected } = other || {};
+
   function setData(data) {
     dispatch({ type: ActionTypes.SET, data });
   }
 
-  function select(component, id) {
+  function select(resource, id) {
     updateTimeout.current = null; //prevent cancel of the update to the previous selected component
 
     dispatch({
       type: ActionTypes.UPDATE,
       resource: Resources.OTHER,
-      data: { selected: new ComponentId(component, id) },
+      data: { selected: new ResourceId(resource, id) },
     });
   }
 
@@ -64,6 +66,7 @@ export function QnaireContextProvider({ id, children }) {
     if (updateTimeout.current) {
       clearTimeout(updateTimeout.current);
     }
+
 
     dispatch({
       type: ActionTypes.UPDATE,
@@ -112,11 +115,46 @@ export function QnaireContextProvider({ id, children }) {
     update(Resources.CHOICES, id, updatedData);
   }
 
-  function createQuestion() {}
+  function findMaxOrderNum(objects) {
+    return Object.keys(objects).reduce((max, id) => {
+      const order_num = objects[id].order_num;
+      return order_num > max ? order_num : max;
+    }, 0);
+  }
 
   function createSection() {
-    console.log("create seciton");
+    let order_num = 0;
+    if (selected) {
+      switch (selected.resource) {
+        case Resources.QNAIRES:
+          order_num = findMaxOrderNum(sections) + 1;
+          break;
+        case Resources.SECTIONS:
+          order_num = selected.order_num + 1;
+          break;
+        case Resources.QUESTIONS:
+          order_num = sections[selected.section].order_num + 1;
+          break;
+      }
+    } else {
+      order_num = findMaxOrderNum(sections) + 1;
+    }
+    const name = `Sekce ${order_num + 1}`;
+    const data = { name, order_num };
+
+    //I can't dispatch without id, so POST first
+
+    POST(Resources.SECTIONS, { ...data, qnaire: id }).then((data) => {
+      dispatch({
+        type: ActionTypes.CREATE,
+        resource: Resources.SECTIONS,
+        data,
+      });
+      select(Resources.SECTIONS, data.id);
+    });
   }
+
+  function createQuestion() {}
 
   function paste(type, id) {}
 
@@ -137,7 +175,6 @@ export function QnaireContextProvider({ id, children }) {
 
   const { setPageActions } = useAppContext();
 
-  //set page actions on initial render
   useEffect(() => {
     const pageActions = [
       new PageAction("Přidat sekci", <AddBoxIcon />, createSection),
@@ -145,7 +182,7 @@ export function QnaireContextProvider({ id, children }) {
     ];
     setPageActions(pageActions);
     // return () => setPageActions([]);
-  }, []);
+  }, [selected, questions, sections]); //the effect needs to be executed when these change, because the old callbacks use old state
 
   return (
     <QnaireContext.Provider value={value}>{children}</QnaireContext.Provider>

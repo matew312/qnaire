@@ -40,7 +40,7 @@ export function LoginPage({ auth }) {
 
   useEffect(() => {
     if (auth.isAuthenticated) {
-      navigate("/");
+      navigate("/questionnaires/");
     }
   }, [auth.isAuthenticated]);
 

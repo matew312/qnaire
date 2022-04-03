@@ -278,7 +278,7 @@ class SectionSerializer(serializers.ModelSerializer):
         list_serializer_class = DictSerializer
 
     def validate(self, data):
-        qnaire = get_latest_field_value('qnaire')
+        qnaire = get_latest_field_value('qnaire', data, self.instance)
         raise_validation_error_if_qnaire_published(qnaire)
         return self.do_validate(data)
 
@@ -298,7 +298,6 @@ class CreateSectionSerializer(SectionSerializer):
     class Meta:
         model = Section
         fields = SECTION_FIELDS + ('qnaire',)
-        list_serializer_class = DictSerializer
 
     def do_validate(self, data):
         request = self.context.get('request')

@@ -32,6 +32,7 @@ import {
   MultipleChoiceQuestionMenu,
 } from "./QuestionMenu";
 import { useQnaireContext } from "./QnaireContextProvider";
+import { Resources } from "../Resources";
 
 const QUESTION_TYPES = {
   OpenQuestion: {
@@ -51,11 +52,13 @@ const QUESTION_TYPES = {
   },
 };
 
-export function Question({ data }) {
+function Question({ data }) {
   const { id, text, mandatory, order_num, resourcetype, error } = data;
   const { selected, select, updateQuestion } = useQnaireContext();
 
-  const isSelected = Boolean(selected && selected.isEqual(Question, id));
+  const isSelected = Boolean(
+    selected && selected.isEqual(Resources.QUESTIONS, id)
+  );
 
   const style = isSelected
     ? {
@@ -68,7 +71,11 @@ export function Question({ data }) {
   const Menu = QUESTION_TYPES[resourcetype].menu;
 
   return (
-    <Card sx={style} className="clickable" onClick={() => select(Question, id)}>
+    <Card
+      sx={style}
+      className="clickable"
+      onClick={() => select(Resources.QUESTIONS, id)}
+    >
       <CardContent>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={8}>
@@ -186,3 +193,6 @@ export function Question({ data }) {
 Question.defaultProps = {
   type: "MultipleChoiceQuestion",
 };
+
+
+export default React.memo(Question);

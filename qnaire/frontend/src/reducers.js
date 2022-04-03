@@ -4,17 +4,15 @@ import { Resources } from "./Resources";
 
 export const ActionTypes = {
   SET: "set",
+  CREATE: "create",
   UPDATE: "update",
   UPDATE_QUESTION_TYPE: "update_question_type",
-  SET_ERROR: "set_error",
-  CLEAR_ERROR: "clear_error",
 };
 
 //"SET" is not generic because I would need to post 3 dispatches to SET each (questions, sections, qnaire) instead of just one.
 const GenericActionTypes = {
   [ActionTypes.UPDATE]: true,
-  [ActionTypes.SET_ERROR]: true,
-  [ActionTypes.CLEAR_ERROR]: true,
+  [ActionTypes.CREATE]: true,
 };
 
 //NOTE: I keep the state immutable
@@ -58,6 +56,8 @@ function dictReducer(name, reducer) {
     switch (action.type) {
       case ActionTypes.UPDATE:
         return updateObj();
+      case ActionTypes.CREATE:
+        return setObj(data);
     }
   }
 
@@ -159,7 +159,7 @@ function sectionsReducer(state, action) {
 function qnaireReducer(state, action) {
   switch (action.type) {
     case ActionTypes.SET: {
-      const { question, sections, choices, ...data } = action.data;
+      const { questions, sections, choices, ...data } = action.data;
       return { ...data };
     }
     //...

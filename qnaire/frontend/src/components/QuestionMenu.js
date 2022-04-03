@@ -4,11 +4,13 @@ import { OptionMenu } from "./basic/OptionMenu";
 import Check from "@mui/icons-material/Check";
 import { useQnaireContext } from "./QnaireContextProvider";
 
-export function MultipleChoiceQuestionMenu({ id, random_order }) {
+export function MultipleChoiceQuestionMenu({ data: { id, random_order } }) {
   const { updateQuestion } = useQnaireContext();
   return (
     <OptionMenu>
-      <MenuItem onClick={() => updateQuestion({ random_order: !random_order })}>
+      <MenuItem
+        onClick={() => updateQuestion(id, { random_order: !random_order })}
+      >
         <ListItemIcon>{random_order && <Check />}</ListItemIcon>
         Zobrazovat možnosti v náhodném pořadí
       </MenuItem>
