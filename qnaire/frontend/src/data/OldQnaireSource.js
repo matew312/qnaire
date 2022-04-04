@@ -6,26 +6,28 @@ import {
 import { Resources } from "../Resources";
 import { GET, PATCH, POST, DELETE } from "../request";
 import { DISPLAY_TYPES } from "../components/RangeQuestionOptions";
-import { DataGateway } from "./DataGateway";
 
 const ANY_ID = "ANY_ID";
 const UPDATE_TIMEOUT = 750;
 
 export class QnaireSource {
-  constructor(id) {
-    this.id = id;
+  constructor({ questions, sections, choices, ...data }) {
+    this.id = data.id;
+    this.questionnaires = [];
+    this.questionnaires[this.id] = data;
+    this.sections = sections;
+    this.questions = questions;
+    this.choices = choices;
 
-    this.sources = {};
+    this.newObj = null;
+    this.selected = null;
+
     this.subscribers = {};
-    Object.keys(Resources).forEach((key) => {
-      const resource = Resources[key];
-      this.sources[resource] = new DataGateway(resource);
-      this.subscribers[resource] = {};
-    });
-
     Object.keys(Resources).forEach(
       (key) => (this.subscribers[Resources[key]] = {})
     );
+    console.log(this.subscribers);
+    this.updateTimeout = null;
   }
 
   _get(resource, id) {
