@@ -58,7 +58,7 @@ export function RangeQuestionOptions({ id, isSelected }) {
       </Grid>
       <Grid item xs={6} sm>
         <TextField
-          value={step ? step : ""}
+          value={step !== null ? step : ""}
           onChange={(e) =>
             source.updateQuestion(id, {
               step: e.target.value ? parseInt(e.target.value) : null,

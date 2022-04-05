@@ -43,6 +43,20 @@ class DictSerializer(serializers.ListSerializer):
         return {item[self.dict_key]: item for item in items}
 
 
+def validate_move(queryset, data):
+    if data['order_num'] >= queryset.count():
+        raise serializers.ValidationError(
+            'Invalid order_num')
+    return data
+
+
+def validate_ordered_add(queryset, data):
+    if data['order_num'] > queryset.count():
+        raise serializers.ValidationError(
+            'Invalid order_num')
+    return data
+
+
 def get_latest_field_value(field, data, instance):
     if field in data:
         return data[field]
@@ -100,11 +114,13 @@ class QuestionSerializer(serializers.ModelSerializer):
         # on update (having two serializers would be fine as well)
         if self.instance:
             if 'section' in data:
-                # make sure the section is within the same qnaire as the previous one
-                new_section = data['section']
-                if new_section.qnaire != section.qnaire:
+                if data['section'] != section:
                     raise serializers.ValidationError(
-                        f"New section is in a different questionnaire than the current section")
+                        f"section can only be updated through the 'move' API action")
+            if 'order_num' in data:
+                if data['order_num'] != self.instance.order_num:
+                    raise serializers.ValidationError(
+                        f"order_num can only be updated through the 'move' API action")
         # on create
         else:
             request = self.context.get('request')
@@ -113,6 +129,8 @@ class QuestionSerializer(serializers.ModelSerializer):
             if section.qnaire.creator != request.user:
                 raise serializers.ValidationError(
                     f"Section belongs to a questionnaire not owned by the user")
+            
+            data = validate_ordered_add(Question.objects.filter(section=section), data)
 
         return self.do_validate(data)
 
@@ -184,7 +202,8 @@ class ChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Choice
         fields = CHOICE_FIELDS
-        extra_kwargs = {'question': {'read_only': True}}
+        extra_kwargs = {'question': {'read_only': True},
+                        'order_num': {'read_only': True}}
         list_serializer_class = DictSerializer
 
     def validate(self, data):
@@ -271,20 +290,35 @@ class QuestionPolymorphicSerializer(PolymorphicSerializer):
 SECTION_FIELDS = ('id', 'name', 'desc', 'order_num')
 
 
+class QuestionMoveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Question
+        fields = ('order_num', 'section')
+
+    def validate(self, data):
+        src_question = self.context.get('src')
+        section = data['section']
+        # the question with the target order_num must be in the target section
+        queryset = Question.objects.filter(section=section)
+        if src_question.section == section:
+            return validate_move(queryset, data)
+        else:
+             # the target section must be from the same qnaire as the src
+            queryset = queryset.filter(section__qnaire=src_question.section.qnaire)
+            return validate_ordered_add(queryset, data)
+
+
 class SectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Section
         fields = SECTION_FIELDS
+        extra_kwargs = {'order_num': {'read_only': True}}
         list_serializer_class = DictSerializer
 
     def validate(self, data):
         qnaire = get_latest_field_value('qnaire', data, self.instance)
         raise_validation_error_if_qnaire_published(qnaire)
         return self.do_validate(data)
-
-        # I CAN'T VALIDATE ORDER_NUM WITHOUT BULK UPDATES (If I am changing order_num of a section, I am naturally changing order of some other ones)
-        # self.instance contains the model instance during updates and this Serializer isn't for creation, so it's always fine
-        # sections = self.instance.qnaire.section_set.exclude(pk=self.instance.pk)
 
         # extra_kwargs = {'qnaire': {'write_only': True}} <-- This wasn't enough, because I want qnaire only for CREATE requests.
         # If there was just one Serializer I would need to check if 'qnaire' in data and self.instance is not None then data['qnaire'] == self.instance.qnaire
@@ -302,16 +336,27 @@ class CreateSectionSerializer(SectionSerializer):
     def do_validate(self, data):
         request = self.context.get('request')
         qnaire = data['qnaire']
+
         # make sure the created section belongs to a qnaire owned by the current user
         if qnaire.creator != request.user:
             raise serializers.ValidationError(
                 f"User doesn't own the questionnaire")
 
-        return data
-
+        return validate_ordered_add(Section.objects.filter(qnaire=qnaire), data)
 
 QUESTIONNAIRE_FIELDS = ('id', 'name', 'desc', 'anonymous',
                         'private', 'published', 'created_at')
+
+
+class SectionMoveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Section
+        fields = ('order_num', )
+
+    def validate(self, data):
+        src_section = self.context.get('src')
+        queryset = Section.objects.filter(qnaire=src_section.qnaire)
+        return validate_move(queryset, data)
 
 
 class QuestionnaireSerializer(serializers.ModelSerializer):

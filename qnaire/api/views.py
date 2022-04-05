@@ -23,7 +23,7 @@ class ResponseView(APIView):
                 data=request.data)
             if private_qnaire_id_serializer.is_valid():
                 queryset = PrivateQnaireId.objects.filter(
-                    pk=private_qnaire_id_serializer.data.get('id'), qnaire=qnaire)
+                    pk=private_qnaire_id_serializer.validated_data['id'], qnaire=qnaire)
                 if queryset.exists():
                     private_qnaire_id = queryset[0]
                 else:

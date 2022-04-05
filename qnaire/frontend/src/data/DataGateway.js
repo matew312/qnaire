@@ -18,7 +18,11 @@ export class DataGateway {
 
   //partial update
   update(id, updatedData) {
-    return PATCH(this.resource, updatedData);
+    return PATCH(`${this.resource}/${id}`, updatedData);
+  }
+
+  customUpdate(id, action, updatedData) {
+    return PATCH(`${this.resource}/${id}/${action}`, updatedData);
   }
 
   delete(id) {

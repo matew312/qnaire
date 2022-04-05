@@ -7,7 +7,7 @@ const DataEvents = {
 };
 
 //The data source always starts with initial data and allows creates, updates and deletes
-// and allows subscribers to be notified on these events.
+// and allows subscribers to be notified on these events. It keeps the latest VALID data.
 export class DataSource {
   constructor(resource, data) {
     this.gateway = new DataGateway(resource);
@@ -46,22 +46,25 @@ export class DataSource {
   }
 
   create(data) {
-    this.gateway.create(data).then((data) => {
+    return this.gateway.create(data).then((data) => {
       this.data[data.id] = data;
       this._notify(DataEvents.CREATE, data);
     });
   }
 
   //partial update
-  update(id, updatedData) {
-    this.gateway.update(id, updatedData).then((data) => {
+  update(id, updatedData, notify = true) {
+    return this.gateway.update(id, updatedData).then((data) => {
       this.data[data.id] = data;
-      this._notify(DataEvents.UPDATE);
+      if (notify) {
+        this._notify(DataEvents.UPDATE);
+      }
     });
   }
 
   delete(id) {
-    this.gateway.delete(id).then(() => {
+    return this.gateway.delete(id).then(() => {
+      delete this.data[id];
       this._notify(DataEvents.DELETE);
     });
   }

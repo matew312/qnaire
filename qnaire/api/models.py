@@ -14,7 +14,8 @@ class Respondent(models.Model):
 
 
 class Response(models.Model):
-    respondent = models.ForeignKey(Respondent, on_delete=models.SET_NULL, null=True)
+    respondent = models.ForeignKey(
+        Respondent, on_delete=models.SET_NULL, null=True)
     submit_timestamp = models.DateTimeField(auto_now_add=True)
 
 
@@ -37,6 +38,11 @@ class Section(models.Model):
     desc = models.TextField(blank=True)
     order_num = models.IntegerField(validators=[MinValueValidator(0)])
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['qnaire', 'order_num']),
+        ]
+
     def __str__(self) -> str:
         return f'{self.name}'
 
@@ -47,6 +53,11 @@ class Question(PolymorphicModel):
     text = models.TextField()
     mandatory = models.BooleanField()
     order_num = models.IntegerField(validators=[MinValueValidator(0)])
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['section', 'order_num']),
+        ]
 
     def __str__(self) -> str:
         return f'{self.text}'
@@ -97,8 +108,15 @@ class Choice(models.Model):
     question = models.ForeignKey(
         MultipleChoiceQuestion, on_delete=models.CASCADE)
     text = models.CharField(max_length=100)
-    order_num = models.IntegerField(validators=[MinValueValidator(0)])
-    skip_to_section = models.ForeignKey(Section, on_delete=models.SET_NULL, null=True)
+    order_num = models.IntegerField(
+        validators=[MinValueValidator(0)])
+    skip_to_section = models.ForeignKey(
+        Section, on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['question', 'order_num']),
+        ]
 
     def __str__(self) -> str:
         return f'{self.text}'
