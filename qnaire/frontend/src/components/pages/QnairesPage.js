@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useRequireAuth } from "../../auth";
 import { GET } from "../../request";
-import { useAppContext } from "../AppContextProvider";
+import { useAppContext } from "../../providers/AppContextProvider";
 
 export function QnairesPage() {
 

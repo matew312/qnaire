@@ -3,11 +3,7 @@ import { Typography, TextField } from "@mui/material";
 
 export function EditableText(props) {
   return !props.editable ? (
-    <Typography
-      {...props.typographyProps}
-    >
-      {props.value}
-    </Typography>
+    <Typography {...props.typographyProps}>{props.value}</Typography>
   ) : (
     <TextField
       value={props.value}
@@ -21,5 +17,5 @@ EditableText.defaultProps = {
   value: "",
   editable: false,
   textFieldProps: {},
-  typographyProps: {}
+  typographyProps: {},
 };

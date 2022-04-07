@@ -10,8 +10,8 @@ const theme = createTheme({
     //   // contrastText: will be calculated to contrast with palette.primary.main
     // },
     background: {
-      default: "#eaeaea"
-    }
+      default: "#eaeaea",
+    },
   },
 });
 

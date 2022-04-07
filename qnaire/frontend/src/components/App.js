@@ -10,9 +10,8 @@ import { LoginPage } from "./pages/LoginPage";
 import { AppStructure } from "./AppStructure";
 import { useAuth } from "../auth";
 import { AuthOnlyOutlet } from "./AuthOnlyOutlet";
-import { AppContextProvider } from "./AppContextProvider";
-import { CustomThemeProvider } from "./CustomThemeProvider";
-import Cookies from "universal-cookie";
+import { AppContextProvider } from "../providers/AppContextProvider";
+import { CustomThemeProvider } from "../providers/CustomThemeProvider";
 
 function App() {
   const auth = useAuth();

@@ -7,8 +7,6 @@ import {
   TextField,
 } from "@mui/material";
 import React, { useState } from "react";
-import { useQnaireContext } from "./QnaireContextProvider";
-import { useQnaireSource } from "./QnaireSourceProvider";
 
 export const DISPLAY_TYPES = {
   1: "Výběr z možností",
@@ -18,17 +16,22 @@ export const DISPLAY_TYPES = {
   5: "Smajlíkové hodnocení",
 };
 
-export function RangeQuestionOptions({ id, isSelected }) {
-  const source = useQnaireSource();
-  const { min, max, step, type } = source.getQuestion(id);
-
+export function RangeQuestionOptions({
+  id,
+  min,
+  max,
+  step,
+  type,
+  update,
+  isSelected,
+}) {
   return isSelected ? (
     <Grid container spacing={2}>
       <Grid item xs={6} sm>
         <TextField
           value={min !== null ? min : ""}
           onChange={(e) =>
-            source.updateQuestion(id, {
+            update({
               min: e.target.value ? parseFloat(e.target.value) : null,
             })
           }
@@ -44,7 +47,7 @@ export function RangeQuestionOptions({ id, isSelected }) {
         <TextField
           value={max !== null ? max : ""}
           onChange={(e) =>
-            source.updateQuestion(id, {
+            update({
               max: e.target.value ? parseFloat(e.target.value) : null,
             })
           }
@@ -60,7 +63,7 @@ export function RangeQuestionOptions({ id, isSelected }) {
         <TextField
           value={step !== null ? step : ""}
           onChange={(e) =>
-            source.updateQuestion(id, {
+            update({
               step: e.target.value ? parseInt(e.target.value) : null,
             })
           }
@@ -76,9 +79,7 @@ export function RangeQuestionOptions({ id, isSelected }) {
           <InputLabel id="range-type-select-label">Způsob zobrazení</InputLabel>
           <Select
             value={type}
-            onChange={(e) =>
-              source.updateQuestion(id, { type: e.target.value })
-            }
+            onChange={(e) => update({ type: e.target.value })}
             label="Způsob zobrazení"
             id="range-type-select"
             labelId="range-type-select-label"

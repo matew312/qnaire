@@ -2,18 +2,11 @@ import { ListItemIcon, MenuItem } from "@mui/material";
 import React from "react";
 import { OptionMenu } from "./basic/OptionMenu";
 import Check from "@mui/icons-material/Check";
-import { useQnaireContext } from "./QnaireContextProvider";
-import { useQnaireSource } from "./QnaireSourceProvider";
 
-export function MultipleChoiceQuestionMenu({id}) {
-  const source = useQnaireSource();
-  const { random_order } = source.getQuestion(id);
-
+export function MultipleChoiceQuestionMenu({ id, random_order }) {
   return (
     <OptionMenu>
-      <MenuItem
-        onClick={() => source.updateQuestion(id, { random_order: !random_order })}
-      >
+      <MenuItem onClick={() => update({ random_order: !random_order })}>
         <ListItemIcon>{random_order && <Check />}</ListItemIcon>
         Zobrazovat možnosti v náhodném pořadí
       </MenuItem>

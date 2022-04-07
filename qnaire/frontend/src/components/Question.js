@@ -31,10 +31,9 @@ import {
   RangeQuestionMenu,
   MultipleChoiceQuestionMenu,
 } from "./QuestionMenu";
-import { useQnaireContext } from "./QnaireContextProvider";
-import { Resources } from "../Resources";
-import { useQnaireSource } from "./QnaireSourceProvider";
-import { useForceRender } from "../hooks";
+import { useQuestionController } from "../controllers/useQuestionController";
+import { useQuestionSelect } from "../providers/QnaireProvider";
+import { getSelectedStyle } from "../style";
 
 const QUESTION_TYPES = {
   OpenQuestion: {
@@ -55,44 +54,25 @@ const QUESTION_TYPES = {
 };
 
 function Question({ id }) {
-  const forceRender = useForceRender();
-  const source = useQnaireSource();
-  const { text, mandatory, order_num, resourcetype, error } =
-    source.getQuestion(id);
+  const { text, mandatory, order_num, resourcetype, error, update, ...data } =
+    useQuestionController(id);
 
-  const isSelected = source.isSelected(Resources.QUESTIONS, id);
+  const { isSelected, select } = useQuestionSelect(id);
 
-  useEffect(() => {
-    source.subscribeQuestion(id, forceRender);
-    return () => {
-      source.unsubscribeQuestion(id, forceRender);
-    };
-  }, []);
-
-  const style = isSelected
-    ? {
-        border: 1,
-        borderColor: "primary.light",
-      }
-    : {};
-
-  const Options = QUESTION_TYPES[resourcetype].component;
-  const Menu = QUESTION_TYPES[resourcetype].menu;
+  const QuestionOptions = QUESTION_TYPES[resourcetype].component;
+  const QuestionMenu = QUESTION_TYPES[resourcetype].menu;
 
   return (
     <Card
-      sx={style}
+      sx={getSelectedStyle(isSelected)}
       className="clickable"
-      onClick={() => {
-        source.select(Resources.QUESTIONS, id, forceRender);
-        forceRender();
-      }}
+      onClick={select}
     >
       <CardContent>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={8}>
             <EditableText
-              onChange={(text) => source.updateQuestion(id, { text })}
+              onChange={(text) => update({ text })}
               editable={isSelected}
               value={text}
               typographyProps={{ variant: "h4" }}
@@ -111,9 +91,7 @@ function Question({ id }) {
                 <Select
                   value={resourcetype}
                   label="Typ otázky"
-                  onChange={(e) =>
-                    source.updateQuestionType(id, e.target.value)
-                  }
+                  onChange={(e) => update({ resourcetype: e.target.value })}
                   id="type-select"
                   labelId="type-select-label"
                   required
@@ -129,7 +107,12 @@ function Question({ id }) {
           )}
 
           <Grid item xs={12}>
-            <Options isSelected={isSelected} id={id} />
+            <QuestionOptions
+              id={id}
+              {...data}
+              update={update}
+              isSelected={isSelected}
+            />
           </Grid>
 
           {isSelected && (
@@ -174,7 +157,7 @@ function Question({ id }) {
                         <Switch
                           checked={mandatory}
                           onChange={(e) =>
-                            source.updateQuestion(id, {
+                            update({
                               mandatory: e.target.checked,
                             })
                           }
@@ -185,7 +168,7 @@ function Question({ id }) {
                   </FormGroup>
                 </Grid>
                 <Grid item xs="auto">
-                  <Menu id={id} />
+                  <QuestionMenu id={id} {...data} update={update} />
                 </Grid>
               </Grid>
             </Grid>

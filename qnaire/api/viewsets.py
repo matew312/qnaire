@@ -67,6 +67,7 @@ class SectionViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedView
     serializer_action_classes = {'create': CreateSectionSerializer}
     user_field = 'qnaire__creator'
     order_scope_field = 'qnaire'
+    list_serializer_class = serializer_class # for OrderedViewSetMixin
 
     @action(detail=True, methods=['PATCH'])
     def move(self, request, pk=None):
@@ -89,6 +90,7 @@ class QuestionViewSet(UserQuerySetMixin, OrderedViewSetMixin, viewsets.ModelView
     serializer_class = QuestionPolymorphicSerializer
     user_field = 'section__qnaire__creator'
     order_scope_field = 'section'
+    list_serializer_class = serializer_class # for OrderedViewSetMixin
 
 
     @action(detail=True, methods=['PATCH'])

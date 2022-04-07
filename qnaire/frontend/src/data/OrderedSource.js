@@ -1,4 +1,4 @@
-import { DataSource } from "./DataSource";
+import { DataEvents, DataSource } from "./DataSource";
 import { OrderedGateway } from "./OrderedGateway";
 
 const OrderedEvents = {
@@ -19,15 +19,50 @@ export class OrderedSource extends DataSource {
     this._subscribe(OrderedEvents.MOVE, callback);
   }
 
+  unsubscribeMove(callback) {
+    this._unsubscribe(OrderedEvents.MOVE, callback);
+  }
+
   _move(id, data) {
-    if (this.data[srcId] === this.data[dstId]) {
-      return;
-    }
     return this.gateway.move(id, data).then((dict) => {
-      Object.keys(dict).forEach((id) => {
-        this.data[id] = dict[id];
-      });
-      this._notify(OrderedEvents.MOVE);
+      ids = Object.keys(dict);
+      if (ids.length > 0) {
+        ids.forEach((id) => {
+          this.data[id] = dict[id];
+        });
+        this._notify(OrderedEvents.MOVE);
+      }
     });
+  }
+
+  //when a new object is created or deleted, the order of other objects may change
+  create(data) {
+    return this.gateway.create(data).then(({ id, changed_data }) => {
+      Object.values(changed_data).forEach((obj) => {
+        this.data[obj.id] = obj;
+      });
+      this._notify(DataEvents.CREATE);
+      return this.data[id];
+    });
+  }
+
+  delete(id) {
+    return this.gateway.delete(id).then(({ changed_data }) => {
+      delete this.data[id];
+      Object.values(changed_data).forEach((obj) => {
+        this.data[obj.id] = obj;
+      });
+      this._notify(DataEvents.DELETE);
+    });
+  }
+
+  _sortByOrder(list) {
+    return list.sort((a, b) => a.order_num - b.order_num);
+  }
+
+  _sortIdsByOrder(idList) {
+    return idList.sort(
+      (aId, bId) => this.data[aId].order_num - this.data[bId].order_num
+    );
   }
 }

@@ -58,7 +58,11 @@ class OrderedViewSetMixin():
         filtered_queryset.update(order_num=F('order_num') + 1)
         obj = serializer.save()
 
-        return response.Response(self.get_serializer(filtered_queryset, many=True).data, status=status.HTTP_200_OK)
+        return response.Response({
+            'id': obj.id,
+            # data that changed, including the new object
+            'changed_data': self.list_serializer_class(filtered_queryset, many=True).data
+        }, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
         obj = self.get_object()
@@ -67,9 +71,12 @@ class OrderedViewSetMixin():
         queryset = self.queryset
         filters = {}
         if self.order_scope_field:
-            filters[self.order_scope_field] = getattr(obj, self.order_scope_field)
+            filters[self.order_scope_field] = getattr(
+                obj, self.order_scope_field)
         queryset.filter(order_num__gt=order_num, **
                         filters).update(order_num=F('order_num') - 1)
         obj.delete()
         changed_objs = queryset.filter(order_num__gte=order_num, **filters)
-        return response.Response(data=self.get_serializer(changed_objs, many=True).data, status=status.HTTP_200_OK)
+        return response.Response(data={
+            'changed_data': self.list_serializer_class(changed_objs, many=True).data
+        }, status=status.HTTP_200_OK)

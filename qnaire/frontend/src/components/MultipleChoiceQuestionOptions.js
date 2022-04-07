@@ -9,25 +9,28 @@ import {
   Box,
 } from "@mui/material";
 import React, { useMemo, useState } from "react";
-import { useForceRender } from "../hooks";
 import { ChoiceIcon } from "./basic/ChoiceIcon";
 import Choice from "./Choice";
-import { useQnaireContext } from "./QnaireContextProvider";
-import { useQnaireSource } from "./QnaireSourceProvider";
+import { useMultipleChoiceQuestionController } from "../controllers/useMultipleChoiceQuestionController";
 
-export function MultipleChoiceQuestionOptions({ id, isSelected }) {
-  const source = useQnaireSource();
-  const { min_answers, max_answers, other_choice } = source.getQuestion(id);
-  const choices = source.getChoicesForQuestion(id);
+export function MultipleChoiceQuestionOptions({
+  id,
+  min_answers,
+  max_answers,
+  other_choice,
+  isSelected,
+  update,
+}) {
+  const { choiceIds } = useMultipleChoiceQuestionController(id);
 
-  const totalChoices = choices.length;
+  const totalChoices = choiceIds.length;
   const checkbox = max_answers > 1;
 
   return (
     <Grid container spacing={isSelected ? 1 : 0}>
-      {choices.map((choice) => (
-        <Grid item xs={12} key={choice.id}>
-          <Choice id={choice.id} editable={isSelected} checkbox={checkbox} />
+      {choiceIds.map((choiceId) => (
+        <Grid item xs={12} key={choiceId}>
+          <Choice id={choiceId} editable={isSelected} checkbox={checkbox} />
         </Grid>
       ))}
       {isSelected ? (
@@ -46,7 +49,7 @@ export function MultipleChoiceQuestionOptions({ id, isSelected }) {
                 <Switch
                   checked={other_choice}
                   onChange={(e) =>
-                    source.updateQuestion(id, {
+                    update({
                       other_choice: e.target.checked,
                     })
                   }
@@ -71,7 +74,7 @@ export function MultipleChoiceQuestionOptions({ id, isSelected }) {
                 step={1}
                 onChange={(e) => {
                   const [min, max] = e.target.value;
-                  source.updateQuestion(id, {
+                  update({
                     min_answers: min,
                     max_answers: max,
                   });

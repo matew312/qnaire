@@ -2,25 +2,17 @@ import { Grid, Typography } from "@mui/material";
 import React, { useEffect, useReducer, useState, useMemo } from "react";
 import { EditableText } from "./basic/EditableText";
 import Section from "./Section";
-import { Resources } from "../Resources";
-import { useQnaireSource } from "./QnaireSourceProvider";
-import { useForceRender } from "../hooks";
+import { useQnaireController } from "../controllers/useQnaireController";
+import { useQnaireSelect } from "../providers/QnaireProvider";
+import { getSelectedStyle } from "../style";
 
-export function Questionnaire() {
-  const source = useQnaireSource();
-  const forceRender = useForceRender();
+export function Questionnaire({ id }) {
+  const { name, desc, sectionIds, update, isLoaded } = useQnaireController(id);
+  const { isSelected, select } = useQnaireSelect(id);
 
-  useEffect(() => {
-    source.subscribeQnaire(forceRender);
-
-    return () => {
-      source.unsubscribeQnaire(forceRender);
-    };
-  }, [source]);
-
-  const { id, name, desc } = source.getQnaire();
-  const sections = source.getSections();
-  const isSelected = source.isSelected(Resources.QNAIRES, id);
+  if (!isLoaded) {
+    return null;
+  }
 
   return (
     <Grid container>
@@ -28,12 +20,10 @@ export function Questionnaire() {
         item
         xs={12}
         container
-        spacing={1}
         className="clickable"
-        onClick={() => {
-          source.select(Resources.QNAIRES, id, forceRender);
-          forceRender();
-        }}
+        sx={getSelectedStyle(isSelected)}
+        p={2}
+        onClick={select}
       >
         <Grid item xs={12}>
           <EditableText
@@ -41,7 +31,7 @@ export function Questionnaire() {
             typographyProps={{ variant: "h2" }}
             value={name}
             onChange={(name) => {
-              source.updateQnaire({ name });
+              update({ name });
             }}
             textFieldProps={{
               fullWidth: true,
@@ -51,12 +41,12 @@ export function Questionnaire() {
             }}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} mt={2}>
           <EditableText
             editable={isSelected}
             value={desc}
             onChange={(desc) => {
-              source.updateQnaire({ desc });
+              update({ desc });
             }}
             textFieldProps={{
               fullWidth: true,
@@ -69,9 +59,9 @@ export function Questionnaire() {
         </Grid>
       </Grid>
       <Grid item container xs={12} mt={4} spacing={4}>
-        {sections.map((section) => (
-          <Grid item xs={12} key={section.id}>
-            <Section id={section.id} />
+        {sectionIds.map((sectionId) => (
+          <Grid item xs={12} key={sectionId}>
+            <Section id={sectionId} />
           </Grid>
         ))}
       </Grid>

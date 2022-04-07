@@ -1,17 +1,15 @@
 import { Resources } from "../Resources";
 import { OrderedSource } from "./OrderedSource";
 
-export class SectionSource extends OrderedSource {
+export class ChoiceSource extends OrderedSource {
   constructor(data = null) {
     super(Resources.SECTIONS, data);
   }
 
-  getSortedSectionIds() {
-    return this._sortIdsByOrder(Object.keys(this.data));
-  }
-
-  getSortedSections() {
-    return this._sortByOrder(Object.values(this.data));
+  getChoiceIdsForQuestion(id) {
+    const filtered = this.getFilteredIdList((choice) => choice.question == id);
+    const sorted = this._sortIdsByOrder(filtered);
+    return sorted;
   }
 
   move(id, orderNum) {

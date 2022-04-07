@@ -1,19 +1,20 @@
 import { Grid, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
-import { useQnaireContext } from "./QnaireContextProvider";
-import { useQnaireSource } from "./QnaireSourceProvider";
 
-export function OpenQuestionOptions({ id, isSelected }) {
-  const source = useQnaireSource();
-  const { min_length, max_length } = source.getQuestion(id);
-
+export function OpenQuestionOptions({
+  id,
+  min_length,
+  max_length,
+  isSelected,
+  update,
+}) {
   return isSelected ? (
     <Grid container spacing={2}>
       <Grid item xs={12} sm={6}>
         <TextField
           value={min_length !== null ? min_length : ""}
           onChange={(e) =>
-            source.updateQuestion(id, {
+            update({
               min_length: e.target.value ? parseInt(e.target.value) : null,
             })
           }
@@ -29,7 +30,7 @@ export function OpenQuestionOptions({ id, isSelected }) {
         <TextField
           value={max_length !== null ? max_length : ""}
           onChange={(e) =>
-            source.updateQuestion(id, {
+            update({
               max_length: e.target.value ? parseInt(e.target.value) : null,
             })
           }

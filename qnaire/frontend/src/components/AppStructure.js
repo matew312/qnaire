@@ -21,7 +21,7 @@ import Button from "@mui/material/Button";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 import { IconMenu } from "./basic/IconMenu";
-import { useAppContext } from "./AppContextProvider";
+import { useAppContext } from "../providers/AppContextProvider";
 import { useNavigate } from "react-router-dom";
 
 const drawerWidth = 240;

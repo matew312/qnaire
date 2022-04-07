@@ -2,33 +2,20 @@ import { Box, Grid, Typography } from "@mui/material";
 import React, { useMemo, useEffect } from "react";
 import { EditableText } from "./basic/EditableText";
 import Question from "./Question";
-import { ActionTypes } from "../reducers";
-import { sortArrayByOrderNum } from "../qnaireUtils";
-import { useQnaireContext } from "./QnaireContextProvider";
-import { Resources } from "../Resources";
-import { useQnaireSource } from "./QnaireSourceProvider";
-import { useForceRender } from "../hooks";
+import { useSectionController } from "../controllers/useSectionController";
+import { useSectionSelect } from "../providers/QnaireProvider";
+import { getSelectedStyle } from "../style";
 
 function Section({ id }) {
-  const forceRender = useForceRender();
-  const source = useQnaireSource();
-  const { name, desc, order_num } = source.getSection(id);
-  const isSelected = source.isSelected(Resources.SECTIONS, id);
-  const questions = source.getQuestionsForSection(id);
-
-  useEffect(() => {
-    source.subscribeSection(id, forceRender);
-    return () => {
-      source.unsubscribeSection(id, forceRender);
-    };
-  }, []);
+  const { name, desc, order_num, questionIds, update } =
+    useSectionController(id);
+  const { isSelected, select } = useSectionSelect(id);
 
   const style = {
     display: "flex",
   };
   if (isSelected) {
     Object.assign(style, {
-      borderTop: 1,
       borderLeft: 1,
       pl: 2,
       pt: 2,
@@ -37,24 +24,22 @@ function Section({ id }) {
   }
 
   return (
-    <Grid container spacing={1}>
+    <Grid container>
       <Grid
         item
         xs={12}
         container
-        spacing={1}
+        sx={getSelectedStyle(isSelected)}
+        p={2}
         className="clickable"
-        onClick={() => {
-          source.select(Resources.SECTIONS, id, forceRender);
-          forceRender();
-        }}
+        onClick={select}
       >
         <Grid item xs={12}>
           <EditableText
             editable={isSelected}
             value={name}
             onChange={(name) => {
-              source.updateSection(id, { name });
+              update({ name });
             }}
             typographyProps={{ variant: "h3" }}
             textFieldProps={{
@@ -62,15 +47,16 @@ function Section({ id }) {
               id: "section-name",
               label: "Sekce",
               required: true,
+              backgroundColor: "white",
             }}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} mt={2}>
           <EditableText
             editable={isSelected}
             value={desc}
             onChange={(desc) => {
-              source.updateSection(id, { desc });
+              update({ desc });
             }}
             textFieldProps={{
               fullWidth: true,
@@ -85,9 +71,9 @@ function Section({ id }) {
       <Grid item xs={12}>
         <Box sx={style}>
           <Grid container spacing={2}>
-            {questions.map((q) => (
-              <Grid item xs={12} key={q.id}>
-                <Question id={q.id} />
+            {questionIds.map((qId) => (
+              <Grid item xs={12} key={qId}>
+                <Question id={qId} />
               </Grid>
             ))}
           </Grid>
