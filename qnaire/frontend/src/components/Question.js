@@ -16,60 +16,32 @@ import {
   CardContent,
   CardActionArea,
 } from "@mui/material";
-import React, { useState, useEffect } from "react";
-import { OpenQuestionOptions } from "./OpenQuestionOptions";
-import { RangeQuestionOptions } from "./RangeQuestionOptions";
-import { MultipleChoiceQuestionOptions } from "./MultipleChoiceQuestionOptions";
+import * as React from "react";
 import { EditableText } from "./basic/EditableText";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ContentCutIcon from "@mui/icons-material/ContentCut";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import {
-  OpenQuestionMenu,
-  RangeQuestionMenu,
-  MultipleChoiceQuestionMenu,
-} from "./QuestionMenu";
-import { useQuestionController } from "../controllers/useQuestionController";
 import { useQuestionSelect } from "../providers/QnaireProvider";
 import { getSelectedStyle } from "../style";
 import ConfirmDialogIconButton from "./basic/ConfirmDialogIconButton";
 import PasteButton from "./PasteButton";
+import { QuestionTypes } from "../QuestionTypes";
 
-const QUESTION_TYPES = {
-  OpenQuestion: {
-    component: OpenQuestionOptions,
-    desc: "Otevřená otázka",
-    menu: OpenQuestionMenu,
-  },
-  RangeQuestion: {
-    component: RangeQuestionOptions,
-    desc: "Výběr čísla z rozmezí",
-    menu: RangeQuestionMenu,
-  },
-  MultipleChoiceQuestion: {
-    component: MultipleChoiceQuestionOptions,
-    desc: "Výběr z možností",
-    menu: MultipleChoiceQuestionMenu,
-  },
-};
-
-function Question({ id }) {
-  const {
-    text,
-    mandatory,
-    order_num,
-    resourcetype,
-    error,
-    update,
-    destroy,
-    ...data
-  } = useQuestionController(id);
-
+function Question({
+  options: QuestionOptions,
+  menu: QuestionMenu,
+  id,
+  text,
+  mandatory,
+  order_num,
+  resourcetype,
+  error,
+  update,
+  destroy,
+  ...data
+}) {
   const { isSelected, select } = useQuestionSelect(id);
-
-  const QuestionOptions = QUESTION_TYPES[resourcetype].component;
-  const QuestionMenu = QUESTION_TYPES[resourcetype].menu;
 
   return (
     <Card
@@ -104,9 +76,9 @@ function Question({ id }) {
                   id="type-select"
                   labelId="type-select-label"
                 >
-                  {Object.keys(QUESTION_TYPES).map((type) => (
+                  {Object.keys(QuestionTypes).map((type) => (
                     <MenuItem value={type} key={type}>
-                      {QUESTION_TYPES[type].desc}
+                      {QuestionTypes[type].desc}
                     </MenuItem>
                   ))}
                 </Select>
@@ -143,12 +115,12 @@ function Question({ id }) {
                   </Tooltip>
                 </Grid>
                 {/* <Grid item xs="auto">
-                  <Tooltip title="Vyjmout">
-                    <IconButton>
-                      <ContentCutIcon />
-                    </IconButton>
-                  </Tooltip>
-                </Grid> */}
+                    <Tooltip title="Vyjmout">
+                      <IconButton>
+                        <ContentCutIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Grid> */}
                 <Grid item xs="auto">
                   <ConfirmDialogIconButton
                     icon={DeleteIcon}
@@ -188,9 +160,11 @@ function Question({ id }) {
 
           {error && (
             <Grid item xs={12}>
-              <Typography color="error" textAlign="center">
-                {error}
-              </Typography>
+              {Object.keys(error).map((key) => {
+                return (
+                  <Typography key={key} color="error" textAlign="center">{`${key}: ${error[key]}`}</Typography>
+                );
+              })}
             </Grid>
           )}
         </Grid>
@@ -198,9 +172,5 @@ function Question({ id }) {
     </Card>
   );
 }
-
-Question.defaultProps = {
-  type: "MultipleChoiceQuestion",
-};
 
 export default React.memo(Question);

@@ -10,19 +10,28 @@ export const useGenericController = (source, id) => {
   }, []);
 
   const update = useCallback(
-    (updatedData) => {
+    (updatedData, shouldSourceUpdate = true) => {
       updateData(updatedData);
+      if (!shouldSourceUpdate) {
+        return;
+      }
+      //data won't be updated here...
+      // if (data.error) {
+      //   // include the potentially erroneous data in the update if there is already an error
+      //   updatedData = { ...data, ...updatedData };
+      // }
       source
         .update(id, updatedData)
         .then((data) => {
-          updateData(data);
+          updateData({ ...data, error: "" });
         })
         .catch((error) => {
           updateData({ error });
         });
     },
-    [id]
+    [id, data]
   );
+  
 
   const destroy = useCallback(() => {
     source.delete(id).catch((error) => {

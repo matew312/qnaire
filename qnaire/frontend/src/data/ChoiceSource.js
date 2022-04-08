@@ -6,9 +6,9 @@ export class ChoiceSource extends OrderedSource {
     super(Resources.CHOICES, data);
   }
 
-  getChoiceIdsForQuestion(id) {
-    const filtered = this.getFilteredIdList((choice) => choice.question == id);
-    const sorted = this._sortIdsByOrder(filtered);
+  getChoicesForQuestion(id) {
+    const filtered = this.getFilteredList((choice) => choice.question == id);
+    const sorted = this._sortByOrder(filtered);
     return sorted;
   }
 

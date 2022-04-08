@@ -1,3 +1,4 @@
+import React, { useMemo, useState } from "react";
 import {
   Button,
   FormControlLabel,
@@ -7,30 +8,34 @@ import {
   Switch,
   Typography,
   Box,
+  ListItemIcon,
+  MenuItem,
 } from "@mui/material";
-import React, { useMemo, useState } from "react";
 import { ChoiceIcon } from "./basic/ChoiceIcon";
 import Choice from "./Choice";
+import Check from "@mui/icons-material/Check";
+import { OptionMenu } from "./basic/OptionMenu";
 import { useMultipleChoiceQuestionController } from "../controllers/useMultipleChoiceQuestionController";
+import Question from "./Question";
 
-export function MultipleChoiceQuestionOptions({
-  id,
+function Options({
   min_answers,
   max_answers,
   other_choice,
   isSelected,
   update,
-}) {
-  const { choiceIds, createChoice } = useMultipleChoiceQuestionController(id);
 
-  const totalChoices = choiceIds.length;
+  choices,
+  createChoice,
+}) {
+  const totalChoices = choices.length;
   const checkbox = max_answers > 1;
 
   return (
     <Grid container spacing={isSelected ? 1 : 0}>
-      {choiceIds.map((choiceId) => (
-        <Grid item xs={12} key={choiceId}>
-          <Choice id={choiceId} editable={isSelected} checkbox={checkbox} />
+      {choices.map((choice) => (
+        <Grid item xs={12} key={choice.id}>
+          <Choice id={choice.id} editable={isSelected} checkbox={checkbox} />
         </Grid>
       ))}
       {isSelected ? (
@@ -93,3 +98,24 @@ export function MultipleChoiceQuestionOptions({
     </Grid>
   );
 }
+
+function Menu({ random_order, update }) {
+  return (
+    <OptionMenu>
+      <MenuItem onClick={() => update({ random_order: !random_order })}>
+        <ListItemIcon>{random_order && <Check />}</ListItemIcon>
+        Zobrazovat možnosti v náhodném pořadí
+      </MenuItem>
+    </OptionMenu>
+  );
+}
+
+function MultipleChoiceQuestion({ id }) {
+  const questionController = useMultipleChoiceQuestionController(id);
+
+  return (
+    <Question options={Options} menu={Menu} {...questionController}></Question>
+  );
+}
+
+export default React.memo(MultipleChoiceQuestion);

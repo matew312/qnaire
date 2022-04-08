@@ -88,7 +88,7 @@ export function QnaireProvider({ children }) {
     }
 
     if (order_num == null) {
-      order_num = questionSource.getQuestionIdsForSection(sectionId).length;
+      order_num = questionSource.getQuestionsForSection(sectionId).length;
     }
 
     const text = `Otázka ${order_num + 1}`;

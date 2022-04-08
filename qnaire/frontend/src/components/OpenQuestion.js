@@ -1,13 +1,10 @@
 import { Grid, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
+import { useOpenQuestionController } from "../controllers/useOpenQuestionController";
+import { OptionMenu } from "./basic/OptionMenu";
+import Question from "./Question";
 
-export function OpenQuestionOptions({
-  id,
-  min_length,
-  max_length,
-  isSelected,
-  update,
-}) {
+export function Options({ min_length, max_length, isSelected, update }) {
   return isSelected ? (
     <Grid container spacing={2}>
       <Grid item xs={12} sm={6}>
@@ -44,3 +41,17 @@ export function OpenQuestionOptions({
     </Grid>
   ) : null;
 }
+
+export function Menu(props) {
+  return <OptionMenu></OptionMenu>;
+}
+
+function OpenQuestion({ id }) {
+  const questionController = useOpenQuestionController(id);
+
+  return (
+    <Question options={Options} menu={Menu} {...questionController}></Question>
+  );
+}
+
+export default React.memo(OpenQuestion);

@@ -6,11 +6,11 @@ export class QuestionSource extends OrderedSource {
     super(Resources.QUESTIONS, data);
   }
 
-  getQuestionIdsForSection(id) {
-    const filtered = this.getFilteredIdList(
+  getQuestionsForSection(id) {
+    const filtered = this.getFilteredList(
       (question) => question.section == id
     );
-    const sorted = this._sortIdsByOrder(filtered);
+    const sorted = this._sortByOrder(filtered);
     return sorted;
   }
 

@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   FormControl,
   Grid,
@@ -6,7 +7,9 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import React, { useState } from "react";
+import { OptionMenu } from "./basic/OptionMenu";
+import { useRangeQuestionController } from "../controllers/useRangeQuestionController";
+import Question from "./Question";
 
 export const DISPLAY_TYPES = {
   1: "Výběr z možností",
@@ -16,8 +19,7 @@ export const DISPLAY_TYPES = {
   5: "Smajlíkové hodnocení",
 };
 
-export function RangeQuestionOptions({
-  id,
+export function Options({
   min,
   max,
   step,
@@ -97,3 +99,15 @@ export function RangeQuestionOptions({
     </Grid>
   ) : null;
 }
+
+export function Menu(props) {
+  return <OptionMenu></OptionMenu>;
+}
+
+function RangeQuestion({ id }) {
+  const questionController = useRangeQuestionController(id);
+
+  return <Question options={Options} menu={Menu} {...questionController}></Question>;
+}
+
+export default React.memo(RangeQuestion);

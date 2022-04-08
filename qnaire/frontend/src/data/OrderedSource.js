@@ -64,10 +64,4 @@ export class OrderedSource extends DataSource {
   _sortByOrder(list) {
     return list.sort((a, b) => a.order_num - b.order_num);
   }
-
-  _sortIdsByOrder(idList) {
-    return idList.sort(
-      (aId, bId) => this.data[aId].order_num - this.data[bId].order_num
-    );
-  }
 }

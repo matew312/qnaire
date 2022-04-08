@@ -6,17 +6,17 @@ export function useQnaireController(id) {
   const [data, update] = useGenericController(qnaireSource, id);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const [sectionIds, setSectionIds] = useState(null);
+  const [sections, setSections] = useState(null);
 
   const handleSectionOrderChange = useCallback(() => {
-    setSectionIds(qnaireSource.sectionSource.getSortedSectionIds());
+    setSections(qnaireSource.sectionSource.getSortedSections());
   }, [id]);
 
   useEffect(() => {
     qnaireSource.retrieve(id).then((data) => {
-      update(data);
+      update(data, false); //passed shouldSourceUpdate=false to prevent unnecessary api call
       const sectionSource = qnaireSource.sectionSource;
-      setSectionIds(sectionSource.getSortedSectionIds());
+      setSections(sectionSource.getSortedSections());
       setIsLoaded(true);
       sectionSource.subscribeMove(handleSectionOrderChange);
       sectionSource.subscribeCreate(handleSectionOrderChange);
@@ -31,5 +31,5 @@ export function useQnaireController(id) {
     });
   }, [id]);
 
-  return { ...data, sectionIds, update, isLoaded };
+  return { ...data, sections, update, isLoaded };
 }

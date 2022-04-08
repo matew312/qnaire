@@ -1,21 +1,23 @@
 import React, { useCallback, useEffect, useState } from "react";
 import qnaireSource from "../data/QnaireSource";
+import { useQuestionController } from "./useQuestionController";
 
 export function useMultipleChoiceQuestionController(id) {
-  const choiceSource = qnaireSource.choiceSource;
+  const questionController = useQuestionController(id);
 
-  const [choiceIds, setChoiceIds] = useState(() =>
-    choiceSource.getChoiceIdsForQuestion(id)
+  const choiceSource = qnaireSource.choiceSource;
+  const [choices, setChoices] = useState(() =>
+    choiceSource.getChoicesForQuestion(id)
   );
 
   const createChoice = useCallback(() => {
-    const order_num = choiceIds.length;
+    const order_num = choices.length;
     const text = `Možnost ${order_num + 1}`;
     choiceSource.create({ question: id, order_num, text });
-  }, [id, choiceIds]);
+  }, [id, choices]);
 
   const handleChoiceOrderChange = useCallback(() => {
-    setChoiceIds(choiceSource.getChoiceIdsForQuestion(id));
+    setChoices(choiceSource.getChoicesForQuestion(id));
   }, [id]);
 
   useEffect(() => {
@@ -31,5 +33,5 @@ export function useMultipleChoiceQuestionController(id) {
     };
   }, [id]);
 
-  return { choiceIds, createChoice };
+  return { ...questionController, choices, createChoice };
 }

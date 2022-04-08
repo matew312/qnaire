@@ -6,10 +6,6 @@ export class SectionSource extends OrderedSource {
     super(Resources.SECTIONS, data);
   }
 
-  getSortedSectionIds() {
-    return this._sortIdsByOrder(Object.keys(this.data));
-  }
-
   getSortedSections() {
     return this._sortByOrder(Object.values(this.data));
   }

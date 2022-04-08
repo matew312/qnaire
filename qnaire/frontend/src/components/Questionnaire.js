@@ -7,7 +7,7 @@ import { useQnaireSelect } from "../providers/QnaireProvider";
 import { getSelectedStyle } from "../style";
 
 export function Questionnaire({ id }) {
-  const { name, desc, sectionIds, update, isLoaded } = useQnaireController(id);
+  const { name, desc, sections, update, isLoaded } = useQnaireController(id);
   const { isSelected, select } = useQnaireSelect(id);
 
   if (!isLoaded) {
@@ -59,9 +59,9 @@ export function Questionnaire({ id }) {
         </Grid>
       </Grid>
       <Grid item container xs={12} mt={4} spacing={4}>
-        {sectionIds.map((sectionId) => (
-          <Grid item xs={12} key={sectionId}>
-            <Section id={sectionId} />
+        {sections.map((section) => (
+          <Grid item xs={12} key={section.id}>
+            <Section id={section.id} /> {/* Pass just the id */}
           </Grid>
         ))}
       </Grid>

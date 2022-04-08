@@ -7,12 +7,12 @@ export function useSectionController(id) {
   const questionSource = qnaireSource.questionSource;
 
   const [data, update, destroy] = useGenericController(sectionSource, id);
-  const [questionIds, setQuestionIds] = useState(() => {
-    return questionSource.getQuestionIdsForSection(id);
+  const [questions, setQuestions] = useState(() => {
+    return questionSource.getQuestionsForSection(id);
   });
 
   const handleQuestionOrderChange = useCallback(() => {
-    setQuestionIds(questionSource.getQuestionIdsForSection(id));
+    setQuestions(questionSource.getQuestionsForSection(id));
   }, [id]);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export function useSectionController(id) {
 
   return {
     ...data,
-    questionIds,
+    questions,
     update,
     destroy,
   };

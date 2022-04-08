@@ -9,9 +9,10 @@ import { useSectionController } from "../controllers/useSectionController";
 import { useSectionSelect } from "../providers/QnaireProvider";
 import { getSelectedStyle } from "../style";
 import PasteButton from "./PasteButton";
+import { QuestionTypes } from "../QuestionTypes";
 
 function Section({ id }) {
-  const { name, desc, order_num, questionIds, update, destroy } =
+  const { name, desc, order_num, questions, update, destroy } =
     useSectionController(id);
   const { isSelected, select } = useSectionSelect(id);
   const style = {
@@ -92,11 +93,14 @@ function Section({ id }) {
       <Grid item xs={12}>
         <Box sx={style}>
           <Grid container spacing={2}>
-            {questionIds.map((qId) => (
-              <Grid item xs={12} key={qId}>
-                <Question id={qId} />
-              </Grid>
-            ))}
+            {questions.map((q) => {
+              const Question = QuestionTypes[q.resourcetype].component;
+              return (
+                <Grid item xs={12} key={q.id}>
+                  <Question id={q.id} />
+                </Grid>
+              );
+            })}
           </Grid>
         </Box>
       </Grid>

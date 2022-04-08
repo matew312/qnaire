@@ -80,15 +80,6 @@ export class DataSource {
     }, []);
   }
 
-  getFilteredIdList(filterFunc) {
-    return Object.keys(this.data).reduce((filtered, id) => {
-      if (filterFunc(this.data[id])) {
-        filtered.push(id);
-      }
-      return filtered;
-    }, []);
-  }
-
   create(data) {
     return this.gateway.create(data).then((data) => {
       this.data[data.id] = data;
