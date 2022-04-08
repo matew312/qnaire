@@ -10,7 +10,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { useAppContext } from "./AppContextProvider";
 import { PageAction } from "../PageAction";
 import qnaireSource from "../data/QnaireSource";
-import { Resources } from "../Resources";
+import { Resources } from "../data/Resources";
 
 const QnaireContext = React.createContext();
 
@@ -18,26 +18,19 @@ export function QnaireProvider({ children }) {
   const [selected, setSelected] = useState(null);
   const [copiedQuestion, setCopiedQuestion] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [error, setError] = useState("");
 
   const select = useCallback((resource, id) => {
     qnaireSource.flush();
     setSelected({ resource, id });
   }, []);
 
-  function findMaxOrderNum(objects) {
-    return Object.keys(objects).reduce((max, id) => {
-      const order_num = objects[id].order_num;
-      return order_num > max ? order_num : max;
-    }, 0);
-  }
-
   function createSection() {
     const sections = qnaireSource.sectionSource.getAll();
-    let order_num = 0;
+    let order_num = null;
     if (selected) {
       switch (selected.resource) {
         case Resources.QNAIRES:
-          order_num = findMaxOrderNum(sections) + 1;
           break;
         case Resources.SECTIONS:
           order_num = sections[selected.id].order_num + 1;
@@ -47,9 +40,12 @@ export function QnaireProvider({ children }) {
           order_num = sections[question.section].order_num + 1;
           break;
       }
-    } else {
-      order_num = findMaxOrderNum(sections) + 1;
     }
+
+    if (order_num == null) {
+      order_num = Object.keys(sections).length;
+    }
+
     const name = `Sekce ${order_num + 1}`;
     const data = { name, order_num, qnaire: qnaireSource.id };
 
@@ -58,13 +54,57 @@ export function QnaireProvider({ children }) {
     });
   }
 
-  function createQuestion() {}
+  function createQuestion() {
+    const questionSource = qnaireSource.questionSource;
+    const sections = qnaireSource.sectionSource.getAll();
+    if (Object.keys(sections).length == 0) {
+      setError(
+        "Každá otázka musí patřit do nějaké sekce, a v tomto dotazníku žádná není."
+      );
+    }
+    let order_num = null;
+    let sectionId = null;
+    let resourcetype = "MultipleChoiceQuestion";
+    if (selected) {
+      switch (selected.resource) {
+        case Resources.QNAIRES:
+          break;
+        case Resources.SECTIONS:
+          sectionId = selected.id;
+          break;
+        case Resources.QUESTIONS:
+          const questions = questionSource.getAll();
+          const question = questions[selected.id];
+          sectionId = question.section;
+          order_num = question.order_num + 1;
+          resourcetype = question.resourcetype; //use the same type as the currently selected question
+          break;
+      }
+    }
+    if (sectionId == null) {
+      // take last one
+      const sortedSectionIds = qnaireSource.sectionSource.getSortedSectionIds();
+      sectionId = sortedSectionIds[sortedSectionIds.length - 1];
+    }
+
+    if (order_num == null) {
+      order_num = questionSource.getQuestionIdsForSection(sectionId).length;
+    }
+
+    const text = `Otázka ${order_num + 1}`;
+    const data = { text, order_num, section: sectionId, resourcetype };
+    questionSource.create(data).then((data) => {
+      select(Resources.QUESTIONS, data.id);
+    });
+  }
 
   function paste(type, id) {}
 
   const value = {
     select,
     selected,
+    error,
+    setError,
   };
 
   const { setPageActions } = useAppContext();

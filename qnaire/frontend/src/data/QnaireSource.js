@@ -1,4 +1,4 @@
-import { Resources } from "../Resources";
+import { Resources } from "./Resources";
 import { GET, PATCH, POST, DELETE } from "../request";
 import { DISPLAY_TYPES } from "../components/RangeQuestionOptions";
 import { SectionSource } from "./SectionSource";

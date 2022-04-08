@@ -51,7 +51,7 @@ class Question(PolymorphicModel):
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
     # maybe make question text a CharField and add new TextField called description
     text = models.TextField()
-    mandatory = models.BooleanField()
+    mandatory = models.BooleanField(default=False)
     order_num = models.IntegerField(validators=[MinValueValidator(0)])
 
     class Meta:
@@ -88,16 +88,16 @@ class RangeQuestion(Question):
     MAX_CHOICES_FOR_ENUMERATE = 100
     MAX_SMILEYS = 5
 
-    type = models.IntegerField(choices=TYPE_CHOICES)
-    min = models.FloatField()
-    max = models.FloatField()
+    type = models.IntegerField(choices=TYPE_CHOICES, default=2)
+    min = models.FloatField(default=1)
+    max = models.FloatField(default=5)
     # only integer step will be allowed (the alternative is make all field decimal so that it would be possible to validate the step)
     step = models.IntegerField(null=True, validators=[GreaterThanValidator(0)])
 
 
 class MultipleChoiceQuestion(Question):
     # min_answers=0 is allowed (it means that chosing nothing will be OK even if required=true)
-    min_answers = models.IntegerField(validators=[MinValueValidator(0)])
+    min_answers = models.IntegerField(validators=[MinValueValidator(0)], default=0)
     max_answers = models.IntegerField(
         null=True, validators=[MinValueValidator(0)])
     other_choice = models.BooleanField(default=False)

@@ -1,4 +1,4 @@
-import { Resources } from "../Resources";
+import { Resources } from "./Resources";
 import { OrderedSource } from "./OrderedSource";
 
 export class QuestionSource extends OrderedSource {
@@ -23,26 +23,6 @@ export class QuestionSource extends OrderedSource {
       order_num,
       resourcetype,
     };
-    switch (newQ.resourcetype) {
-      case "OpenQuestion": {
-        newQ = { ...newQ, min_length: null, max_length: null };
-        break;
-      }
-      case "RangeQuestion": {
-        newQ = { ...newQ, min: 1, max: 5, step: 1, type: 1 };
-        break;
-      }
-      case "MultipleChoiceQuestion": {
-        newQ = {
-          ...newQ,
-          min_answers: 0,
-          max_answers: 0,
-          other_choice: false,
-          random_order: false,
-        };
-        break;
-      }
-    }
     //call /type API endpoint here
   }
 

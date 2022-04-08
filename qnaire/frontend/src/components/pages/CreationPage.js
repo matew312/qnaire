@@ -7,6 +7,7 @@ import { NumField } from "../basic/NumField";
 import { SmileyRating } from "../basic/SmileyRating";
 import { QnaireProvider } from "../../providers/QnaireProvider";
 import { Questionnaire } from "../Questionnaire";
+import { QnaireErrorDialog } from "../QnaireErrorDialog";
 
 export function CreationPage({ auth }) {
   let { id } = useParams();
@@ -14,6 +15,7 @@ export function CreationPage({ auth }) {
   return (
     <QnaireProvider>
       <Questionnaire id={id} />
+      <QnaireErrorDialog />
     </QnaireProvider>
     //   {/* <br /> <br /> <hr />
     //   <Typography variant="h2">Creation page</Typography>

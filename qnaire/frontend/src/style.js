@@ -4,8 +4,8 @@ import React from "react";
 export function getSelectedStyle(isSelected) {
   const style = isSelected
     ? {
-        border: 1,
-        borderColor: "primary.light",
+        border: 2,
+        borderColor: "primary.light", //secondary.light
       }
     : {};
   return style;

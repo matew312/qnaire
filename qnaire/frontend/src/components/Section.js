@@ -16,10 +16,10 @@ function Section({ id }) {
   };
   if (isSelected) {
     Object.assign(style, {
-      borderLeft: 1,
+      borderLeft: 2,
       pl: 2,
       pt: 2,
-      borderColor: "primary.light",
+      borderColor: "primary.light", //"secondary.light",
     });
   }
 
@@ -47,7 +47,6 @@ function Section({ id }) {
               id: "section-name",
               label: "Sekce",
               required: true,
-              backgroundColor: "white",
             }}
           />
         </Grid>
