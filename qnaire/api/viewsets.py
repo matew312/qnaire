@@ -129,13 +129,14 @@ class QuestionViewSet(UserQuerySetMixin, OrderedViewSetMixin, viewsets.ModelView
                                      status=status.HTTP_400_BAD_REQUEST)
 
 
-class ChoiceViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, viewsets.ModelViewSet):
+class ChoiceViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedViewSetMixin, viewsets.ModelViewSet):
     queryset = Choice.objects.all()
     serializer_class = ChoiceSerializer
     serializer_action_classes = {'create': CreateChoiceSerializer}
     # I'm not sure how much the performance will hurt from this.
     # And it's not like allowing users to GET Choices of other users would be terrible.
     user_field = 'question__section__qnaire__creator'
+    list_serializer_class = ChoiceSerializer
 
 
 class AnswerViewSet(viewsets.ModelViewSet):

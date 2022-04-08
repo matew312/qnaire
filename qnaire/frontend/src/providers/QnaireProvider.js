@@ -98,13 +98,21 @@ export function QnaireProvider({ children }) {
     });
   }
 
-  function paste(type, id) {}
+  function copy() {
+
+  }
+
+  function paste() {
+
+  }
 
   const value = {
     select,
     selected,
     error,
     setError,
+    copy,
+    paste,
   };
 
   const { setPageActions } = useAppContext();

@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 import qnaireSource from "../data/QnaireSource";
-import { useUpdatableState } from "./useUpdatableState";
+import { useGenericController } from "./useGenericController";
 
 export function useQuestionController(id) {
   const questionSource = qnaireSource.questionSource;
 
-  const [data, regularUpdate] = useUpdatableState(questionSource, id);
+  const [data, regularUpdate, destroy] = useGenericController(questionSource, id);
   const update = useCallback(
     (updatedData) => {
       if ("resourcetype" in updatedData) {
@@ -17,5 +17,5 @@ export function useQuestionController(id) {
     [id]
   );
 
-  return { ...data, update };
+  return { ...data, update, destroy };
 }

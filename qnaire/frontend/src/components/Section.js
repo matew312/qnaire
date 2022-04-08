@@ -1,16 +1,19 @@
-import { Box, Grid, Typography } from "@mui/material";
-import React, { useMemo, useEffect } from "react";
+import * as React from "react";
+import { Box, Divider, Grid, Tooltip, IconButton } from "@mui/material";
+import ConfirmDialogIconButton from "./basic/ConfirmDialogIconButton";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { OptionMenu } from "./basic/OptionMenu";
 import { EditableText } from "./basic/EditableText";
 import Question from "./Question";
 import { useSectionController } from "../controllers/useSectionController";
 import { useSectionSelect } from "../providers/QnaireProvider";
 import { getSelectedStyle } from "../style";
+import PasteButton from "./PasteButton";
 
 function Section({ id }) {
-  const { name, desc, order_num, questionIds, update } =
+  const { name, desc, order_num, questionIds, update, destroy } =
     useSectionController(id);
   const { isSelected, select } = useSectionSelect(id);
-
   const style = {
     display: "flex",
   };
@@ -66,6 +69,25 @@ function Section({ id }) {
             }}
           />
         </Grid>
+
+        {isSelected && (
+          <Grid item container xs={12} justifyContent="flex-end" sx={{ pt: 1 }}>
+            <Grid item xs="auto">
+              <ConfirmDialogIconButton
+                icon={DeleteIcon}
+                title={"Smazat sekci a všechny otázky v ní?"}
+                onConfirm={destroy}
+                tooltip={"Smazat"}
+              />
+            </Grid>
+            <Grid item xs="auto">
+              <PasteButton />
+            </Grid>
+            {/* <Grid item xs="auto">
+                <OptionMenu></OptionMenu>
+              </Grid> */}
+          </Grid>
+        )}
       </Grid>
       <Grid item xs={12}>
         <Box sx={style}>

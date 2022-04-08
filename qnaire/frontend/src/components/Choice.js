@@ -14,7 +14,8 @@ import { useChoiceController } from "../controllers/useChoiceController";
 import ScrollableSelect from "./basic/ScrollableSelect";
 
 export default function Choice({ id, editable, checkbox, textFieldProps }) {
-  const { text, skip_to_section, sections, update } = useChoiceController(id);
+  const { text, skip_to_section, sections, update, destroy } =
+    useChoiceController(id);
 
   return (
     <Grid container alignItems="center">
@@ -37,14 +38,19 @@ export default function Choice({ id, editable, checkbox, textFieldProps }) {
               label="Přeskočit na"
               id="skip-to-section-select"
               labelId="skip-to-section-label"
-              defaultValue={
-                skip_to_section ? skip_to_section.id.toString() : ""
+              value={skip_to_section ? skip_to_section.toString() : ""}
+              onChange={(e) =>
+                update({
+                  skip_to_section: e.target.value
+                    ? parseInt(e.target.value)
+                    : null,
+                })
               }
             >
               <MenuItem value="">&#8212;</MenuItem>
-              {Object.keys(sections).map((id) => (
-                <MenuItem value={id} key={id}>
-                  {sections[id].name}
+              {sections.map((section) => (
+                <MenuItem value={section.id} key={section.id}>
+                  {section.name}
                 </MenuItem>
               ))}
             </ScrollableSelect>
@@ -53,7 +59,7 @@ export default function Choice({ id, editable, checkbox, textFieldProps }) {
       )}
       {editable && (
         <Grid item xs="auto">
-          <IconButton>
+          <IconButton onClick={destroy}>
             <ClearIcon />
           </IconButton>
         </Grid>

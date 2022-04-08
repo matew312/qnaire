@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useReducer, useState } from "react";
 import qnaireSource from "../data/QnaireSource";
-import { useUpdatableState } from "./useUpdatableState";
+import { useGenericController } from "./useGenericController";
 
 export function useQnaireController(id) {
-  const [data, update] = useUpdatableState(qnaireSource, id);
+  const [data, update] = useGenericController(qnaireSource, id);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const [sectionIds, setSectionIds] = useState(null);

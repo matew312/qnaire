@@ -21,7 +21,7 @@ export function MultipleChoiceQuestionOptions({
   isSelected,
   update,
 }) {
-  const { choiceIds } = useMultipleChoiceQuestionController(id);
+  const { choiceIds, createChoice } = useMultipleChoiceQuestionController(id);
 
   const totalChoices = choiceIds.length;
   const checkbox = max_answers > 1;
@@ -40,7 +40,9 @@ export function MultipleChoiceQuestionOptions({
               <ChoiceIcon checkbox={checkbox} />
             </Grid>
             <Grid item xs>
-              <Button variant="text">Přidat možnost</Button>
+              <Button variant="text" onClick={createChoice}>
+                Přidat možnost
+              </Button>
             </Grid>
           </Grid>
           <FormGroup mt={2}>

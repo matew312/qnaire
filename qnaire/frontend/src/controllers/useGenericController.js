@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 
-export const useUpdatableState = (source, id) => {
+export const useGenericController = (source, id) => {
   const [data, setData] = useState(() => source.get(id));
 
   const updateData = useCallback((updatedData) => {
@@ -24,7 +24,13 @@ export const useUpdatableState = (source, id) => {
     [id]
   );
 
+  const destroy = useCallback(() => {
+    source.delete(id).catch((error) => {
+      updateData({ error });
+    });
+  }, [id]);
+
   return useMemo(() => {
-    return [data, update];
-  }, [data]);
+    return [data, update, destroy];
+  }, [data, update, destroy]);
 };

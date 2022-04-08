@@ -3,7 +3,7 @@ import { OrderedSource } from "./OrderedSource";
 
 export class ChoiceSource extends OrderedSource {
   constructor(data = null) {
-    super(Resources.SECTIONS, data);
+    super(Resources.CHOICES, data);
   }
 
   getChoiceIdsForQuestion(id) {

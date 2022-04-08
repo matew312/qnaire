@@ -59,8 +59,8 @@ class OrderedViewSetMixin():
         obj = serializer.save()
 
         return response.Response({
-            'id': obj.id,
-            # data that changed, including the new object
+            **serializer.data,
+            # other data that changed
             'changed_data': self.list_serializer_class(filtered_queryset, many=True).data
         }, status=status.HTTP_200_OK)
 

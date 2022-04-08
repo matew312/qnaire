@@ -24,7 +24,6 @@ import { EditableText } from "./basic/EditableText";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ContentCutIcon from "@mui/icons-material/ContentCut";
-import ContentPasteIcon from "@mui/icons-material/ContentPaste";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import {
   OpenQuestionMenu,
@@ -34,6 +33,8 @@ import {
 import { useQuestionController } from "../controllers/useQuestionController";
 import { useQuestionSelect } from "../providers/QnaireProvider";
 import { getSelectedStyle } from "../style";
+import ConfirmDialogIconButton from "./basic/ConfirmDialogIconButton";
+import PasteButton from "./PasteButton";
 
 const QUESTION_TYPES = {
   OpenQuestion: {
@@ -54,8 +55,16 @@ const QUESTION_TYPES = {
 };
 
 function Question({ id }) {
-  const { text, mandatory, order_num, resourcetype, error, update, ...data } =
-    useQuestionController(id);
+  const {
+    text,
+    mandatory,
+    order_num,
+    resourcetype,
+    error,
+    update,
+    destroy,
+    ...data
+  } = useQuestionController(id);
 
   const { isSelected, select } = useQuestionSelect(id);
 
@@ -86,7 +95,7 @@ function Question({ id }) {
           </Grid>
           {isSelected && (
             <Grid item xs={12} sm={4}>
-              <FormControl fullWidth>
+              <FormControl fullWidth required>
                 <InputLabel id="type-select-label">Typ otázky</InputLabel>
                 <Select
                   value={resourcetype}
@@ -94,7 +103,6 @@ function Question({ id }) {
                   onChange={(e) => update({ resourcetype: e.target.value })}
                   id="type-select"
                   labelId="type-select-label"
-                  required
                 >
                   {Object.keys(QUESTION_TYPES).map((type) => (
                     <MenuItem value={type} key={type}>
@@ -142,11 +150,15 @@ function Question({ id }) {
                   </Tooltip>
                 </Grid> */}
                 <Grid item xs="auto">
-                  <Tooltip title="Smazat">
-                    <IconButton>
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
+                  <ConfirmDialogIconButton
+                    icon={DeleteIcon}
+                    title={"Smazat otázku?"}
+                    onConfirm={destroy}
+                    tooltip={"Smazat"}
+                  />
+                </Grid>
+                <Grid item xs="auto">
+                  <PasteButton />
                 </Grid>
 
                 <Divider orientation="vertical" flexItem sx={{ mx: 2 }} />

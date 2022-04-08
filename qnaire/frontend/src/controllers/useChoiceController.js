@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
 import qnaireSource from "../data/QnaireSource";
-import { useUpdatableState } from "./useUpdatableState";
+import { useGenericController } from "./useGenericController";
 
 export function useChoiceController(id) {
   const choiceSource = qnaireSource.choiceSource;
   const sectionSource = qnaireSource.sectionSource;
-  const [data, update] = useUpdatableState(choiceSource, id);
+  const [data, update, destroy] = useGenericController(choiceSource, id);
   const [sections, setSections] = useState(() =>
     sectionSource.getSortedSections()
   );
@@ -27,5 +27,5 @@ export function useChoiceController(id) {
     };
   }, [id]);
 
-  return { ...data, sections, update };
+  return { ...data, sections, update, destroy };
 }

@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import qnaireSource from "../data/QnaireSource";
-import { useUpdatableState } from "./useUpdatableState";
+import { useGenericController } from "./useGenericController";
 
 export function useSectionController(id) {
   const sectionSource = qnaireSource.sectionSource;
   const questionSource = qnaireSource.questionSource;
 
-  const [data, update] = useUpdatableState(sectionSource, id);
+  const [data, update, destroy] = useGenericController(sectionSource, id);
   const [questionIds, setQuestionIds] = useState(() => {
     return questionSource.getQuestionIdsForSection(id);
   });
@@ -32,5 +32,6 @@ export function useSectionController(id) {
     ...data,
     questionIds,
     update,
+    destroy,
   };
 }
