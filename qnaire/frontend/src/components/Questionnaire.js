@@ -21,7 +21,7 @@ export function Questionnaire({ id }) {
         xs={12}
         container
         className="clickable"
-        sx={getSelectedStyle(isSelected)}
+        sx={{borderTop: 2, borderBottom: 2, ...getSelectedStyle(isSelected)}}
         p={2}
         onClick={select}
       >

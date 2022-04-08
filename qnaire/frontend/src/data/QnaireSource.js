@@ -41,12 +41,6 @@ class QnaireSource extends DataSource {
     });
   }
 
-  flush() {
-    super.flush();
-    this.sectionSource.flush();
-    this.questionSource.flush();
-    this.choiceSource.flush();
-  }
 }
 
 //singleton

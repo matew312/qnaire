@@ -6,7 +6,6 @@ export const DataEvents = {
   DELETE: "delete",
 };
 
-const UPDATE_TIMEOUT = 750;
 
 //The data source always starts with initial data and allows creates, updates and deletes
 // and allows subscribers to be notified on these events. It keeps the latest VALID data.
@@ -18,7 +17,6 @@ export class DataSource {
     Object.keys(DataEvents).forEach((key) => {
       this.subscribers[DataEvents[key]] = [];
     });
-    this.updateTimeout = null;
   }
 
   _setData(data) {
@@ -89,27 +87,14 @@ export class DataSource {
   }
 
   //partial update
-  update(id, updatedData, notify = true, timeout = UPDATE_TIMEOUT) {
-    if (this.updateTimeout) {
-      clearTimeout(this.updateTimeout);
-      this.updateTimeout = null;
-    }
-
-    const delayPromise = new Promise((resolve) => {
-      this.updateTimeout = setTimeout(() => resolve(), timeout);
+  update(id, updatedData, notify = true) {
+    return this.gateway.update(id, updatedData).then((data) => {
+      this.data[data.id] = data;
+      if (notify) {
+        this._notify(DataEvents.UPDATE);
+      }
+      return data;
     });
-
-    return delayPromise
-      .then(() => {
-        return this.gateway.update(id, updatedData);
-      })
-      .then((data) => {
-        this.data[data.id] = data;
-        if (notify) {
-          this._notify(DataEvents.UPDATE);
-        }
-        return data;
-      });
   }
 
   delete(id) {
@@ -117,9 +102,5 @@ export class DataSource {
       delete this.data[id];
       this._notify(DataEvents.DELETE);
     });
-  }
-
-  flush() {
-    this.updateTimeout = null; //
   }
 }

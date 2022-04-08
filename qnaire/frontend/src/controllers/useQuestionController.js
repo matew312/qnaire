@@ -5,11 +5,14 @@ import { useGenericController } from "./useGenericController";
 export function useQuestionController(id) {
   const questionSource = qnaireSource.questionSource;
 
-  const [data, regularUpdate, destroy] = useGenericController(questionSource, id);
+  const [data, regularUpdate, destroy, cancelPendingUpdate] =
+    useGenericController(questionSource, id);
   const update = useCallback(
     (updatedData) => {
       if ("resourcetype" in updatedData) {
-        //... TODO
+        cancelPendingUpdate();
+        //questionSource.updateType(id, updatedData.resourcetype);
+        //TODo...
       } else {
         regularUpdate({ ...updatedData, resourcetype: data.resourcetype });
       }

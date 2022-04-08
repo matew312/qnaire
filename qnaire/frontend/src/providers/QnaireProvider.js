@@ -21,7 +21,6 @@ export function QnaireProvider({ children }) {
   const [error, setError] = useState("");
 
   const select = useCallback((resource, id) => {
-    qnaireSource.flush();
     setSelected({ resource, id });
   }, []);
 
