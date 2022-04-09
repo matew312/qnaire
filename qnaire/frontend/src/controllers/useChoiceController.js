@@ -9,9 +9,9 @@ export function useChoiceController(id) {
   const [sections, setSections] = useState(() =>
     sectionSource.getSortedSections()
   );
-  const handleSectionsChange = useCallback(() => {
+  const handleSectionsChange = () => {
     setSections(sectionSource.getSortedSections());
-  }, [id]);
+  };
 
   useEffect(() => {
     sectionSource.subscribeUpdate(handleSectionsChange);

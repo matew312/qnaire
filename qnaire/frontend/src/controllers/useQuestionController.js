@@ -7,18 +7,15 @@ export function useQuestionController(id) {
 
   const [data, regularUpdate, destroy, cancelPendingUpdate] =
     useGenericController(questionSource, id);
-  const update = useCallback(
-    (updatedData) => {
-      if ("resourcetype" in updatedData) {
-        cancelPendingUpdate();
-        //questionSource.updateType(id, updatedData.resourcetype);
-        //TODo...
-      } else {
-        regularUpdate({ ...updatedData, resourcetype: data.resourcetype });
-      }
-    },
-    [id]
-  );
+  const update = (updatedData) => {
+    if ("resourcetype" in updatedData) {
+      cancelPendingUpdate();
+      //questionSource.updateType(id, updatedData.resourcetype);
+      //TODo...
+    } else {
+      regularUpdate({ ...updatedData, resourcetype: data.resourcetype });
+    }
+  };
 
   return { ...data, update, destroy };
 }

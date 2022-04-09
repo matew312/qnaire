@@ -26,7 +26,14 @@ export default function ConfirmDialog({
         )}
         <DialogActions>
           <Button onClick={onClose}>Zrušit</Button>
-          <Button onClick={onConfirm} autoFocus>
+          <Button
+            onClick={() => {
+              //a confirm dialog should always close when confirmed, so I can put it here
+              onClose();
+              onConfirm();
+            }}
+            autoFocus
+          >
             Potvrdit
           </Button>
         </DialogActions>

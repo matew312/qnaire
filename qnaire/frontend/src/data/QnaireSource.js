@@ -20,6 +20,23 @@ class QnaireSource extends DataSource {
     this.subscribers[QnaireEvents.LOAD] = [];
   }
 
+  //The sources could've been in a map, but I normally want them to be used explicitly.
+  //Only use this when the caller would have to do the branching himself.
+  getSource(resource) {
+    switch (resource) {
+      case Resources.QNAIRES:
+        return this;
+      case Resources.SECTIONS:
+        return this.sectionSource;
+      case Resources.QUESTIONS:
+        return this.questionSource;
+      case Resources.CHOICES:
+        return this.choiceSource;
+      default:
+        return null;
+    }
+  }
+
   subscribeLoad(callback) {
     this._subscribe(QnaireEvents.LOAD, callback);
   }
@@ -40,7 +57,6 @@ class QnaireSource extends DataSource {
       return this.data;
     });
   }
-
 }
 
 //singleton

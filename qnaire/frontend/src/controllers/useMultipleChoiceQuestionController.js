@@ -10,15 +10,15 @@ export function useMultipleChoiceQuestionController(id) {
     choiceSource.getChoicesForQuestion(id)
   );
 
-  const createChoice = useCallback(() => {
+  const createChoice = () => {
     const order_num = choices.length;
     const text = `Možnost ${order_num + 1}`;
     choiceSource.create({ question: id, order_num, text });
-  }, [id, choices]);
+  };
 
-  const handleChoiceOrderChange = useCallback(() => {
+  const handleChoiceOrderChange = () => {
     setChoices(choiceSource.getChoicesForQuestion(id));
-  }, [id]);
+  };
 
   useEffect(() => {
     //this could be optimized by allowing to sub the question by id so that its notified only when change related to it happens
@@ -31,7 +31,7 @@ export function useMultipleChoiceQuestionController(id) {
       choiceSource.unsubscribeCreate(handleChoiceOrderChange);
       choiceSource.unsubscribeDelete(handleChoiceOrderChange);
     };
-  }, [id]);
+  }, []);
 
   return { ...questionController, choices, createChoice };
 }

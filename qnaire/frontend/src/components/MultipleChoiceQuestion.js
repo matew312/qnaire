@@ -110,11 +110,16 @@ function Menu({ random_order, update }) {
   );
 }
 
-function MultipleChoiceQuestion({ id }) {
+function MultipleChoiceQuestion({ id, index }) {
   const questionController = useMultipleChoiceQuestionController(id);
 
   return (
-    <Question options={Options} menu={Menu} {...questionController}></Question>
+    <Question
+      index={index}
+      options={Options}
+      menu={Menu}
+      {...questionController}
+    ></Question>
   );
 }
 

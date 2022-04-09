@@ -11,9 +11,9 @@ export function useSectionController(id) {
     return questionSource.getQuestionsForSection(id);
   });
 
-  const handleQuestionOrderChange = useCallback(() => {
+  const handleQuestionOrderChange = () => {
     setQuestions(questionSource.getQuestionsForSection(id));
-  }, [id]);
+  };
 
   useEffect(() => {
     //this could be optimized by allowing to sub the section by id so that its notified only when change related to it happens

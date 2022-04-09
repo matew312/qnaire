@@ -19,14 +19,7 @@ export const DISPLAY_TYPES = {
   5: "Smajlíkové hodnocení",
 };
 
-export function Options({
-  min,
-  max,
-  step,
-  type,
-  update,
-  isSelected,
-}) {
+export function Options({ min, max, step, type, update, isSelected }) {
   return isSelected ? (
     <Grid container spacing={2}>
       <Grid item xs={6} sm>
@@ -104,10 +97,17 @@ export function Menu(props) {
   return <OptionMenu></OptionMenu>;
 }
 
-function RangeQuestion({ id }) {
+function RangeQuestion({ id, index }) {
   const questionController = useRangeQuestionController(id);
 
-  return <Question options={Options} menu={Menu} {...questionController}></Question>;
+  return (
+    <Question
+      index={index}
+      options={Options}
+      menu={Menu}
+      {...questionController}
+    ></Question>
+  );
 }
 
 export default React.memo(RangeQuestion);

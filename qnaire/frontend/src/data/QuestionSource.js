@@ -26,7 +26,7 @@ export class QuestionSource extends OrderedSource {
     //call /type API endpoint here
   }
 
-  move(id, sectionId, orderNum) {
+  move(id, orderNum, sectionId) {
     return this._move(id, { section: sectionId, order_num: orderNum });
   }
 }

@@ -58,11 +58,15 @@ class OrderedViewSetMixin():
         filtered_queryset.update(order_num=F('order_num') + 1)
         obj = serializer.save()
 
-        return response.Response({
-            **serializer.data,
-            # other data that changed
-            'changed_data': self.list_serializer_class(filtered_queryset, many=True).data
-        }, status=status.HTTP_200_OK)
+        response_data = serializer.data # {**serializer.data}
+        changed_objs = filtered_queryset.exclude(pk=obj.id)
+        if changed_objs:  # querysets retrieve the results when used in boolean evaluation
+            print(self.list_serializer_class(
+                changed_objs, many=True).data)
+            response_data['changed_data'] = self.list_serializer_class(
+                changed_objs, many=True).data
+
+        return response.Response(response_data, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
         obj = self.get_object()
@@ -77,6 +81,9 @@ class OrderedViewSetMixin():
                         filters).update(order_num=F('order_num') - 1)
         obj.delete()
         changed_objs = queryset.filter(order_num__gte=order_num, **filters)
-        return response.Response(data={
-            'changed_data': self.list_serializer_class(changed_objs, many=True).data
-        }, status=status.HTTP_200_OK)
+        if changed_objs:
+            return response.Response(data={
+                'changed_data': self.list_serializer_class(changed_objs, many=True).data
+            }, status=status.HTTP_200_OK)
+        else:
+            return response.Response(status=status.HTTP_204_NO_CONTENT)

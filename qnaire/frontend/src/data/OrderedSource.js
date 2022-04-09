@@ -25,7 +25,7 @@ export class OrderedSource extends DataSource {
 
   _move(id, data) {
     return this.gateway.move(id, data).then((dict) => {
-      ids = Object.keys(dict);
+      const ids = Object.keys(dict);
       if (ids.length > 0) {
         ids.forEach((id) => {
           this.data[id] = dict[id];

@@ -1,16 +1,48 @@
 import React, { useCallback, useEffect, useReducer, useState } from "react";
 import qnaireSource from "../data/QnaireSource";
+import { useQnaireContext } from "../providers/QnaireProvider";
 import { useGenericController } from "./useGenericController";
 
 export function useQnaireController(id) {
   const [data, update] = useGenericController(qnaireSource, id);
   const [isLoaded, setIsLoaded] = useState(false);
+  const { setError } = useQnaireContext();
 
+  //technically, just the ids are needed, but there is no reason to not keep object references
   const [sections, setSections] = useState(null);
 
-  const handleSectionOrderChange = useCallback(() => {
+  const handleSectionOrderChange = () => {
     setSections(qnaireSource.sectionSource.getSortedSections());
-  }, [id]);
+  };
+
+  function handleDragEnd(result) {
+    const { destination, source, draggableId, type } = result;
+    if (!destination) {
+      return;
+    }
+    if (
+      source.droppableId === destination.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
+
+    //const newSections = Array.from(sections);
+    //It's not really possible to do an optimistic update,
+    //because I don't have access to the section's state
+    //(and the whole reason why I'm using listeners is that when I lifted state up the performance was horrendous)
+
+    const dataSource = qnaireSource.getSource(type);
+    dataSource
+      .move(
+        parseInt(draggableId),
+        destination.index,
+        parseInt(destination.droppableId) //ignored in sectionSource and choiceSource
+      )
+      .catch((error) => {
+        setError(JSON.stringify(error));
+      });
+  }
 
   useEffect(() => {
     qnaireSource.retrieve(id).then((data) => {
@@ -31,5 +63,5 @@ export function useQnaireController(id) {
     });
   }, [id]);
 
-  return { ...data, sections, update, isLoaded };
+  return { ...data, sections, update, isLoaded, handleDragEnd };
 }

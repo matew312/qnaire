@@ -6,7 +6,6 @@ export const DataEvents = {
   DELETE: "delete",
 };
 
-
 //The data source always starts with initial data and allows creates, updates and deletes
 // and allows subscribers to be notified on these events. It keeps the latest VALID data.
 export class DataSource {
@@ -24,7 +23,9 @@ export class DataSource {
   }
 
   _notify(event) {
-    this.subscribers[event].forEach((sub) => sub());
+    this.subscribers[event].forEach((sub) => {
+      sub();
+    });
   }
 
   _subscribe(event, callback) {
@@ -44,10 +45,9 @@ export class DataSource {
   }
 
   _unsubscribe(resource, callback) {
-    let subs = this.subscribers[resource];
-    subs = subs.filter(function (sub) {
-      return sub !== callback;
-    });
+    this.subscribers[resource] = this.subscribers[resource].filter(
+      (sub) => sub !== callback
+    );
   }
 
   unsubscribeCreate(callback) {
@@ -63,7 +63,10 @@ export class DataSource {
   }
 
   get(id) {
-    return this.data ? this.data[id] : null;
+    if (this.data && id in this.data) {
+      return this.data[id];
+    }
+    return null;
   }
   getAll() {
     return this.data;

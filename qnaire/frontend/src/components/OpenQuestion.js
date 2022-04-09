@@ -46,11 +46,16 @@ export function Menu(props) {
   return <OptionMenu></OptionMenu>;
 }
 
-function OpenQuestion({ id }) {
+function OpenQuestion({ id, index }) {
   const questionController = useOpenQuestionController(id);
 
   return (
-    <Question options={Options} menu={Menu} {...questionController}></Question>
+    <Question
+      index={index}
+      options={Options}
+      menu={Menu}
+      {...questionController}
+    ></Question>
   );
 }
 

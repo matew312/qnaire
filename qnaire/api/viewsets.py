@@ -122,7 +122,7 @@ class QuestionViewSet(UserQuerySetMixin, OrderedViewSetMixin, viewsets.ModelView
                 section=old_section, order_num__gte=old_order_num))
             changed_questions += list(Question.objects.filter(
                 section=section, order_num__gte=order_num))
-            return response.Response(QuestionSerializer(changed_questions, many=True).data, status=status.HTTP_200_OK)
+            return response.Response(QuestionPolymorphicSerializer(changed_questions, many=True).data, status=status.HTTP_200_OK)
 
         else:
             return response.Response(move_serializer.errors,

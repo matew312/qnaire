@@ -23,6 +23,7 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { IconMenu } from "./basic/IconMenu";
 import { useAppContext } from "../providers/AppContextProvider";
 import { useNavigate } from "react-router-dom";
+import { useMediaQuery } from "@mui/material";
 
 const drawerWidth = 240;
 
@@ -104,7 +105,12 @@ export function AppStructure({ auth, children }) {
   const { pageActions } = useAppContext();
 
   const theme = useTheme();
-  const [open, setOpen] = React.useState(false);
+  const isMdOrLarger = useMediaQuery(theme.breakpoints.up("md")); //useMediaQuery((theme) => theme.breakpoints.up("md"));
+  const [open, setOpen] = React.useState(isMdOrLarger);
+
+  React.useEffect(() => {
+    setOpen(isMdOrLarger);
+  }, [isMdOrLarger]);
 
   const handleDrawerOpen = () => {
     setOpen(true);
