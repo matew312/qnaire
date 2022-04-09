@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Button,
   FormControlLabel,
@@ -30,6 +30,12 @@ function Options({
 }) {
   const totalChoices = choices.length;
   const checkbox = max_answers > 1;
+
+  // useEffect(() => {
+  //   if (max_answers !== null && max_answers > totalChoices) {
+  //     update({ max_answers: totalChoices });
+  //   }
+  // }, [totalChoices]);
 
   return (
     <Grid container spacing={isSelected ? 1 : 0}>

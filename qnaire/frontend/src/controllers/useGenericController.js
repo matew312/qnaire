@@ -6,7 +6,7 @@ import React, {
   useRef,
 } from "react";
 
-const UPDATE_TIMEOUT = 7500;
+const UPDATE_TIMEOUT = 750;
 
 export const useGenericController = (source, id) => {
   const [data, setData] = useState(() => source.get(id));

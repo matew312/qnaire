@@ -1,4 +1,4 @@
-import { TextField, Typography } from "@mui/material";
+import { Slider, TextField, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { EditableText } from "../basic/EditableText";
@@ -17,6 +17,7 @@ export function CreationPage({ auth }) {
       <Questionnaire id={id} />
       <QnaireErrorDialog />
     </QnaireProvider>
+
     //   {/* <br /> <br /> <hr />
     //   <Typography variant="h2">Creation page</Typography>
     //   <Typography variant="h3">Potential range question display:</Typography>
