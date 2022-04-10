@@ -1,3 +1,4 @@
+import { useTheme } from "@emotion/react";
 import React, {
   useContext,
   useEffect,
@@ -20,4 +21,23 @@ function useTimeoutEffect(callback, array, timeout = 1000) {
 export const useForceRender = () => {
   const [, forceRender] = useReducer((oldVal) => oldVal + 1, 0);
   return forceRender;
+};
+
+export const useScrollWhenSelected = (isSelected, ref) => {
+  const theme = useTheme();
+  useEffect(() => {
+    if (isSelected) {
+      var headerOffset = theme.mixins.toolbar.minHeight;
+      var elementRect = ref.current.getBoundingClientRect();
+      if (elementRect.bottom > window.innerHeight) {
+        var offsetPosition =
+          elementRect.top + window.pageYOffset - headerOffset - 40;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth",
+        });
+      }
+    }
+  }, [isSelected]);
 };

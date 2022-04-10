@@ -33,6 +33,7 @@ import PasteButton from "./PasteButton";
 import { QuestionTypes } from "../QuestionTypes";
 import HorizontalDragBox from "./basic/HorizontalDragBox";
 import ErrorList from "./basic/ErrorList";
+import { useScrollWhenSelected } from "../hooks";
 
 function Question({
   options: QuestionOptions,
@@ -50,6 +51,8 @@ function Question({
 }) {
   const { isSelected, select } = useQuestionSelect(id);
   const { copy } = useQnaireContext();
+  const scrollRef = React.useRef(null);
+  useScrollWhenSelected(isSelected, scrollRef);
 
   return (
     <Draggable draggableId={id.toString()} index={index}>
@@ -64,7 +67,7 @@ function Question({
         >
           <HorizontalDragBox dragHandleProps={provided.dragHandleProps}>
             {/* <CardContent> */}
-            <Grid container spacing={2} alignItems="top">
+            <Grid container spacing={2} alignItems="top" ref={scrollRef}>
               <Grid item xs /* xs={12} sm={8} */>
                 <EditableText
                   onChange={(text) => update({ text })}

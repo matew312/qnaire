@@ -1,5 +1,15 @@
 import React, { useEffect, useReducer, useState, useMemo } from "react";
-import { Box, Grid, Paper, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  IconButton,
+  Paper,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import PreviewIcon from "@mui/icons-material/Preview";
+
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import { EditableText } from "./basic/EditableText";
 import Section from "./Section";
@@ -24,7 +34,10 @@ export function Questionnaire({ id }) {
       <Droppable droppableId="qnaire" type={Resources.SECTIONS}>
         {(provided) => (
           <Box {...provided.droppableProps} ref={provided.innerRef}>
-            <Paper sx={{backgroundColor:"background.default"}}  variant="outlined">
+            <Paper
+              sx={{ backgroundColor: "background.default" }}
+              variant="outlined"
+            >
               <Grid
                 container
                 className="clickable"
@@ -32,6 +45,18 @@ export function Questionnaire({ id }) {
                 p={2}
                 onClick={select}
               >
+                <Grid item container xs={12} justifyContent="flex-end" alignItems="center">
+                  <Grid item xs="auto">
+                    <Tooltip title="Zobrazit náhled">
+                      <IconButton>
+                        <PreviewIcon fontSize="large" />
+                      </IconButton>
+                    </Tooltip>
+                  </Grid>
+                  <Grid item xs="auto">
+                    <Button  variant="contained">Publikovat</Button>
+                  </Grid>
+                </Grid>
                 <Grid item xs={12}>
                   <EditableText
                     editable={isSelected}

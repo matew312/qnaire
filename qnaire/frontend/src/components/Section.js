@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Box,
   Divider,
@@ -23,12 +23,15 @@ import HorizontalDragBox from "./basic/HorizontalDragBox";
 import { Resources } from "../data/Resources";
 import CollapseButton from "./basic/CollapseButton";
 import ErrorList from "./basic/ErrorList";
+import { useScrollWhenSelected } from "../hooks";
 
 function Section({ id, index }) {
   const { name, desc, order_num, questions, update, destroy, error } =
     useSectionController(id);
   const { isSelected, select } = useSectionSelect(id);
   const [showQuestions, setShowQuestions] = useState(true);
+  const scrollRef = useRef(null);
+  useScrollWhenSelected(isSelected, scrollRef);
   const style = {
     display: "flex",
     pt: 2,
@@ -65,6 +68,7 @@ function Section({ id, index }) {
                   elevation={2}
                   className="clickable"
                   onClick={select}
+                  ref={scrollRef}
                 >
                   <HorizontalDragBox
                     dragHandleProps={draggableProvided.dragHandleProps}
