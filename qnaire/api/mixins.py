@@ -79,7 +79,8 @@ class OrderedViewSetMixin():
                 obj, self.order_scope_field)
         queryset.filter(order_num__gt=order_num, **
                         filters).update(order_num=F('order_num') - 1)
-        obj.delete()
+        # obj.delete()
+        self.perform_destroy(obj)
         changed_objs = queryset.filter(order_num__gte=order_num, **filters)
         if changed_objs:
             return response.Response(data={

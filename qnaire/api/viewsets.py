@@ -37,7 +37,6 @@ def handle_ordered_destroy(model, obj, serializer, **filters):
     return response.Response(data=serializer(changed_objs, many=True).data, status=status.HTTP_200_OK)
 
 
-
 # for section movement and question movement within section
 
 
@@ -67,7 +66,7 @@ class SectionViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedView
     serializer_action_classes = {'create': CreateSectionSerializer}
     user_field = 'qnaire__creator'
     order_scope_field = 'qnaire'
-    list_serializer_class = serializer_class # for OrderedViewSetMixin
+    list_serializer_class = serializer_class  # for OrderedViewSetMixin
 
     @action(detail=True, methods=['PATCH'])
     def move(self, request, pk=None):
@@ -90,8 +89,7 @@ class QuestionViewSet(UserQuerySetMixin, OrderedViewSetMixin, viewsets.ModelView
     serializer_class = QuestionPolymorphicSerializer
     user_field = 'section__qnaire__creator'
     order_scope_field = 'section'
-    list_serializer_class = serializer_class # for OrderedViewSetMixin
-
+    list_serializer_class = serializer_class  # for OrderedViewSetMixin
 
     @action(detail=True, methods=['PATCH'])
     def move(self, request, pk=None):
@@ -138,6 +136,14 @@ class ChoiceViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedViewS
     user_field = 'question__section__qnaire__creator'
     order_scope_field = 'question'
     list_serializer_class = ChoiceSerializer
+
+    def perform_destroy(self, instance):
+        question = instance.question
+        new_total_choices = question.choice_set.count()
+        if question.max_answers is not None and question.max_answers > new_total_choices:
+            question.max_answers = new_total_choices
+            question.save()
+        instance.delete()
 
 
 class AnswerViewSet(viewsets.ModelViewSet):

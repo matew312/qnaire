@@ -9,6 +9,7 @@ export function useMultipleChoiceQuestionController(id) {
   const [choices, setChoices] = useState(() =>
     choiceSource.getChoicesForQuestion(id)
   );
+  
 
   const createChoice = () => {
     const order_num = choices.length;
@@ -32,6 +33,18 @@ export function useMultipleChoiceQuestionController(id) {
       choiceSource.unsubscribeDelete(handleChoiceOrderChange);
     };
   }, []);
+
+  useEffect(() => {
+    if (
+      questionController.max_answers !== null &&
+      questionController.max_answers > choices.length
+    ) {
+      //the server already updated the question during the deletion of the choice,
+      // but I will do shouldSourceUpdate to true so that I keep the local DataSource in a consistent state
+      // (thought it's not strictly necessary right now)
+      questionController.update({ max_answers: choices.length });
+    }
+  }, [choices.length]);
 
   return { ...questionController, choices, createChoice };
 }
