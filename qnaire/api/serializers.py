@@ -129,8 +129,9 @@ class QuestionSerializer(serializers.ModelSerializer):
             if section.qnaire.creator != request.user:
                 raise serializers.ValidationError(
                     f"Section belongs to a questionnaire not owned by the user")
-            
-            data = validate_ordered_add(Question.objects.filter(section=section), data)
+
+            data = validate_ordered_add(
+                Question.objects.filter(section=section), data)
 
         return self.do_validate(data)
 
@@ -303,9 +304,37 @@ class QuestionMoveSerializer(serializers.ModelSerializer):
         if src_question.section == section:
             return validate_move(queryset, data)
         else:
-             # the target section must be from the same qnaire as the src
-            queryset = queryset.filter(section__qnaire=src_question.section.qnaire)
+            # the target section must be from the same qnaire as the src
+            queryset = queryset.filter(
+                section__qnaire=src_question.section.qnaire)
             return validate_ordered_add(queryset, data)
+
+
+class OpenQuestionTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OpenQuestion
+        fields = ()
+
+
+class RangeQuestionTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RangeQuestion
+        fields = ()
+
+
+class MultipleChoiceQuestionTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MultipleChoiceQuestion
+        fields = ()
+
+
+class QuestionTypePolymorphicSerializer(PolymorphicSerializer):
+    model_serializer_mapping = {
+        # Question: QuestionSerializer, # instances of Question are not allowed
+        OpenQuestion: OpenQuestionTypeSerializer,
+        RangeQuestion: RangeQuestionTypeSerializer,
+        MultipleChoiceQuestion: MultipleChoiceQuestionTypeSerializer
+    }
 
 
 class SectionSerializer(serializers.ModelSerializer):
@@ -343,6 +372,7 @@ class CreateSectionSerializer(SectionSerializer):
                 f"User doesn't own the questionnaire")
 
         return validate_ordered_add(Section.objects.filter(qnaire=qnaire), data)
+
 
 QUESTIONNAIRE_FIELDS = ('id', 'name', 'desc', 'anonymous',
                         'private', 'published', 'created_at')

@@ -70,6 +70,7 @@ function Question({
                   onChange={(text) => update({ text })}
                   editable={isSelected}
                   value={text}
+                  selectOnFocus={true}
                   typographyProps={{ variant: "h5" }}
                   textFieldProps={{
                     fullWidth: true,

@@ -22,6 +22,12 @@ export class DataSource {
     this.data = data;
   }
 
+  _addEvents(eventMap) {
+    Object.keys(eventMap).forEach((key) => {
+      this.subscribers[eventMap[key]] = [];
+    });
+  }
+
   _notify(event) {
     this.subscribers[event].forEach((sub) => {
       sub();

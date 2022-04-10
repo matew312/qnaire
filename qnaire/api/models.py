@@ -97,7 +97,8 @@ class RangeQuestion(Question):
 
 class MultipleChoiceQuestion(Question):
     # min_answers=0 is allowed (it means that chosing nothing will be OK even if required=true)
-    min_answers = models.IntegerField(validators=[MinValueValidator(0)], default=0)
+    min_answers = models.IntegerField(
+        validators=[MinValueValidator(0)], default=0)
     max_answers = models.IntegerField(
         null=True, validators=[MinValueValidator(0)])
     other_choice = models.BooleanField(default=False)
@@ -123,7 +124,8 @@ class Choice(models.Model):
 
 
 class Answer(PolymorphicModel):
-    response = models.ForeignKey(Response, on_delete=models.PROTECT)
+    # there seems to be an issue with cascade here?
+    response = models.ForeignKey(Response, on_delete=models.CASCADE)
 
 
 class OpenAnswer(Answer):

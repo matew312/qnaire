@@ -10,9 +10,7 @@ export class OrderedSource extends DataSource {
     super(resource, data);
     this.gateway = new OrderedGateway(resource); //"override" the gateway
     //initialize subs for the new events
-    Object.keys(OrderedEvents).forEach((key) => {
-      this.subscribers[OrderedEvents[key]] = [];
-    });
+   this._addEvents(OrderedEvents);
   }
 
   subscribeMove(callback) {

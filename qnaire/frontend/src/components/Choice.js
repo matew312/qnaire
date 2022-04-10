@@ -26,13 +26,14 @@ export default function Choice({ id, editable, checkbox, textFieldProps }) {
         <EditableText
           value={text}
           editable={editable}
+          selectOnFocus={true}
           onChange={(text) => update({ text })}
           textFieldProps={{ ...textFieldProps }}
         />
       </Grid>
       {editable && (
         <Grid item xs={3}>
-          <FormControl fullWidth size="small" variant="filled">
+          <FormControl fullWidth size="small" variant="standard">
             <InputLabel id="skip-to-section-label">Přeskočit na</InputLabel>
             <ScrollableSelect
               label="Přeskočit na"
@@ -73,7 +74,10 @@ Choice.defaultProps = {
   editable: true,
   checkbox: false,
   textFieldProps: {
-    variant: "filled",
+    //I specify the label text so that the TextField aligns with the Select, but I hide the label
+    label: "Text",
+    InputLabelProps: { sx: { display: "none" } },
+    variant: "standard",
     size: "small",
     fullWidth: true,
     required: true,

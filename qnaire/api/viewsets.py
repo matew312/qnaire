@@ -10,6 +10,7 @@ from .serializers import (
     CreateSectionSerializer,
     QuestionMoveSerializer,
     QuestionSerializer,
+    QuestionTypePolymorphicSerializer,
     QuestionnaireCreationSerializer,
     QuestionnaireSerializer,
     QuestionPolymorphicSerializer,
@@ -96,35 +97,43 @@ class QuestionViewSet(UserQuerySetMixin, OrderedViewSetMixin, viewsets.ModelView
         src_question = self.get_object()
         move_serializer = QuestionMoveSerializer(
             data=request.data, context={'src': src_question})
-        if move_serializer.is_valid():
-            order_num = move_serializer.validated_data['order_num']
-            section = move_serializer.validated_data['section']
-            section_changed = section != src_question.section
-            if order_num == src_question.order_num and not section_changed:
-                return response.Response(status=status.HTTP_204_NO_CONTENT)
+        move_serializer.is_valid(raise_exception=True)
 
-            if not section_changed:
-                return handle_simple_move(Question, src_question, order_num, QuestionPolymorphicSerializer, section=section)
+        order_num = move_serializer.validated_data['order_num']
+        section = move_serializer.validated_data['section']
+        section_changed = section != src_question.section
+        if order_num == src_question.order_num and not section_changed:
+            return response.Response(status=status.HTTP_204_NO_CONTENT)
 
-            old_section = src_question.section
-            old_order_num = src_question.order_num
-            Question.objects.filter(section=old_section, order_num__gt=old_order_num).update(
-                order_num=F('order_num') - 1)
-            Question.objects.filter(section=section, order_num__gte=order_num).update(
-                order_num=F('order_num') + 1)
-            src_question.section = section
-            src_question.order_num = order_num
-            src_question.save()
+        if not section_changed:
+            return handle_simple_move(Question, src_question, order_num, QuestionPolymorphicSerializer, section=section)
 
-            changed_questions = list(Question.objects.filter(
-                section=old_section, order_num__gte=old_order_num))
-            changed_questions += list(Question.objects.filter(
-                section=section, order_num__gte=order_num))
-            return response.Response(QuestionPolymorphicSerializer(changed_questions, many=True).data, status=status.HTTP_200_OK)
+        old_section = src_question.section
+        old_order_num = src_question.order_num
+        Question.objects.filter(section=old_section, order_num__gt=old_order_num).update(
+            order_num=F('order_num') - 1)
+        Question.objects.filter(section=section, order_num__gte=order_num).update(
+            order_num=F('order_num') + 1)
+        src_question.section = section
+        src_question.order_num = order_num
+        src_question.save()
 
-        else:
-            return response.Response(move_serializer.errors,
-                                     status=status.HTTP_400_BAD_REQUEST)
+        changed_questions = list(Question.objects.filter(
+            section=old_section, order_num__gte=old_order_num))
+        changed_questions += list(Question.objects.filter(
+            section=section, order_num__gte=order_num))
+        return response.Response(QuestionPolymorphicSerializer(changed_questions, many=True).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['PATCH'])
+    def type(self, request, pk=None):
+        question = self.get_object()
+        serializer = QuestionTypePolymorphicSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        field_values = {'id': question.id, 'section': question.section,
+                        'order_num': question.order_num, 'text': question.text, 'mandatory': question.mandatory}
+        question.delete()
+        new_question = serializer.save(**field_values)
+        return response.Response(QuestionPolymorphicSerializer(new_question).data, status=status.HTTP_200_OK)
 
 
 class ChoiceViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedViewSetMixin, viewsets.ModelViewSet):

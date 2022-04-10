@@ -91,6 +91,7 @@ function Section({ id, index }) {
                           onChange={(name) => {
                             update({ name });
                           }}
+                          selectOnFocus={true}
                           typographyProps={{ variant: "h4" }}
                           textFieldProps={{
                             fullWidth: true,

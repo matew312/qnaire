@@ -20,11 +20,13 @@ export function useSectionController(id) {
     questionSource.subscribeMove(handleQuestionOrderChange);
     questionSource.subscribeCreate(handleQuestionOrderChange);
     questionSource.subscribeDelete(handleQuestionOrderChange);
+    questionSource.subscribeType(handleQuestionOrderChange); //the Section is doing the question component mapping, so it needs to rerender
 
     return () => {
       questionSource.unsubscribeMove(handleQuestionOrderChange);
       questionSource.unsubscribeCreate(handleQuestionOrderChange);
       questionSource.unsubscribeDelete(handleQuestionOrderChange);
+      questionSource.unsubscribeType(handleQuestionOrderChange);
     };
   }, [id]);
 
