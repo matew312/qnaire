@@ -88,9 +88,9 @@ export function QnaireProvider({ children }) {
       }
     }
     if (sectionId == null) {
-      // take last one
-      const sortedSectionIds = qnaireSource.sectionSource.getSortedSectionIds();
-      sectionId = sortedSectionIds[sortedSectionIds.length - 1];
+      // take the last one
+      const sortedSections = qnaireSource.sectionSource.getSortedSections();
+      sectionId = sortedSections[sortedSections.length - 1].id;
     }
 
     if (order_num == null) {

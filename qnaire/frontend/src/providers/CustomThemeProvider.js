@@ -1,5 +1,6 @@
 import * as React from "react";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { grey } from "@mui/material/colors";
 
 const theme = createTheme({
   palette: {
@@ -10,7 +11,7 @@ const theme = createTheme({
     //   // contrastText: will be calculated to contrast with palette.primary.main
     // },
     background: {
-      default: "#eaeaea",
+      default: grey[200],
     },
   },
 });

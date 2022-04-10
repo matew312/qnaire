@@ -32,6 +32,7 @@ import ConfirmDialogIconButton from "./basic/ConfirmDialogIconButton";
 import PasteButton from "./PasteButton";
 import { QuestionTypes } from "../QuestionTypes";
 import HorizontalDragBox from "./basic/HorizontalDragBox";
+import ErrorList from "./basic/ErrorList";
 
 function Question({
   options: QuestionOptions,
@@ -55,6 +56,7 @@ function Question({
       {(provided) => (
         <Card
           sx={{ px: 2, pb: 2, ...getSelectedStyle(isSelected) }}
+          // raised
           className="clickable"
           onClick={select}
           ref={provided.innerRef}
@@ -62,13 +64,13 @@ function Question({
         >
           <HorizontalDragBox dragHandleProps={provided.dragHandleProps}>
             {/* <CardContent> */}
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={8}>
+            <Grid container spacing={2} alignItems="top">
+              <Grid item xs /* xs={12} sm={8} */>
                 <EditableText
                   onChange={(text) => update({ text })}
                   editable={isSelected}
                   value={text}
-                  typographyProps={{ variant: "h4" }}
+                  typographyProps={{ variant: "h5" }}
                   textFieldProps={{
                     fullWidth: true,
                     id: "question-text",
@@ -77,8 +79,8 @@ function Question({
                   }}
                 />
               </Grid>
-              {isSelected && (
-                <Grid item xs={12} sm={4}>
+              <Grid item /* sm="auto" */ xs={12} sm={4}>
+                {isSelected ? (
                   <FormControl fullWidth required>
                     <InputLabel id="type-select-label">Typ otázky</InputLabel>
                     <Select
@@ -95,8 +97,12 @@ function Question({
                       ))}
                     </Select>
                   </FormControl>
-                </Grid>
-              )}
+                ) : (
+                  <Typography color="text.secondary" textAlign="right">
+                    {QuestionTypes[resourcetype].desc}
+                  </Typography>
+                )}
+              </Grid>
 
               <Grid item xs={12}>
                 <QuestionOptions
@@ -172,15 +178,7 @@ function Question({
 
               {error && (
                 <Grid item xs={12}>
-                  {Object.keys(error).map((key) => {
-                    return (
-                      <Typography
-                        key={key}
-                        color="error"
-                        textAlign="center"
-                      >{`${key}: ${error[key]}`}</Typography>
-                    );
-                  })}
+                  <ErrorList error={error} />
                 </Grid>
               )}
             </Grid>
