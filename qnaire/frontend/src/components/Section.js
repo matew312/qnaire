@@ -25,6 +25,17 @@ import CollapseButton from "./basic/CollapseButton";
 import ErrorList from "./basic/ErrorList";
 import { useScrollWhenSelected } from "../hooks";
 
+const Questions = React.memo(({ questions }) =>
+  questions.map((q, index) => {
+    const Question = QuestionTypes[q.resourcetype].component;
+    return (
+      <Grid item xs={12} key={q.id}>
+        <Question id={q.id} index={index} />
+      </Grid>
+    );
+  })
+);
+
 function Section({ id, index }) {
   const { name, desc, order_num, questions, update, destroy, error } =
     useSectionController(id);
@@ -158,14 +169,7 @@ function Section({ id, index }) {
                   sx={{ ...style, display: showQuestions ? "block" : "none" }}
                 >
                   <Grid container spacing={2}>
-                    {questions.map((q, index) => {
-                      const Question = QuestionTypes[q.resourcetype].component;
-                      return (
-                        <Grid item xs={12} key={q.id}>
-                          <Question id={q.id} index={index} />
-                        </Grid>
-                      );
-                    })}
+                    <Questions questions={questions} />
                   </Grid>
                 </Box>
                 {placeholder}

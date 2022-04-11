@@ -45,10 +45,7 @@ class MultiSerializerViewSetMixin(object):
 class OrderedViewSetMixin():
     order_scope_field = None
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
+    def do_create(self, serializer):
         filters = {}
         if self.order_scope_field:
             filters[self.order_scope_field] = serializer.validated_data[self.order_scope_field]
@@ -58,7 +55,7 @@ class OrderedViewSetMixin():
         filtered_queryset.update(order_num=F('order_num') + 1)
         obj = serializer.save()
 
-        response_data = serializer.data # {**serializer.data}
+        response_data = serializer.data  # {**serializer.data}
         changed_objs = filtered_queryset.exclude(pk=obj.id)
         if changed_objs:  # querysets retrieve the results when used in boolean evaluation
             print(self.list_serializer_class(
@@ -68,8 +65,7 @@ class OrderedViewSetMixin():
 
         return response.Response(response_data, status=status.HTTP_200_OK)
 
-    def destroy(self, request, *args, **kwargs):
-        obj = self.get_object()
+    def do_destroy(self, obj):
         order_num = obj.order_num
         # accessing the queryset directly so that other filters (e.g. of UserQuerySetMixin) are not unnecessarily applied
         queryset = self.queryset
@@ -88,3 +84,15 @@ class OrderedViewSetMixin():
             }, status=status.HTTP_200_OK)
         else:
             return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# class PublishedQnaireQuerySetMixin():
+#     allow_update = False
+#     qnaire_field = None
+
+#     def get_queryset(self, *args, **kwargs):
+#         method = self.request.method
+#         queryset = super().get_queryset(*args, **kwargs)
+#         if method in ['POST', 'DELETE'] or (not self.allow_update and method in ['PUT', 'PATCH']):
+#             queryset = queryset.filter(**{qnaire_field: })
+#         return queryset

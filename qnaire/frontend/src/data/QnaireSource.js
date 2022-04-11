@@ -52,7 +52,15 @@ class QnaireSource extends DataSource {
       this.sectionSource._setData(sections);
       this.questionSource._setData(questions);
       this.choiceSource._setData(choices);
-      this._setData(qnaire);
+      this._setData({ [qnaire.id]: qnaire });
+      this._notify(QnaireEvents.LOAD);
+      return this.data[qnaire.id];
+    });
+  }
+
+  retrieveAll() {
+    return this.gateway.retrieveAll().then((data) => {
+      this._setData(data);
       this._notify(QnaireEvents.LOAD);
       return this.data;
     });

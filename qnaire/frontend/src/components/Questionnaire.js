@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useState, useMemo } from "react";
+import React, { useEffect, useReducer, useState, useMemo, useRef } from "react";
 import {
   Box,
   Button,
@@ -19,11 +19,40 @@ import { getSelectedStyle } from "../style";
 import { Resources } from "../data/Resources";
 import HorizontalDragBox from "./basic/HorizontalDragBox";
 import ErrorList from "./basic/ErrorList";
+import { useScrollWhenSelected } from "../hooks";
+import PublishQnaireDialog from "./PublishQnaireDialog";
+
+const Sections = React.memo(({ sections }) =>
+  sections.map((section, index) => (
+    <Grid item xs={12} key={section.id}>
+      <Section id={section.id} index={index} />
+    </Grid>
+  ))
+);
 
 export function Questionnaire({ id }) {
-  const { name, desc, sections, update, isLoaded, handleDragEnd, error } =
-    useQnaireController(id);
+  const {
+    name,
+    desc,
+    private: isPrivate,
+    anonymous: isAnonymous,
+    published: isPublished,
+    sections,
+    update,
+    publish,
+    isLoaded,
+    handleDragEnd,
+    error,
+  } = useQnaireController(id);
   const { isSelected, select } = useQnaireSelect(id);
+  const scrollRef = useRef(null);
+  useScrollWhenSelected(isSelected, scrollRef);
+
+  useEffect(() => {
+    if (isLoaded) {
+      select();
+    }
+  }, [isLoaded]);
 
   if (!isLoaded) {
     return null;
@@ -37,6 +66,7 @@ export function Questionnaire({ id }) {
             <Paper
               sx={{ backgroundColor: "background.default" }}
               variant="outlined"
+              ref={scrollRef}
             >
               <Grid
                 container
@@ -45,7 +75,13 @@ export function Questionnaire({ id }) {
                 p={2}
                 onClick={select}
               >
-                <Grid item container xs={12} justifyContent="flex-end" alignItems="center">
+                <Grid
+                  item
+                  container
+                  xs={12}
+                  justifyContent="flex-end"
+                  alignItems="center"
+                >
                   <Grid item xs="auto">
                     <Tooltip title="Zobrazit náhled">
                       <IconButton>
@@ -54,7 +90,12 @@ export function Questionnaire({ id }) {
                     </Tooltip>
                   </Grid>
                   <Grid item xs="auto">
-                    <Button  variant="contained">Publikovat</Button>
+                    <PublishQnaireDialog
+                      name={name}
+                      isPrivate={isPrivate}
+                      isAnonymous={isAnonymous}
+                      onPublish={publish}
+                    />
                   </Grid>
                 </Grid>
                 <Grid item xs={12}>
@@ -97,11 +138,7 @@ export function Questionnaire({ id }) {
               </Grid>
             </Paper>
             <Grid container mt={1} spacing={4}>
-              {sections.map((section, index) => (
-                <Grid item xs={12} key={section.id}>
-                  <Section id={section.id} index={index} />
-                </Grid>
-              ))}
+              <Sections sections={sections} />
             </Grid>
             {provided.placeholder}
           </Box>

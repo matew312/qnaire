@@ -95,7 +95,7 @@ def raise_validation_error_if_mandatory(q):
 def raise_validation_error_if_qnaire_published(qnaire):
     if qnaire.published:
         raise serializers.ValidationError(
-            f'Content of questionnaire {qnaire} cannot be modified, because the questionnaire is published')
+            f'The action is not allowed on a published questionnaire')
 
 
 QUESTION_FIELDS = ('id', 'section', 'order_num', 'text', 'mandatory')
@@ -109,8 +109,6 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         section = get_original_field_value('section', data, self.instance)
-        raise_validation_error_if_qnaire_published(section.qnaire)
-
         # on update (having two serializers would be fine as well)
         if self.instance:
             if 'section' in data:
@@ -209,7 +207,6 @@ class ChoiceSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         question = get_original_field_value('question', data, self.instance)
-        raise_validation_error_if_qnaire_published(question.section.qnaire)
 
         request = self.context.get('request')
         question = self.instance.question if self.instance else data['question']
@@ -288,9 +285,6 @@ class QuestionPolymorphicSerializer(PolymorphicSerializer):
         list_serializer_class = DictSerializer
 
 
-SECTION_FIELDS = ('id', 'name', 'desc', 'order_num')
-
-
 class QuestionMoveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
@@ -337,6 +331,9 @@ class QuestionTypePolymorphicSerializer(PolymorphicSerializer):
     }
 
 
+SECTION_FIELDS = ('id', 'name', 'desc', 'order_num')
+
+
 class SectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Section
@@ -345,8 +342,6 @@ class SectionSerializer(serializers.ModelSerializer):
         list_serializer_class = DictSerializer
 
     def validate(self, data):
-        qnaire = get_latest_field_value('qnaire', data, self.instance)
-        raise_validation_error_if_qnaire_published(qnaire)
         return self.do_validate(data)
 
         # extra_kwargs = {'qnaire': {'write_only': True}} <-- This wasn't enough, because I want qnaire only for CREATE requests.
@@ -395,7 +390,6 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
         fields = QUESTIONNAIRE_FIELDS
 
     def validate(self, data):
-        print(data)
         request = self.context.get('request')
         if 'name' in data:
             name = data['name']

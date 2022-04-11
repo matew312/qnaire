@@ -8,6 +8,10 @@ from .validators import GreaterThanValidator
 
 # Create your models here.
 
+# needed because of a bug in django-polymorphic
+def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
+    return models.CASCADE(collector, field, sub_objs.non_polymorphic(), using)
+
 
 class Respondent(models.Model):
     id = models.CharField(primary_key=True, max_length=64)
@@ -48,7 +52,7 @@ class Section(models.Model):
 
 
 class Question(PolymorphicModel):
-    section = models.ForeignKey(Section, on_delete=models.CASCADE)
+    section = models.ForeignKey(Section, on_delete=NON_POLYMORPHIC_CASCADE)
     # maybe make question text a CharField and add new TextField called description
     text = models.TextField()
     mandatory = models.BooleanField(default=False)
@@ -124,8 +128,7 @@ class Choice(models.Model):
 
 
 class Answer(PolymorphicModel):
-    # there seems to be an issue with cascade here?
-    response = models.ForeignKey(Response, on_delete=models.CASCADE)
+    response = models.ForeignKey(Response, on_delete=NON_POLYMORPHIC_CASCADE)
 
 
 class OpenAnswer(Answer):

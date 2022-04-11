@@ -30,10 +30,15 @@ export const useGenericController = (source, id) => {
       updatedData = { ...pendingData.current, ...updatedData };
       pendingData.current = updatedData;
     }
-    updateTimeoutId.current = setTimeout(() => {
+
+    return new Promise((resolve) => {
+      updateTimeoutId.current = setTimeout(() => {
+        resolve();
+      }, UPDATE_TIMEOUT);
+    }).then(() => {
       updateTimeoutId.current = null;
       pendingData.current = null;
-      source
+      return source
         .update(id, updatedData)
         .then((data) => {
           updateData({ ...data, error: "" });
@@ -41,7 +46,7 @@ export const useGenericController = (source, id) => {
         .catch((error) => {
           updateData({ error });
         });
-    }, UPDATE_TIMEOUT);
+    });
   };
   const cancelUpdate = () => {
     if (updateTimeoutId.current) {

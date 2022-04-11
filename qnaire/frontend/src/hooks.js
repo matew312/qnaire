@@ -29,10 +29,13 @@ export const useScrollWhenSelected = (isSelected, ref) => {
     if (isSelected) {
       var headerOffset = theme.mixins.toolbar.minHeight;
       var elementRect = ref.current.getBoundingClientRect();
-      if (elementRect.bottom > window.innerHeight) {
-        var offsetPosition =
-          elementRect.top + window.pageYOffset - headerOffset - 40;
+      var offsetPosition =
+        elementRect.top + window.pageYOffset - headerOffset - 40;
 
+      if (
+        elementRect.bottom > window.innerHeight ||
+        elementRect.top < headerOffset
+      ) {
         window.scrollTo({
           top: offsetPosition,
           behavior: "smooth",

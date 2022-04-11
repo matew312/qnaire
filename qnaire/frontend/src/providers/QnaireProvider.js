@@ -221,15 +221,23 @@ export function useQnaireContext() {
 }
 
 function useSelect(resource, id) {
-  const { selected, select } = useQnaireContext();
+  const { selected, select, setError } = useQnaireContext();
   const isSelected = Boolean(
     selected && selected.id == id && selected.resource === resource
   );
+
   return useMemo(() => {
     return {
       isSelected,
       select: () => {
-        if (!isSelected) {
+        //allow selecting a question only when the qnaire isn't published
+        const published = qnaireSource.get(qnaireSource.id).published;
+        if (
+          published &&
+          resource === Resources.QUESTIONS
+        ) {
+          setError("Nelze měnit obsah otázek, když je dotazník publikovaný.")
+        } else if (!isSelected) {
           select(resource, id);
         }
       },

@@ -1,5 +1,5 @@
 from django.db.models import F
-from rest_framework import permissions, viewsets, response, status
+from rest_framework import permissions, viewsets, response, status, mixins
 from rest_framework.decorators import action
 from .mixins import OrderedViewSetMixin, UserQuerySetMixin, MultiSerializerViewSetMixin
 from .models import Answer, Choice, Question, Questionnaire, Section
@@ -16,7 +16,58 @@ from .serializers import (
     QuestionPolymorphicSerializer,
     SectionMoveSerializer,
     SectionSerializer,
+    raise_validation_error_if_qnaire_published,
 )
+
+
+class ModelViewSetWithValidation(viewsets.ModelViewSet):
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.validate_create(serializer)
+        return self.do_create(serializer)
+
+    def validate_create(self, serializer):
+        pass
+
+    def do_create(self, serializer):
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return response.Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.validate_update(instance, serializer)
+        return self.do_update(instance, serializer)
+
+    def validate_update(self, instance, serializer):
+        pass
+
+    def do_update(self, instance, serializer):
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return response.Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.validate_destroy(instance)
+        return self.do_destroy(instance)
+
+    def validate_destroy(self, instance):
+        pass
+
+    def do_destroy(self, instance):
+        self.perform_destroy(instance)
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class QuestionnaireViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, viewsets.ModelViewSet):
@@ -26,16 +77,6 @@ class QuestionnaireViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, views
 
     def perform_create(self, serializer):
         serializer.save(creator=self.request.user)
-
-
-def handle_ordered_destroy(model, obj, serializer, **filters):
-    order_num = obj.order_num
-    model.objects.filter(order_num__gt=order_num, **
-                         filters).update(order_num=F('order_num') - 1)
-    obj.delete()
-    changed_objs = model.objects.filter(
-        order_num__gte=order_num, **filters)
-    return response.Response(data=serializer(changed_objs, many=True).data, status=status.HTTP_200_OK)
 
 
 # for section movement and question movement within section
@@ -61,13 +102,20 @@ def handle_simple_move(model, src, order_num, serializer, **filters):
     return response.Response(serializer(changed_objects, many=True).data, status=status.HTTP_200_OK)
 
 
-class SectionViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedViewSetMixin, viewsets.ModelViewSet):
+class SectionViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedViewSetMixin, ModelViewSetWithValidation):
     queryset = Section.objects.all()
     serializer_class = SectionSerializer
     serializer_action_classes = {'create': CreateSectionSerializer}
     user_field = 'qnaire__creator'
     order_scope_field = 'qnaire'
     list_serializer_class = serializer_class  # for OrderedViewSetMixin
+
+    def validate_destroy(self, instance):
+        raise_validation_error_if_qnaire_published(instance.qnaire)
+
+    def validate_create(self, serializer):
+        raise_validation_error_if_qnaire_published(
+            serializer.validated_data['qnaire'])
 
     @action(detail=True, methods=['PATCH'])
     def move(self, request, pk=None):
@@ -85,12 +133,22 @@ class SectionViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedView
                                      status=status.HTTP_400_BAD_REQUEST)
 
 
-class QuestionViewSet(UserQuerySetMixin, OrderedViewSetMixin, viewsets.ModelViewSet):
+class QuestionViewSet(UserQuerySetMixin, OrderedViewSetMixin, ModelViewSetWithValidation):
     queryset = Question.objects.all()
     serializer_class = QuestionPolymorphicSerializer
     user_field = 'section__qnaire__creator'
     order_scope_field = 'section'
     list_serializer_class = serializer_class  # for OrderedViewSetMixin
+
+    def validate_destroy(self, instance):
+        raise_validation_error_if_qnaire_published(instance.section.qnaire)
+
+    def validate_create(self, serializer):
+        raise_validation_error_if_qnaire_published(
+            serializer.validated_data['section'].qnaire)
+
+    def validate_update(self, instance, serializer):
+        raise_validation_error_if_qnaire_published(instance.section.qnaire)
 
     @action(detail=True, methods=['PATCH'])
     def move(self, request, pk=None):
@@ -127,7 +185,8 @@ class QuestionViewSet(UserQuerySetMixin, OrderedViewSetMixin, viewsets.ModelView
     @action(detail=True, methods=['PATCH'])
     def type(self, request, pk=None):
         question = self.get_object()
-        serializer = QuestionTypePolymorphicSerializer(data=request.data)
+        serializer = QuestionTypePolymorphicSerializer(
+            question, data=request.data)
         serializer.is_valid(raise_exception=True)
         field_values = {'id': question.id, 'section': question.section,
                         'order_num': question.order_num, 'text': question.text, 'mandatory': question.mandatory}
@@ -136,7 +195,7 @@ class QuestionViewSet(UserQuerySetMixin, OrderedViewSetMixin, viewsets.ModelView
         return response.Response(QuestionPolymorphicSerializer(new_question).data, status=status.HTTP_200_OK)
 
 
-class ChoiceViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedViewSetMixin, viewsets.ModelViewSet):
+class ChoiceViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedViewSetMixin, ModelViewSetWithValidation):
     queryset = Choice.objects.all()
     serializer_class = ChoiceSerializer
     serializer_action_classes = {'create': CreateChoiceSerializer}
@@ -145,6 +204,18 @@ class ChoiceViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedViewS
     user_field = 'question__section__qnaire__creator'
     order_scope_field = 'question'
     list_serializer_class = ChoiceSerializer
+
+    def validate_destroy(self, instance):
+        raise_validation_error_if_qnaire_published(
+            instance.question.section.qnaire)
+
+    def validate_create(self, serializer):
+        raise_validation_error_if_qnaire_published(
+            serializer.validated_data['question'].section.qnaire)
+
+    def validate_update(self, instance, serializer):
+        raise_validation_error_if_qnaire_published(
+            instance.question.section.qnaire)
 
     def perform_destroy(self, instance):
         question = instance.question

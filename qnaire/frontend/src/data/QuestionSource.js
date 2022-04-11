@@ -21,7 +21,7 @@ export class QuestionSource extends OrderedSource {
     this._subscribe(QuestionEvents.TYPE, callback);
   }
 
-  unsubscribeType() {
+  unsubscribeType(callback) {
     this._unsubscribe(QuestionEvents.TYPE, callback);
   }
 
