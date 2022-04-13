@@ -28,8 +28,8 @@ import { useMediaQuery } from "@mui/material";
 const drawerWidth = 240;
 
 const Main = styled("main", {
-  shouldForwardProp: (prop) => prop !== "open" && prop !== "drawerDisabled",
-})(({ theme, open, drawerDisabled }) => ({
+  shouldForwardProp: (prop) => prop !== "open",
+})(({ theme, open }) => ({
   flexGrow: 1,
   padding: theme.spacing(1),
   transition: theme.transitions.create("margin", {
@@ -37,7 +37,7 @@ const Main = styled("main", {
     duration: theme.transitions.duration.leavingScreen,
   }),
   marginLeft: `-${drawerWidth}px`,
-  ...((open || drawerDisabled) && {
+  ...(open && {
     transition: theme.transitions.create("margin", {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
@@ -159,39 +159,38 @@ export function AppStructure({ auth, children }) {
           />
         </Toolbar>
       </AppBar>
-      {!drawerDisabled && (
-        <Drawer
-          sx={{
+      <Drawer
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          "& .MuiDrawer-paper": {
             width: drawerWidth,
-            flexShrink: 0,
-            "& .MuiDrawer-paper": {
-              width: drawerWidth,
-              boxSizing: "border-box",
-            },
-          }}
-          variant="persistent"
-          anchor="left"
-          open={open}
-        >
-          <DrawerHeader>
-            <IconButton onClick={handleDrawerClose}>
-              {theme.direction === "ltr" ? (
-                <ChevronLeftIcon />
-              ) : (
-                <ChevronRightIcon />
-              )}
-            </IconButton>
-          </DrawerHeader>
-          <Divider />
-          <List>
-            {pageActions.map((action) => (
-              <ListItem button key={action.name} onClick={action.callback}>
-                <ListItemIcon>{action.icon}</ListItemIcon>
-                <ListItemText primary={action.name} />
-              </ListItem>
-            ))}
-          </List>
-          {/* <Divider />
+            boxSizing: "border-box",
+          },
+        }}
+        variant="persistent"
+        anchor="left"
+        open={open && !drawerDisabled}
+      >
+        <DrawerHeader>
+          <IconButton onClick={handleDrawerClose}>
+            {theme.direction === "ltr" ? (
+              <ChevronLeftIcon />
+            ) : (
+              <ChevronRightIcon />
+            )}
+          </IconButton>
+        </DrawerHeader>
+        <Divider />
+        <List>
+          {pageActions.map((action) => (
+            <ListItem button key={action.name} onClick={action.callback}>
+              <ListItemIcon>{action.icon}</ListItemIcon>
+              <ListItemText primary={action.name} />
+            </ListItem>
+          ))}
+        </List>
+        {/* <Divider />
         <List>
           {["All mail", "Trash", "Spam"].map((text, index) => (
             <ListItem button key={text}>
@@ -202,9 +201,9 @@ export function AppStructure({ auth, children }) {
             </ListItem>
           ))}
         </List> */}
-        </Drawer>
-      )}
-      <Main open={open}>
+      </Drawer>
+      )
+      <Main open={open && !drawerDisabled}>
         <DrawerHeader />
         <Box mt={2}>{children}</Box>
       </Main>
