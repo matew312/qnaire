@@ -210,7 +210,7 @@ export function QnaireProvider({ children }) {
       new PageAction("Přidat otázku", <AddIcon />, createQuestion),
     ];
     setPageActions(pageActions);
-    // return () => setPageActions([]);
+    return () => setPageActions([]);
   }, [isLoaded, selected]);
 
   const value = {

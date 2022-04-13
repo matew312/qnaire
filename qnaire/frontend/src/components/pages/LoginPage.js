@@ -5,6 +5,7 @@ import * as yup from "yup";
 import { Button, TextField, Grid, Box, Typography } from "@mui/material";
 import { POST } from "../../request";
 import FTextField from "../formik/FTextField";
+import { useAppContext } from "../../providers/AppContextProvider";
 
 const initialValues = {
   username: "",
@@ -24,6 +25,16 @@ const validationSchema = yup.object({
 export function LoginPage({ auth }) {
   const [errorText, setErrorText] = useState("");
   const navigate = useNavigate();
+  const { setPageActions, setDrawerDisabled } = useAppContext();
+
+  useEffect(() => {
+    setPageActions([]);
+    setDrawerDisabled(true);
+
+    return () => {
+      setDrawerDisabled(false);
+    }
+  }, []);
 
   function login(values) {
     POST("auth", values, false)
@@ -54,11 +65,7 @@ export function LoginPage({ auth }) {
           </Grid>
           <Box width="100%"></Box>
           <Grid item xs={12} sm={8} lg={4} mt={2}>
-            <FTextField
-              name="password"
-              label="Heslo"
-              type="password"
-            />
+            <FTextField name="password" label="Heslo" type="password" />
           </Grid>
           <Box width="100%"></Box>
           <Grid item xs={12} sm={8} lg={4} mt={2}>

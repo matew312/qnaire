@@ -121,7 +121,7 @@ export function Questionnaire({ id }) {
                     )}
                   </Grid>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} mt={1}>
                   <EditableText
                     editable={isSelected}
                     typographyProps={{ variant: "h3" }}
@@ -155,20 +155,22 @@ export function Questionnaire({ id }) {
                     }}
                   />
                 </Grid>
-                <Grid item xs={12} container justifyContent="flex-end">
-                  <Grid item xs="auto">
-                    <ConfirmDialogIconButton
-                      icon={DeleteIcon}
-                      title={
-                        isPublished
-                          ? "Smazat dotazník a všechny dosud nasbírané odpovědi?"
-                          : "Smazat dotazník?"
-                      }
-                      onConfirm={destroy}
-                      tooltip={"Smazat"}
-                    />
+                {isSelected && (
+                  <Grid item xs={12} container justifyContent="flex-end">
+                    <Grid item xs="auto">
+                      <ConfirmDialogIconButton
+                        icon={DeleteIcon}
+                        title={
+                          isPublished
+                            ? "Smazat dotazník a všechny dosud nasbírané odpovědi?"
+                            : "Smazat dotazník?"
+                        }
+                        onConfirm={destroy}
+                        tooltip={"Smazat"}
+                      />
+                    </Grid>
                   </Grid>
-                </Grid>
+                )}
                 <ErrorList error={error} />
               </Grid>
             </Paper>

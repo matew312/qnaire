@@ -24,7 +24,7 @@ export default function ConfirmDialogIconButton({
   return (
     <div>
       <Tooltip title={tooltip}>
-        <span>
+        <span> 
           <IconButton size={size} onClick={handleClickOpen} disabled={disabled}>
             <Icon fontSize="inherit" />
           </IconButton>

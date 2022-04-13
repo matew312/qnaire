@@ -32,6 +32,7 @@ export function QnairesPage() {
       ),
     ];
     setPageActions(pageActions);
+    return () => setPageActions([]);
   }, []);
 
   const navigate = useNavigate();
@@ -76,7 +77,10 @@ export function QnairesPage() {
                     buttonProps={{ size: "small" }}
                     onConfirm={() => update(qnaire.id, { published: false })}
                   />
-                  <QnaireLinkDialog getLink={() => getLink(qnaire.id)} />
+                  <QnaireLinkDialog
+                    getLink={() => getLink(qnaire.id)}
+                    buttonProps={{ size: "small" }}
+                  />
                 </CardActions>
               ) : (
                 <CardActions>

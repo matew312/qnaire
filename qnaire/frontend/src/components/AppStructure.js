@@ -27,24 +27,24 @@ import { useMediaQuery } from "@mui/material";
 
 const drawerWidth = 240;
 
-const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })(
-  ({ theme, open }) => ({
-    flexGrow: 1,
-    padding: theme.spacing(1),
+const Main = styled("main", {
+  shouldForwardProp: (prop) => prop !== "open" && prop !== "drawerDisabled",
+})(({ theme, open, drawerDisabled }) => ({
+  flexGrow: 1,
+  padding: theme.spacing(1),
+  transition: theme.transitions.create("margin", {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  marginLeft: `-${drawerWidth}px`,
+  ...((open || drawerDisabled) && {
     transition: theme.transitions.create("margin", {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
     }),
-    marginLeft: `-${drawerWidth}px`,
-    ...(open && {
-      transition: theme.transitions.create("margin", {
-        easing: theme.transitions.easing.easeOut,
-        duration: theme.transitions.duration.enteringScreen,
-      }),
-      marginLeft: 0,
-    }),
-  })
-);
+    marginLeft: 0,
+  }),
+}));
 
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
@@ -102,7 +102,7 @@ export function AppStructure({ auth, children }) {
   const navigate = useNavigate();
   const navActions = [{ name: "Moje dotazníky", path: "/questionnaires" }];
   const settings = [loginOrLogoutItem];
-  const { pageActions } = useAppContext();
+  const { pageActions, drawerDisabled } = useAppContext();
 
   const theme = useTheme();
   const isMdOrLarger = useMediaQuery(theme.breakpoints.up("md")); //useMediaQuery((theme) => theme.breakpoints.up("md"));
@@ -122,14 +122,14 @@ export function AppStructure({ auth, children }) {
 
   return (
     <Box sx={{ display: "flex" }}>
-      <AppBar position="fixed" open={open}>
+      <AppBar position="fixed" open={open && !drawerDisabled}>
         <Toolbar>
           <IconButton
             color="inherit"
             aria-label="open drawer"
             onClick={handleDrawerOpen}
             edge="start"
-            sx={{ mr: 2, ...(open && { display: "none" }) }}
+            sx={{ mr: 2, ...((open || drawerDisabled) && { display: "none" }) }}
           >
             <MenuIcon />
           </IconButton>
@@ -159,38 +159,39 @@ export function AppStructure({ auth, children }) {
           />
         </Toolbar>
       </AppBar>
-      <Drawer
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          "& .MuiDrawer-paper": {
+      {!drawerDisabled && (
+        <Drawer
+          sx={{
             width: drawerWidth,
-            boxSizing: "border-box",
-          },
-        }}
-        variant="persistent"
-        anchor="left"
-        open={open}
-      >
-        <DrawerHeader>
-          <IconButton onClick={handleDrawerClose}>
-            {theme.direction === "ltr" ? (
-              <ChevronLeftIcon />
-            ) : (
-              <ChevronRightIcon />
-            )}
-          </IconButton>
-        </DrawerHeader>
-        <Divider />
-        <List>
-          {pageActions.map((action) => (
-            <ListItem button key={action.name} onClick={action.callback}>
-              <ListItemIcon>{action.icon}</ListItemIcon>
-              <ListItemText primary={action.name} />
-            </ListItem>
-          ))}
-        </List>
-        {/* <Divider />
+            flexShrink: 0,
+            "& .MuiDrawer-paper": {
+              width: drawerWidth,
+              boxSizing: "border-box",
+            },
+          }}
+          variant="persistent"
+          anchor="left"
+          open={open}
+        >
+          <DrawerHeader>
+            <IconButton onClick={handleDrawerClose}>
+              {theme.direction === "ltr" ? (
+                <ChevronLeftIcon />
+              ) : (
+                <ChevronRightIcon />
+              )}
+            </IconButton>
+          </DrawerHeader>
+          <Divider />
+          <List>
+            {pageActions.map((action) => (
+              <ListItem button key={action.name} onClick={action.callback}>
+                <ListItemIcon>{action.icon}</ListItemIcon>
+                <ListItemText primary={action.name} />
+              </ListItem>
+            ))}
+          </List>
+          {/* <Divider />
         <List>
           {["All mail", "Trash", "Spam"].map((text, index) => (
             <ListItem button key={text}>
@@ -201,10 +202,11 @@ export function AppStructure({ auth, children }) {
             </ListItem>
           ))}
         </List> */}
-      </Drawer>
+        </Drawer>
+      )}
       <Main open={open}>
         <DrawerHeader />
-        {children}
+        <Box mt={2}>{children}</Box>
       </Main>
     </Box>
   );
