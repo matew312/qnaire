@@ -7,9 +7,12 @@ import React, {
 } from "react";
 import { yupErrorToFieldErrors } from "../validation";
 
-const UPDATE_TIMEOUT = 750;
-
-export const useGenericController = (source, id, validationSchema = null) => {
+export const useGenericController = (
+  source,
+  id,
+  validationSchema = null,
+  timeout = 750
+) => {
   const [data, setData] = useState(() => {
     return { ...source.get(id), error: {} };
   });
@@ -55,7 +58,7 @@ export const useGenericController = (source, id, validationSchema = null) => {
     return new Promise((resolve) => {
       updateTimeoutId.current = setTimeout(() => {
         resolve();
-      }, UPDATE_TIMEOUT);
+      }, timeout);
     }).then(() => {
       updateTimeoutId.current = null;
       pendingData.current = null;

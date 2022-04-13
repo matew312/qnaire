@@ -8,10 +8,19 @@ export function ensurePrecision(value, step) {
 }
 
 export function dictToSortedArray(dict, sortFunc, mapFunc = null) {
-  const array = Object.entries(dict)
-    .sort(sortFunc);
-  if(mapFunc) {
-    array.map(mapFunc)
+  const array = Object.entries(dict).sort(sortFunc);
+  if (mapFunc) {
+    array.map(mapFunc);
   }
   return array;
+}
+
+export function downloadTextFile(text, name) {
+  const a = document.createElement("a");
+  const type = name.split(".").pop();
+  a.href = URL.createObjectURL(
+    new Blob([text], { type: `text/${type === "txt" ? "plain" : type}` })
+  );
+  a.download = name;
+  a.click();
 }

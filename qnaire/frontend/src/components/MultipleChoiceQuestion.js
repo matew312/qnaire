@@ -17,6 +17,7 @@ import Check from "@mui/icons-material/Check";
 import { OptionMenu } from "./basic/OptionMenu";
 import { useMultipleChoiceQuestionController } from "../controllers/useMultipleChoiceQuestionController";
 import Question from "./Question";
+import CheckMenuItem from "./basic/CheckMenuItem";
 
 function Options({
   min_answers,
@@ -103,10 +104,11 @@ function Options({
 function Menu({ random_order, update }) {
   return (
     <OptionMenu>
-      <MenuItem onClick={() => update({ random_order: !random_order })}>
-        <ListItemIcon>{random_order && <Check />}</ListItemIcon>
-        Zobrazovat možnosti v náhodném pořadí
-      </MenuItem>
+      <CheckMenuItem
+        checked={random_order}
+        onChange={(random_order) => update({ random_order })}
+        text="Zobrazovat možnosti v náhodném pořadí"
+      />
     </OptionMenu>
   );
 }

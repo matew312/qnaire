@@ -5,6 +5,7 @@ import {
   Button,
   Grid,
   IconButton,
+  MenuItem,
   Paper,
   Tooltip,
   Typography,
@@ -25,6 +26,10 @@ import PublishQnaireDialog from "./PublishQnaireDialog";
 import ConfirmDialogButton from "./basic/ConfirmDialogButton";
 import ConfirmDialogIconButton from "./basic/ConfirmDialogIconButton";
 import UnpublishDialogButton from "./UnpublishDialogButton";
+import ChangeQnaireDialog from "./ChangeQnaireDialog";
+import { OptionMenu } from "./basic/OptionMenu";
+import CheckMenuItem from "./basic/CheckMenuItem";
+import QnaireLinkDialog from "./QnaireLinkDialog";
 
 const Sections = React.memo(({ sections }) =>
   sections.map((section, index) => (
@@ -38,7 +43,7 @@ export function Questionnaire({ id }) {
   const {
     name,
     desc,
-    private: isPrivate,
+    private: isPrivate, //private is a reserved word...
     anonymous: isAnonymous,
     published: isPublished,
     sections,
@@ -49,6 +54,8 @@ export function Questionnaire({ id }) {
     handleDragEnd,
     error,
     previewLink,
+    exportResult,
+    getLink,
   } = useQnaireController(id);
   const { isSelected, select } = useQnaireSelect(id);
   const scrollRef = useRef(null);
@@ -102,24 +109,40 @@ export function Questionnaire({ id }) {
                       </Link>
                     </Tooltip>
                   </Grid>
-                  <Grid item xs="auto">
-                    {!isPublished ? (
+                  {!isPublished && (
+                    <Grid item xs="auto">
                       <PublishQnaireDialog
                         name={name}
                         isPrivate={isPrivate}
                         isAnonymous={isAnonymous}
-                        onPublish={publish}
+                        onSubmit={publish}
                         buttonProps={{ variant: "contained" }}
                       />
-                    ) : (
-                      <UnpublishDialogButton
-                        buttonProps={{
-                          variant: "contained",
-                        }}
-                        onConfirm={() => update({ published: false })}
-                      />
-                    )}
-                  </Grid>
+                    </Grid>
+                  )}
+                  {isPublished && (
+                    <React.Fragment>
+                      <Grid item xs="auto">
+                        <UnpublishDialogButton
+                          buttonProps={{
+                            variant: "outlined",
+                          }}
+                          onConfirm={() => update({ published: false })}
+                        />
+                      </Grid>
+                      <Grid item xs="auto">
+                        <Button variant="contained" onClick={exportResult}>
+                          Exportovat odpovědi
+                        </Button>
+                      </Grid>
+                      <Grid item xs="auto">
+                        <QnaireLinkDialog
+                          getLink={getLink}
+                          buttonProps={{ size: "small" }}
+                        />
+                      </Grid>
+                    </React.Fragment>
+                  )}
                 </Grid>
                 <Grid item xs={12} mt={1}>
                   <EditableText
@@ -156,7 +179,7 @@ export function Questionnaire({ id }) {
                   />
                 </Grid>
                 {isSelected && (
-                  <Grid item xs={12} container justifyContent="flex-end">
+                  <Grid item xs={12} container justifyContent="flex-end" sx={{pt: 1}}>
                     <Grid item xs="auto">
                       <ConfirmDialogIconButton
                         icon={DeleteIcon}
@@ -168,6 +191,22 @@ export function Questionnaire({ id }) {
                         onConfirm={destroy}
                         tooltip={"Smazat"}
                       />
+                    </Grid>
+                    <Grid item xs="auto">
+                      <OptionMenu>
+                        <CheckMenuItem
+                          checked={isAnonymous}
+                          onChange={(anonymous) => update({ anonymous })}
+                          text="Anonymní"
+                        />
+                        <CheckMenuItem
+                          checked={isPrivate}
+                          onChange={(isPrivate) =>
+                            update({ private: isPrivate })
+                          }
+                          text="Soukromý"
+                        />
+                      </OptionMenu>
                     </Grid>
                   </Grid>
                 )}

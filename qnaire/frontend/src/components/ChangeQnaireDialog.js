@@ -1,11 +1,11 @@
 import * as React from "react";
 import BasePublishQnaireDialog from "./BasePublishQnaireDialog";
 
-export default function PublishQnaireDialog({ name, ...props }) {
+export default function ChangeQnaireDialog({ name, ...props }) {
   return (
     <BasePublishQnaireDialog
-      title={`Publikovat dotazník "${name}"`}
-      buttonText="Publikovat"
+      title={`Změnit dotazník "${name}"`}
+      buttonText="Změnit"
       {...props}
     />
   );

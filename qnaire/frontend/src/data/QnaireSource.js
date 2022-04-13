@@ -66,6 +66,10 @@ class QnaireSource extends DataSource {
     });
   }
 
+  retrieveResult(id) {
+    return this.gateway.customRetrieve(id, "result");
+  }
+
   createPrivateId(id) {
     return POST(`${Resources.QNAIRES}/${id}/private-id`, {});
   }

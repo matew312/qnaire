@@ -12,6 +12,10 @@ export class DataGateway {
     return GET(`${this.resource}`, true, params);
   }
 
+  customRetrieve(id, action) {
+    return GET(`${this.resource}/${id}/${action}`);
+  }
+
   create(data) {
     return POST(this.resource, data);
   }

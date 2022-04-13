@@ -87,8 +87,6 @@ export function AppStructure({ auth, children }) {
       };
 
   function performAction(item) {
-    setOpen(false); //nav actions will close the drawer if it's open
-
     if (!item) {
       return;
     }

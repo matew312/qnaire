@@ -2,21 +2,10 @@ import React, { useCallback, useEffect, useReducer, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import qnaireSource from "../data/QnaireSource";
 import { useQnaireContext } from "../providers/QnaireProvider";
-import { useGenericController } from "./useGenericController";
-import * as yup from "yup";
-import { requiredString } from "../validation";
-
-const validationSchema = yup.object({
-  name: requiredString,
-  desc: yup.string(),
-});
+import { useBaseQnaireController } from "./useBaseQnaireController";
 
 export function useQnaireController(id) {
-  const [data, update, regularDestroy] = useGenericController(
-    qnaireSource,
-    id,
-    validationSchema
-  );
+  const { data, update, ...baseQnaireController } = useBaseQnaireController(id);
   const { setError } = useQnaireContext();
 
   //technically, just the ids are needed, but there is no reason to not keep object references
@@ -55,32 +44,6 @@ export function useQnaireController(id) {
       });
   }
 
-  const navigate = useNavigate();
-
-  const publish = ({ isPrivate, isAnonymous }) => {
-    update({
-      private: isPrivate,
-      anonymous: isAnonymous,
-      published: true,
-    })
-      .then((data) => {
-        navigate("/questionnaires");
-      })
-      .catch((error) => {
-        setError(JSON.stringify(error));
-      });
-  };
-
-  const destroy = () => {
-    regularDestroy()
-      .then(() => navigate("/questionnaires"))
-      .catch((error) => {
-        setError(JSON.stringify(error));
-      });
-  };
-
-  const previewLink = `/questionnaires/${id}/response?preview`;
-
   useEffect(() => {
     qnaireSource.retrieve(id).then((data) => {
       update(data, false); //passed shouldSourceUpdate=false to prevent unnecessary api call
@@ -100,13 +63,11 @@ export function useQnaireController(id) {
   }, [id]);
 
   return {
+    ...baseQnaireController,
     ...data,
-    sections,
     update,
-    destroy,
-    publish,
+    sections,
     isLoaded: Boolean(data.id) && Boolean(sections),
     handleDragEnd,
-    previewLink,
   };
 }

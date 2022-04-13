@@ -13,7 +13,7 @@ export function OptionMenu(props) {
   };
 
   return (
-    <div>
+    <React.Fragment>
       <Tooltip title="Další nastavení">
         <IconButton id={`${props.id}-button`} onClick={handleClick}>
           <MoreVertIcon />
@@ -35,6 +35,6 @@ export function OptionMenu(props) {
       >
         {props.children}
       </Menu>
-    </div>
+    </React.Fragment>
   );
 }
