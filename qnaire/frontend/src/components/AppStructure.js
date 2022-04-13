@@ -100,7 +100,7 @@ export function AppStructure({ auth, children }) {
     }
   }
   const navigate = useNavigate();
-  const navActions = [{ name: "Dotazníky", path: "/questionnaires" }];
+  const navActions = [{ name: "Moje dotazníky", path: "/questionnaires" }];
   const settings = [loginOrLogoutItem];
   const { pageActions } = useAppContext();
 

@@ -5,11 +5,14 @@ import React, {
   useEffect,
   useRef,
 } from "react";
+import { yupErrorToFieldErrors } from "../validation";
 
 const UPDATE_TIMEOUT = 750;
 
-export const useGenericController = (source, id) => {
-  const [data, setData] = useState(() => source.get(id));
+export const useGenericController = (source, id, validationSchema = null) => {
+  const [data, setData] = useState(() => {
+    return { ...source.get(id), error: {} };
+  });
   const updateTimeoutId = useRef(null);
   const pendingData = useRef(null);
 
@@ -23,6 +26,24 @@ export const useGenericController = (source, id) => {
     updateData(updatedData);
     if (!shouldSourceUpdate) {
       return;
+    }
+    if (validationSchema) {
+      try {
+        if (
+          !validationSchema.isValidSync({
+            ...data, //passing the rest of the data so that required fields don't have to be in updatedData
+            ...updatedData,
+          })
+        ) {
+          validationSchema.validateSync({
+            ...data, //passing the rest of the data so that required fields don't have to be in updatedData
+            ...updatedData,
+          });
+        }
+      } catch (error) {
+        updateData({ error: yupErrorToFieldErrors(error) });
+        return;
+      }
     }
     if (updateTimeoutId.current) {
       clearTimeout(updateTimeoutId.current);
@@ -41,7 +62,7 @@ export const useGenericController = (source, id) => {
       return source
         .update(id, updatedData)
         .then((data) => {
-          updateData({ ...data, error: "" });
+          updateData({ ...data, error: {} });
         })
         .catch((error) => {
           updateData({ error });
@@ -57,7 +78,7 @@ export const useGenericController = (source, id) => {
   };
 
   const destroy = () => {
-    source.delete(id).catch((error) => {
+    return source.delete(id).catch((error) => {
       updateData({ error });
     });
   };

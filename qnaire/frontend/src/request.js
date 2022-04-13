@@ -17,16 +17,22 @@ function handleErrors(response) {
   return promise;
 }
 
-export function GET(enpoint, auth = true) {
-  return fetchWithoutContent("GET", enpoint, auth);
+export function GET(enpoint, auth = true, params = null) {
+  return fetchWithoutContent("GET", enpoint, auth, params);
 }
 
 export function DELETE(enpoint, auth = true) {
   return fetchWithoutContent("DELETE", enpoint, auth);
 }
 
-function fetchWithoutContent(method, endpoint, auth = true) {
-  return fetch(`${BASE_PATH}${endpoint}/`, {
+function fetchWithoutContent(method, endpoint, auth = true, params = null) {
+  let url = `${BASE_PATH}${endpoint}/`;
+  if (params) {
+    url += `?${Object.keys(params)
+      .map((key) => `${key}=${params[key]}`)
+      .join("&")}`;
+  }
+  return fetch(url, {
     method,
     headers: {
       ...(auth && { Authorization: getAuthHeader() }),

@@ -1,4 +1,5 @@
 import React, { useEffect, useReducer, useState, useMemo, useRef } from "react";
+import { Link } from "react-router-dom";
 import {
   Box,
   Button,
@@ -9,7 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 import PreviewIcon from "@mui/icons-material/Preview";
-
+import DeleteIcon from "@mui/icons-material/Delete";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import { EditableText } from "./basic/EditableText";
 import Section from "./Section";
@@ -21,6 +22,9 @@ import HorizontalDragBox from "./basic/HorizontalDragBox";
 import ErrorList from "./basic/ErrorList";
 import { useScrollWhenSelected } from "../hooks";
 import PublishQnaireDialog from "./PublishQnaireDialog";
+import ConfirmDialogButton from "./basic/ConfirmDialogButton";
+import ConfirmDialogIconButton from "./basic/ConfirmDialogIconButton";
+import UnpublishDialogButton from "./UnpublishDialogButton";
 
 const Sections = React.memo(({ sections }) =>
   sections.map((section, index) => (
@@ -39,10 +43,12 @@ export function Questionnaire({ id }) {
     published: isPublished,
     sections,
     update,
+    destroy,
     publish,
     isLoaded,
     handleDragEnd,
     error,
+    previewLink,
   } = useQnaireController(id);
   const { isSelected, select } = useQnaireSelect(id);
   const scrollRef = useRef(null);
@@ -81,21 +87,38 @@ export function Questionnaire({ id }) {
                   xs={12}
                   justifyContent="flex-end"
                   alignItems="center"
+                  spacing={1}
                 >
                   <Grid item xs="auto">
                     <Tooltip title="Zobrazit náhled">
-                      <IconButton>
-                        <PreviewIcon fontSize="large" />
-                      </IconButton>
+                      <Link
+                        to={previewLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <IconButton>
+                          <PreviewIcon fontSize="large" />
+                        </IconButton>
+                      </Link>
                     </Tooltip>
                   </Grid>
                   <Grid item xs="auto">
-                    <PublishQnaireDialog
-                      name={name}
-                      isPrivate={isPrivate}
-                      isAnonymous={isAnonymous}
-                      onPublish={publish}
-                    />
+                    {!isPublished ? (
+                      <PublishQnaireDialog
+                        name={name}
+                        isPrivate={isPrivate}
+                        isAnonymous={isAnonymous}
+                        onPublish={publish}
+                        buttonProps={{ variant: "contained" }}
+                      />
+                    ) : (
+                      <UnpublishDialogButton
+                        buttonProps={{
+                          variant: "contained",
+                        }}
+                        onConfirm={() => update({ published: false })}
+                      />
+                    )}
                   </Grid>
                 </Grid>
                 <Grid item xs={12}>
@@ -103,6 +126,7 @@ export function Questionnaire({ id }) {
                     editable={isSelected}
                     typographyProps={{ variant: "h3" }}
                     value={name}
+                    error={error.name}
                     onChange={(name) => {
                       update({ name });
                     }}
@@ -118,6 +142,7 @@ export function Questionnaire({ id }) {
                   <EditableText
                     editable={isSelected}
                     value={desc}
+                    error={error.desc}
                     onChange={(desc) => {
                       update({ desc });
                     }}
@@ -130,11 +155,21 @@ export function Questionnaire({ id }) {
                     }}
                   />
                 </Grid>
-                {error && (
-                  <Grid item xs={12} mt={2}>
-                    <ErrorList error={error} />
+                <Grid item xs={12} container justifyContent="flex-end">
+                  <Grid item xs="auto">
+                    <ConfirmDialogIconButton
+                      icon={DeleteIcon}
+                      title={
+                        isPublished
+                          ? "Smazat dotazník a všechny dosud nasbírané odpovědi?"
+                          : "Smazat dotazník?"
+                      }
+                      onConfirm={destroy}
+                      tooltip={"Smazat"}
+                    />
                   </Grid>
-                )}
+                </Grid>
+                <ErrorList error={error} />
               </Grid>
             </Paper>
             <Grid container mt={1} spacing={4}>

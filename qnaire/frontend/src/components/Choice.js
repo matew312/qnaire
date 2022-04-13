@@ -14,7 +14,7 @@ import { useChoiceController } from "../controllers/useChoiceController";
 import ScrollableSelect from "./basic/ScrollableSelect";
 
 export default function Choice({ id, editable, checkbox, textFieldProps }) {
-  const { text, skip_to_section, sections, update, destroy } =
+  const { text, skip_to_section, sections, update, destroy, error } =
     useChoiceController(id);
 
   return (
@@ -25,6 +25,7 @@ export default function Choice({ id, editable, checkbox, textFieldProps }) {
       <Grid item xs>
         <EditableText
           value={text}
+          error={error.text}
           editable={editable}
           selectOnFocus={true}
           onChange={(text) => update({ text })}
@@ -32,7 +33,7 @@ export default function Choice({ id, editable, checkbox, textFieldProps }) {
         />
       </Grid>
       {editable && (
-        <Grid item xs={3}>
+        <Grid item xs={3} sx={{ mb: "auto" }}>
           <FormControl fullWidth size="small" variant="standard">
             <InputLabel id="skip-to-section-label">Přeskočit na</InputLabel>
             <ScrollableSelect

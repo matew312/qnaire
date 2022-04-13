@@ -4,10 +4,12 @@ import ConfirmDialog from "./ConfirmDialog";
 
 export default function ConfirmDialogIconButton({
   icon: Icon,
+  size,
   tooltip,
   title,
   text,
   onConfirm,
+  disabled,
 }) {
   const [open, setOpen] = React.useState(false);
 
@@ -22,9 +24,11 @@ export default function ConfirmDialogIconButton({
   return (
     <div>
       <Tooltip title={tooltip}>
-        <IconButton onClick={handleClickOpen}>
-          <Icon />
-        </IconButton>
+        <span>
+          <IconButton size={size} onClick={handleClickOpen} disabled={disabled}>
+            <Icon fontSize="inherit" />
+          </IconButton>
+        </span>
       </Tooltip>
       <ConfirmDialog
         onClose={handleClose}

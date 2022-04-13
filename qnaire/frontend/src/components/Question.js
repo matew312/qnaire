@@ -34,6 +34,7 @@ import { QuestionTypes } from "../QuestionTypes";
 import HorizontalDragBox from "./basic/HorizontalDragBox";
 import ErrorList from "./basic/ErrorList";
 import { useScrollWhenSelected } from "../hooks";
+import ESelect from "./fields/ESelect";
 
 function Question({
   options: QuestionOptions,
@@ -50,7 +51,7 @@ function Question({
   ...data
 }) {
   const { isSelected, select } = useQuestionSelect(id);
-  const { copy } = useQnaireContext();
+  const { copy, isPublished, setError } = useQnaireContext();
   const scrollRef = React.useRef(null);
   useScrollWhenSelected(isSelected, scrollRef);
 
@@ -59,9 +60,15 @@ function Question({
       {(provided) => (
         <Card
           sx={{ px: 2, pb: 2, ...getSelectedStyle(isSelected) }}
-          // raised
           className="clickable"
-          onClick={select}
+          onClick={
+            !isPublished
+              ? select
+              : () =>
+                  setError(
+                    "Nelze měnit obsah otázek, když je dotazník publikovaný."
+                  )
+          }
           ref={provided.innerRef}
           {...provided.draggableProps}
         >
@@ -73,6 +80,7 @@ function Question({
                   onChange={(text) => update({ text })}
                   editable={isSelected}
                   value={text}
+                  error={error.text}
                   selectOnFocus={true}
                   typographyProps={{ variant: "h5" }}
                   textFieldProps={{
@@ -85,22 +93,19 @@ function Question({
               </Grid>
               <Grid item /* sm="auto" */ xs={12} sm={4}>
                 {isSelected ? (
-                  <FormControl fullWidth required>
-                    <InputLabel id="type-select-label">Typ otázky</InputLabel>
-                    <Select
-                      value={resourcetype}
-                      label="Typ otázky"
-                      onChange={(e) => update({ resourcetype: e.target.value })}
-                      id="type-select"
-                      labelId="type-select-label"
-                    >
-                      {Object.keys(QuestionTypes).map((type) => (
-                        <MenuItem value={type} key={type}>
-                          {QuestionTypes[type].desc}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                  <ESelect
+                    value={resourcetype}
+                    error={error.type}
+                    label="Typ otázky"
+                    onChange={(e) => update({ resourcetype: e.target.value })}
+                    required
+                  >
+                    {Object.keys(QuestionTypes).map((type) => (
+                      <MenuItem value={type} key={type}>
+                        {QuestionTypes[type].desc}
+                      </MenuItem>
+                    ))}
+                  </ESelect>
                 ) : (
                   <Typography color="text.secondary" textAlign="right">
                     {QuestionTypes[resourcetype].desc}
@@ -113,6 +118,7 @@ function Question({
                   id={id}
                   {...data}
                   update={update}
+                  error={error}
                   isSelected={isSelected}
                 />
               </Grid>
@@ -174,7 +180,12 @@ function Question({
                       </FormGroup>
                     </Grid>
                     <Grid item xs="auto">
-                      <QuestionMenu id={id} {...data} update={update} />
+                      <QuestionMenu
+                        id={id}
+                        {...data}
+                        update={update}
+                        error={error}
+                      />
                     </Grid>
                   </Grid>
                 </Grid>

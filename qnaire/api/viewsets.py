@@ -1,8 +1,8 @@
-from django.db.models import F
+from django.db.models import F, Q
 from rest_framework import permissions, viewsets, response, status, mixins
 from rest_framework.decorators import action
 from .mixins import OrderedViewSetMixin, UserQuerySetMixin, MultiSerializerViewSetMixin
-from .models import Answer, Choice, Question, Questionnaire, Section
+from .models import Answer, Choice, Question, Questionnaire, Response, Section
 from .serializers import (
     AnswerPolymorhicSerializer,
     ChoiceSerializer,
@@ -70,13 +70,34 @@ class ModelViewSetWithValidation(viewsets.ModelViewSet):
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class QuestionnaireViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, viewsets.ModelViewSet):
+class QuestionnaireViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, ModelViewSetWithValidation):
     queryset = Questionnaire.objects.all()
     serializer_class = QuestionnaireSerializer
     serializer_action_classes = {'retrieve': QuestionnaireCreationSerializer}
 
     def perform_create(self, serializer):
         serializer.save(creator=self.request.user)
+
+    def delete_responses(self, instance):
+        # Alternative solution is to include field 'qnaire' in Response. Then I could just do Response.objects.filter(qnaire=qnaire).delete() and cascade would happen
+        responses_pks = Answer.objects.filter(
+            (Q(OpenAnswer___question__section__qnaire=instance) |
+             Q(RangeAnswer___question__section__qnaire=instance) |
+                Q(MultipleChoiceAnswer___question__section__qnaire=instance))).values_list('response', flat=True).distinct()
+        Response.objects.filter(pk__in=responses_pks).delete()
+
+    def do_update(self, instance, serializer):
+        published = serializer.validated_data.get('published', None)
+        if published:
+            self.delete_responses(instance)
+        self.perform_update(serializer)
+        return response.Response(serializer.data)
+
+    def perform_destroy(self, instance):
+        # there can never be responses unless the qnaire is published, which means the query doesn't need to be done otherwise
+        if instance.published:
+            self.delete_responses(instance)
+        return super().perform_destroy(instance)
 
 
 # for section movement and question movement within section
@@ -186,12 +207,13 @@ class QuestionViewSet(UserQuerySetMixin, OrderedViewSetMixin, ModelViewSetWithVa
     def type(self, request, pk=None):
         question = self.get_object()
         serializer = QuestionTypePolymorphicSerializer(
-            question, data=request.data)
+            data=request.data)
         serializer.is_valid(raise_exception=True)
         field_values = {'id': question.id, 'section': question.section,
                         'order_num': question.order_num, 'text': question.text, 'mandatory': question.mandatory}
         question.delete()
         new_question = serializer.save(**field_values)
+        print(serializer)
         return response.Response(QuestionPolymorphicSerializer(new_question).data, status=status.HTTP_200_OK)
 
 

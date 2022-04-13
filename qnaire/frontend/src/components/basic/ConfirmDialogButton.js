@@ -1,8 +1,12 @@
 import { Button } from "@mui/material";
-import * as React from "react"
+import * as React from "react";
 import ConfirmDialog from "./ConfirmDialog";
 
-export default function ConfirmDialogButton({ buttonText, title, text, onConfirm }) {
+export default function ConfirmDialogButton({
+  buttonText,
+  buttonProps,
+  ...props
+}) {
   const [open, setOpen] = React.useState(false);
 
   const handleClickOpen = () => {
@@ -14,17 +18,11 @@ export default function ConfirmDialogButton({ buttonText, title, text, onConfirm
   };
 
   return (
-    <div>
-      <Button variant="outlined" onClick={handleClickOpen}>
+    <React.Fragment>
+      <Button {...buttonProps} onClick={handleClickOpen}>
         {buttonText}
       </Button>
-      <ConfirmDialog
-        onClose={handleClose}
-        open={open}
-        onConfirm={onConfirm}
-        text={text}
-        title={title}
-      />
-    </div>
+      <ConfirmDialog onClose={handleClose} open={open} {...props} />
+    </React.Fragment>
   );
 }

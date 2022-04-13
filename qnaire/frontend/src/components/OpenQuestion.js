@@ -2,14 +2,16 @@ import { Grid, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { useOpenQuestionController } from "../controllers/useOpenQuestionController";
 import { OptionMenu } from "./basic/OptionMenu";
+import ETextField from "./fields/ETextField";
 import Question from "./Question";
 
-export function Options({ min_length, max_length, isSelected, update }) {
+export function Options({ min_length, max_length, isSelected, update, error }) {
   return isSelected ? (
     <Grid container spacing={2}>
       <Grid item xs={12} sm={6}>
-        <TextField
+        <ETextField
           value={min_length !== null ? min_length : ""}
+          error={error.min_length}
           onChange={(e) =>
             update({
               min_length: e.target.value ? parseInt(e.target.value) : null,
@@ -24,8 +26,9 @@ export function Options({ min_length, max_length, isSelected, update }) {
       </Grid>
 
       <Grid item xs={12} sm={6}>
-        <TextField
+        <ETextField
           value={max_length !== null ? max_length : ""}
+          error={error.max_length}
           onChange={(e) =>
             update({
               max_length: e.target.value ? parseInt(e.target.value) : null,

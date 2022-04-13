@@ -1,12 +1,19 @@
 import React, { useCallback, useEffect, useState } from "react";
 import qnaireSource from "../data/QnaireSource";
 import { useGenericController } from "./useGenericController";
+import * as yup from "yup"
+import { requiredString } from "../validation";
+
+const validationSchema = yup.object({
+  name: requiredString,
+  desc: yup.string()
+});
 
 export function useSectionController(id) {
   const sectionSource = qnaireSource.sectionSource;
   const questionSource = qnaireSource.questionSource;
 
-  const [data, update, destroy] = useGenericController(sectionSource, id);
+  const [data, update, destroy] = useGenericController(sectionSource, id, validationSchema);
   const [questions, setQuestions] = useState(() => {
     return questionSource.getQuestionsForSection(id);
   });

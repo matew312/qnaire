@@ -24,6 +24,7 @@ function Options({
   other_choice,
   isSelected,
   update,
+  error,
 
   choices,
   createChoice,

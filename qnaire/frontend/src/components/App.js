@@ -29,11 +29,11 @@ function App() {
                 <Routes>
                   <Route path="login" element={<LoginPage auth={auth} />} />
                   <Route
-                    path="questionnaires/:id/respond"
+                    path="questionnaires/:id/response"
                     element={<ResponsePage />}
                   />
                   <Route
-                    path="questionnaires/:id/respond/:privateId"
+                    path="questionnaires/:id/response/:privateId"
                     element={<ResponsePage />}
                   />
                   <Route path="/" element={<AuthOnlyOutlet auth={auth} />}>

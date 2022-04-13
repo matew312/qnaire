@@ -7,7 +7,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { FormControlLabel, FormGroup, Switch } from "@mui/material";
-import { useFormik } from "formik";
+import { Form, Formik, useFormik } from "formik";
 import FSwitch from "./formik/FSwitch";
 
 export default function PublishQnaireDialog({
@@ -15,6 +15,7 @@ export default function PublishQnaireDialog({
   isAnonymous,
   isPrivate,
   onPublish,
+  buttonProps,
 }) {
   const [open, setOpen] = React.useState(false);
 
@@ -25,40 +26,37 @@ export default function PublishQnaireDialog({
   const handleClose = () => {
     setOpen(false);
   };
-
+  
+  const initialValues = { isPrivate, isAnonymous };
   const submit = (values) => {
-    console.log("submitted");
     onPublish(values);
   };
 
-  const formik = useFormik({
-    initialValues: { isPrivate, isAnonymous },
-    // validationSchema: validationSchema,
-    onSubmit: submit,
-  });
 
   return (
     <React.Fragment>
-      <Button variant="contained" onClick={handleClickOpen}>
+      <Button {...buttonProps} onClick={handleClickOpen}>
         Publikovat
       </Button>
       <Dialog fullWidth open={open} onClose={handleClose}>
-        <form onSubmit={formik.handleSubmit}>
-          <DialogTitle>Publikovat dotazník "{name}"</DialogTitle>
-          <DialogContent>
-            {/* <DialogContentText>
+        <Formik initialValues={initialValues} onSubmit={submit}>
+          <Form>
+            <DialogTitle>Publikovat dotazník "{name}"</DialogTitle>
+            <DialogContent>
+              {/* <DialogContentText>
           
         </DialogContentText> */}
-            <FormGroup>
-              <FSwitch id="isPrivate" label="Soukromý" formik={formik} />
-              <FSwitch id="isAnonymous" label="Anonymní" formik={formik} />
-            </FormGroup>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>Zrušit</Button>
-            <Button type="submit">Publikovat</Button>
-          </DialogActions>
-        </form>
+              <FormGroup>
+                <FSwitch name="isPrivate" label="Soukromý" />
+                <FSwitch name="isAnonymous" label="Anonymní" />
+              </FormGroup>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose}>Zrušit</Button>
+              <Button type="submit">Publikovat</Button>
+            </DialogActions>
+          </Form>
+        </Formik>
       </Dialog>
     </React.Fragment>
   );

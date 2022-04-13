@@ -1,12 +1,20 @@
 import React, { useEffect, useState, useCallback } from "react";
 import qnaireSource from "../data/QnaireSource";
 import { useGenericController } from "./useGenericController";
+import * as yup from "yup";
 
-export function useQuestionController(id) {
+const baseValidationSchema = yup.object({
+  text: yup.string().required("Text otázky musí být neprázdný"),
+});
+
+export function useQuestionController(id, validationSchema = null) {
   const questionSource = qnaireSource.questionSource;
+  validationSchema = validationSchema
+  ? baseValidationSchema.concat(validationSchema)
+  : baseValidationSchema;;
 
   const [data, regularUpdate, destroy, cancelPendingUpdate] =
-    useGenericController(questionSource, id);
+    useGenericController(questionSource, id, validationSchema);
   const update = (updatedData, shouldSourceUpdate = true) => {
     if ("resourcetype" in updatedData) {
       cancelPendingUpdate();

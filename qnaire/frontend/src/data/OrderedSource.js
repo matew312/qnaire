@@ -10,7 +10,7 @@ export class OrderedSource extends DataSource {
     super(resource, data);
     this.gateway = new OrderedGateway(resource); //"override" the gateway
     //initialize subs for the new events
-   this._addEvents(OrderedEvents);
+    this._addEvents(OrderedEvents);
   }
 
   subscribeMove(callback) {
@@ -28,7 +28,7 @@ export class OrderedSource extends DataSource {
         ids.forEach((id) => {
           this.data[id] = dict[id];
         });
-        this._notify(OrderedEvents.MOVE);
+        this._notify(OrderedEvents.MOVE, { id, ...data });
       }
     });
   }
@@ -42,7 +42,7 @@ export class OrderedSource extends DataSource {
           this.data[obj.id] = obj;
         });
       }
-      this._notify(DataEvents.CREATE);
+      this._notify(DataEvents.CREATE, newObj);
       return newObj;
     });
   }
@@ -55,7 +55,7 @@ export class OrderedSource extends DataSource {
           this.data[obj.id] = obj;
         });
       }
-      this._notify(DataEvents.DELETE);
+      this._notify(DataEvents.DELETE, id);
     });
   }
 

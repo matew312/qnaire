@@ -46,14 +46,14 @@ class DictSerializer(serializers.ListSerializer):
 def validate_move(queryset, data):
     if data['order_num'] >= queryset.count():
         raise serializers.ValidationError(
-            'Invalid order_num')
+            {'order_num': 'Invalid order_num'})
     return data
 
 
 def validate_ordered_add(queryset, data):
     if data['order_num'] > queryset.count():
         raise serializers.ValidationError(
-            'Invalid order_num')
+            {'order_num': 'Invalid order_num'})
     return data
 
 
@@ -75,15 +75,21 @@ def get_original_field_value(field, data, instance):
 def validate_less_than_or_equal(a, b, a_field, b_field):
     if (a is None) or (b is None) or (a <= b):
         return
-    raise serializers.ValidationError(
-        f'{a_field} must be less than or equal to {b_field}')
+    err_msg = f'{a_field} must be less than or equal to {b_field}'
+    error = {}
+    error[a_field] = err_msg
+    error[b_field] = err_msg
+    raise serializers.ValidationError(error)
 
 
 def validate_less_than(a, b, a_field, b_field):
     if (a is None) or (b is None) or (a < b):
         return
-    raise serializers.ValidationError(
-        f'{a_field} must be less than {b_field}')
+    err_msg = f'{a_field} must be less than {b_field}'
+    error = {}
+    error[a_field] = err_msg
+    error[b_field] = err_msg
+    raise serializers.ValidationError(error)
 
 
 def raise_validation_error_if_mandatory(q):
@@ -134,7 +140,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         return self.do_validate(data)
 
     # template method
-    @abc.abstractmethod
+    @ abc.abstractmethod
     def do_validate(self, data):
         pass
 
@@ -170,18 +176,17 @@ class RangeQuestionSerializer(QuestionSerializer):
         if step is not None:
             if not min.is_integer():
                 raise serializers.ValidationError(
-                    'min must be an integer when step is defined')
+                    {'min': 'min must be an integer when step is defined'})
             if not max.is_integer():
                 raise serializers.ValidationError(
-                    'max must be an integer when step is defined')
+                    {'max': 'max must be an integer when step is defined'})
             validate_less_than_or_equal(step, max - min, 'step', 'max - min')
 
         if 'type' in data:
             type = data['type']
             if type in [RangeQuestion.ENUMERATE, RangeQuestion.STAR_RATING, RangeQuestion.SMILEY_RATING]:
+                type_name = dict(RangeQuestion.TYPE_CHOICES)[type]
                 if step is None:
-                    type_name = dict(RangeQuestion.TYPE_CHOICES)[
-                        RangeQuestion.ENUMERATE]
                     raise serializers.ValidationError(
                         f'step must be defined for type {type_name}')
                 if (max - min) / step >= RangeQuestion.MAX_CHOICES_FOR_ENUMERATE:
@@ -217,7 +222,7 @@ class ChoiceSerializer(serializers.ModelSerializer):
         skip_to_section = data.get('skip_to_section')
         if skip_to_section is not None and skip_to_section.qnaire != qnaire:
             raise serializers.ValidationError(
-                f"skip_to_section belong to a different questionnaire than the choice.")
+                f"skip_to_section belongs to a different questionnaire than the choice.")
         return data
 
     # template method
@@ -369,10 +374,6 @@ class CreateSectionSerializer(SectionSerializer):
         return validate_ordered_add(Section.objects.filter(qnaire=qnaire), data)
 
 
-QUESTIONNAIRE_FIELDS = ('id', 'name', 'desc', 'anonymous',
-                        'private', 'published', 'created_at')
-
-
 class SectionMoveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Section
@@ -384,10 +385,15 @@ class SectionMoveSerializer(serializers.ModelSerializer):
         return validate_move(queryset, data)
 
 
+QUESTIONNAIRE_FIELDS = ('id', 'name', 'desc', 'anonymous',
+                        'private', 'published', 'last_modified', 'created_at')  # 'active'
+
+
 class QuestionnaireSerializer(serializers.ModelSerializer):
     class Meta:
         model = Questionnaire
         fields = QUESTIONNAIRE_FIELDS
+        list_serializer_class = DictSerializer
 
     def validate(self, data):
         request = self.context.get('request')
@@ -399,7 +405,8 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
                 qs = qs.exclude(id=self.instance.id)
             if qs.exists():
                 raise serializers.ValidationError(
-                    f"Name '{name}' already exists within questionnaires of user '{request.user}'")
+                    {'name': f"Name must be unique within user's questionnaires"})
+
         return data
 
 
@@ -509,7 +516,7 @@ class MultipleChoiceAnswerSerializer(AnswerSerializer):
             raise serializers.ValidationError(
                 f"Fewer choices were selected for question '{q}' than the allowed minimum of {q.min_answers}")
 
-        if total_selected_choices > q.max_answers:
+        if q.max_answers is not None and total_selected_choices > q.max_answers:
             raise serializers.ValidationError(
                 f"More choices were selected for question '{q}' than the allowed maximum of {q.max_answers}")
 

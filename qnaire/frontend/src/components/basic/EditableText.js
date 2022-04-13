@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Typography, TextField } from "@mui/material";
+import ETextField from "../fields/ETextField";
 
 export function EditableText(props) {
   return !props.editable ? (
@@ -7,7 +8,8 @@ export function EditableText(props) {
       {props.value}
     </Typography>
   ) : (
-    <TextField
+    <ETextField
+      error={props.error}
       value={props.value}
       onChange={(e) => props.onChange(e.target.value)}
       {...props.textFieldProps}

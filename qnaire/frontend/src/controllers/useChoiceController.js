@@ -1,11 +1,21 @@
 import React, { useCallback, useEffect, useState } from "react";
 import qnaireSource from "../data/QnaireSource";
 import { useGenericController } from "./useGenericController";
+import * as yup from "yup";
+import { requiredString } from "../validation";
+
+const validationSchema = yup.object({
+  text: requiredString,
+});
 
 export function useChoiceController(id) {
   const choiceSource = qnaireSource.choiceSource;
   const sectionSource = qnaireSource.sectionSource;
-  const [data, update, destroy] = useGenericController(choiceSource, id);
+  const [data, update, destroy] = useGenericController(
+    choiceSource,
+    id,
+    validationSchema
+  );
   const [sections, setSections] = useState(() =>
     sectionSource.getSortedSections()
   );

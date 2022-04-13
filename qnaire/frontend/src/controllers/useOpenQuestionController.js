@@ -1,6 +1,20 @@
 import { useQuestionController } from "./useQuestionController";
+import * as yup from "yup";
+import { number, requiredNumber } from "../validation";
+
+const validationSchema = yup.object({
+  min_length: number.min(1),
+  max_length: number
+    .min(1)
+    .when("min_length", (min_length, schema) =>
+      schema.min(
+        min_length,
+        "Hodnota musí být větší nebo rovna minimálnímu počtu znaků odpovědi"
+      )
+    ),
+});
 
 export function useOpenQuestionController(id) {
-  const questionController = useQuestionController(id);
+  const questionController = useQuestionController(id, validationSchema);
   return { ...questionController };
 }

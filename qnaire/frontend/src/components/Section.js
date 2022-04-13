@@ -15,7 +15,10 @@ import { OptionMenu } from "./basic/OptionMenu";
 import { EditableText } from "./basic/EditableText";
 import Question from "./Question";
 import { useSectionController } from "../controllers/useSectionController";
-import { useSectionSelect } from "../providers/QnaireProvider";
+import {
+  useQnaireContext,
+  useSectionSelect,
+} from "../providers/QnaireProvider";
 import { getSelectedStyle } from "../style";
 import PasteButton from "./PasteButton";
 import { QuestionTypes } from "../QuestionTypes";
@@ -40,6 +43,7 @@ function Section({ id, index }) {
   const { name, desc, order_num, questions, update, destroy, error } =
     useSectionController(id);
   const { isSelected, select } = useSectionSelect(id);
+  const { isPublished } = useQnaireContext();
   const [showQuestions, setShowQuestions] = useState(true);
   const scrollRef = useRef(null);
   useScrollWhenSelected(isSelected, scrollRef);
@@ -76,7 +80,7 @@ function Section({ id, index }) {
                     pb: 2,
                     ...getSelectedStyle(isSelected),
                   }}
-                  elevation={2}
+                  elevation={4}
                   className="clickable"
                   onClick={select}
                   ref={scrollRef}
@@ -103,8 +107,9 @@ function Section({ id, index }) {
                         <EditableText
                           editable={isSelected}
                           value={name}
+                          error={error.name}
                           onChange={(name) => {
-                            update({ name });
+                            update({ name }); 
                           }}
                           selectOnFocus={true}
                           typographyProps={{ variant: "h4" }}
@@ -120,6 +125,7 @@ function Section({ id, index }) {
                         <EditableText
                           editable={isSelected}
                           value={desc}
+                          error={error.desc}
                           onChange={(desc) => {
                             update({ desc });
                           }}
@@ -147,10 +153,11 @@ function Section({ id, index }) {
                               title={"Smazat sekci a všechny otázky v ní?"}
                               onConfirm={destroy}
                               tooltip={"Smazat"}
+                              disabled={isPublished}
                             />
                           </Grid>
                           <Grid item xs="auto">
-                            <PasteButton />
+                            <PasteButton disabled={isPublished} />
                           </Grid>
                           {/* <Grid item xs="auto">
                            <OptionMenu></OptionMenu>

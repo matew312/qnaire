@@ -8,26 +8,24 @@ import {
   TextField,
 } from "@mui/material";
 import { OptionMenu } from "./basic/OptionMenu";
-import { useRangeQuestionController } from "../controllers/useRangeQuestionController";
+import {
+  DISPLAY_TYPES,
+  useRangeQuestionController,
+} from "../controllers/useRangeQuestionController";
 import Question from "./Question";
+import ETextField from "./fields/ETextField";
+import ESelect from "./fields/ESelect";
 
-export const DISPLAY_TYPES = {
-  1: "Výběr z možností",
-  2: "Posuvník",
-  3: "Vstupní pole",
-  4: "Hvězdičkové hodnocení",
-  5: "Smajlíkové hodnocení",
-};
-
-export function Options({ min, max, step, type, update, isSelected }) {
+export function Options({ min, max, step, type, update, isSelected, error }) {
   return isSelected ? (
     <Grid container spacing={2}>
       <Grid item xs={6} sm>
-        <TextField
+        <ETextField
           value={min !== null ? min : ""}
+          error={error.min}
           onChange={(e) =>
             update({
-              min: e.target.value ? parseFloat(e.target.value) : null,
+              min: parseFloat(e.target.value) || null,
             })
           }
           required
@@ -39,11 +37,12 @@ export function Options({ min, max, step, type, update, isSelected }) {
         />
       </Grid>
       <Grid item xs={6} sm>
-        <TextField
+        <ETextField
           value={max !== null ? max : ""}
+          error={error.max}
           onChange={(e) =>
             update({
-              max: e.target.value ? parseFloat(e.target.value) : null,
+              max: parseFloat(e.target.value) || null,
             })
           }
           required
@@ -55,11 +54,12 @@ export function Options({ min, max, step, type, update, isSelected }) {
         />
       </Grid>
       <Grid item xs={6} sm>
-        <TextField
+        <ETextField
           value={step !== null ? step : ""}
+          error={error.step}
           onChange={(e) =>
             update({
-              step: e.target.value ? parseInt(e.target.value) : null,
+              step: parseInt(e.target.value) || null,
             })
           }
           label="Skok"
@@ -70,24 +70,19 @@ export function Options({ min, max, step, type, update, isSelected }) {
         />
       </Grid>
       <Grid item xs={6} sm={4}>
-        <FormControl fullWidth>
-          <InputLabel id="range-type-select-label">Způsob zobrazení</InputLabel>
-          <Select
-            value={type}
-            onChange={(e) => update({ type: e.target.value })}
-            label="Způsob zobrazení"
-            id="range-type-select"
-            labelId="range-type-select-label"
-            required
-            autoWidth
-          >
-            {Object.keys(DISPLAY_TYPES).map((type) => (
-              <MenuItem value={type} key={type}>
-                {DISPLAY_TYPES[type]}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <ESelect
+          value={type.toString()}
+          error={type.error}
+          onChange={(e) => update({ type: parseInt(e.target.value) })}
+          label="Způsob zobrazení"
+          required
+        >
+          {Object.keys(DISPLAY_TYPES).map((type) => (
+            <MenuItem value={type} key={type}>
+              {DISPLAY_TYPES[type]}
+            </MenuItem>
+          ))}
+        </ESelect>
       </Grid>
     </Grid>
   ) : null;

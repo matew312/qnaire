@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'polymorphic',
+    # 'django_filters',
     'frontend.apps.FrontendConfig',
     'accounts.apps.AccountsConfig',
 
@@ -136,6 +137,7 @@ AUTH_USER_MODEL = 'accounts.User'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication', # THIS ONE IS JUST FOR TESTING THE API VIA UI (so I don't have to send the token)
+        # THIS ONE IS JUST FOR TESTING THE API VIA UI (so I don't have to send the token)
+        # 'rest_framework.authentication.SessionAuthentication',
     ],
 }

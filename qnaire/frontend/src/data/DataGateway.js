@@ -8,8 +8,8 @@ export class DataGateway {
   retrieve(id) {
     return GET(`${this.resource}/${id}`);
   }
-  retrieveAll() {
-    return GET(`${this.resource}`);
+  retrieveAll(params = null) {
+    return GET(`${this.resource}`, true, params);
   }
 
   create(data) {

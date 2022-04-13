@@ -1,17 +1,13 @@
 import { FormControlLabel, Switch } from "@mui/material";
+import { useField } from "formik";
 import * as React from "react";
 
-export default function FSwitch({ id, label, formik }) {
+export default function FSwitch({ label, ...props }) {
+  const [field, meta] = useField({ ...props, type: "checkbox" });
+
   return (
     <FormControlLabel
-      control={
-        <Switch
-          id={id}
-          name={id}
-          onChange={formik.handleChange}
-          checked={formik.values[id]}
-        />
-      }
+      control={<Switch {...field} {...props} />}
       label={label}
     />
   );

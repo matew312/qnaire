@@ -53,17 +53,21 @@ class QnaireSource extends DataSource {
       this.questionSource._setData(questions);
       this.choiceSource._setData(choices);
       this._setData({ [qnaire.id]: qnaire });
-      this._notify(QnaireEvents.LOAD);
-      return this.data[qnaire.id];
+      this._notify(QnaireEvents.LOAD, qnaire);
+      return qnaire;
     });
   }
 
-  retrieveAll() {
-    return this.gateway.retrieveAll().then((data) => {
+  retrieveAll(params) {
+    return this.gateway.retrieveAll(params).then((data) => {
       this._setData(data);
-      this._notify(QnaireEvents.LOAD);
+      this._notify(QnaireEvents.LOAD, this.data);
       return this.data;
     });
+  }
+
+  createPrivateId(id) {
+    return POST(`${Resources.QNAIRES}/${id}/private-id`, {});
   }
 }
 

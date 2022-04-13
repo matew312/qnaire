@@ -12,6 +12,8 @@ export default function ConfirmDialog({
   open,
   onClose,
   onConfirm,
+  confirmText,
+  cancelText,
 }) {
   return (
     <div>
@@ -25,7 +27,9 @@ export default function ConfirmDialog({
           </DialogContent>
         )}
         <DialogActions>
-          <Button onClick={onClose}>Zrušit</Button>
+          <Button onClick={onClose}>
+            {cancelText ? cancelText : "Zrušit"}
+          </Button>
           <Button
             onClick={() => {
               //a confirm dialog should always close when confirmed, so I can put it here
@@ -34,7 +38,7 @@ export default function ConfirmDialog({
             }}
             autoFocus
           >
-            Potvrdit
+            {confirmText ? confirmText : "Potvrdit"}
           </Button>
         </DialogActions>
       </Dialog>

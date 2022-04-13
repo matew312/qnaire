@@ -40,5 +40,5 @@ export function setToken(token) {
 }
 
 export function removeToken() {
-  cookies.remove(AUTH_COOKIE);
+  cookies.remove(AUTH_COOKIE, { path: "/" });
 }

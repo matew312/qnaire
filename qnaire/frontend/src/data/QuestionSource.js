@@ -30,7 +30,7 @@ export class QuestionSource extends OrderedSource {
       .customUpdate(id, "type", { resourcetype })
       .then((data) => {
         this.data[data.id] = data;
-        this._notify(QuestionEvents.TYPE);
+        this._notify(QuestionEvents.TYPE, data);
         return data;
       });
   }
@@ -38,4 +38,5 @@ export class QuestionSource extends OrderedSource {
   move(id, orderNum, sectionId) {
     return this._move(id, { section: sectionId, order_num: orderNum });
   }
+
 }

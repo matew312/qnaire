@@ -28,9 +28,9 @@ export class DataSource {
     });
   }
 
-  _notify(event) {
+  _notify(event, data) {
     this.subscribers[event].forEach((sub) => {
-      sub();
+      sub(data);
     });
   }
 
@@ -100,7 +100,7 @@ export class DataSource {
     return this.gateway.update(id, updatedData).then((data) => {
       this.data[data.id] = data;
       if (notify) {
-        this._notify(DataEvents.UPDATE);
+        this._notify(DataEvents.UPDATE, data);
       }
       return data;
     });
@@ -109,7 +109,7 @@ export class DataSource {
   delete(id) {
     return this.gateway.delete(id).then(() => {
       delete this.data[id];
-      this._notify(DataEvents.DELETE);
+      this._notify(DataEvents.DELETE, id);
     });
   }
 }

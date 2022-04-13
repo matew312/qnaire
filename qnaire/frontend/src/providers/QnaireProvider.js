@@ -19,6 +19,7 @@ export function QnaireProvider({ children }) {
   const [selected, setSelected] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState("");
+  const [isPublished, setIsPublished] = useState(true);
 
   const copiedQuestionId = useRef(null);
 
@@ -50,10 +51,11 @@ export function QnaireProvider({ children }) {
     const name = `Sekce ${order_num + 1}`;
     const data = { name, order_num, qnaire: qnaireSource.id };
 
-    qnaireSource.sectionSource
+    return qnaireSource.sectionSource
       .create(data)
       .then((data) => {
         select(Resources.SECTIONS, data.id);
+        return data;
       })
       .catch((error) => {
         setError(JSON.stringify(error));
@@ -64,9 +66,13 @@ export function QnaireProvider({ children }) {
     const questionSource = qnaireSource.questionSource;
     const sections = qnaireSource.sectionSource.getAll();
     if (Object.keys(sections).length == 0) {
-      setError(
-        "Každá otázka musí patřit do nějaké sekce, a v tomto dotazníku žádná není."
-      );
+      // setError(
+      //   "Každá otázka musí patřit do nějaké sekce, a v tomto dotazníku žádná není."
+      // );
+      createSection().then((data) => {
+        createQuestion();
+      });
+      return;
     }
     let order_num = null;
     let sectionId = null;
@@ -99,7 +105,7 @@ export function QnaireProvider({ children }) {
 
     const text = `Otázka ${order_num + 1}`;
     const data = { text, order_num, section: sectionId, resourcetype };
-    questionSource
+    return questionSource
       .create(data)
       .then((data) => {
         select(Resources.QUESTIONS, data.id);
@@ -150,7 +156,10 @@ export function QnaireProvider({ children }) {
   const { setPageActions } = useAppContext();
 
   useEffect(() => {
-    const handleLoad = () => setIsLoaded(true);
+    const handleLoad = (data) => {
+      setIsLoaded(true);
+      setIsPublished(data.published);
+    };
     qnaireSource.subscribeLoad(handleLoad);
 
     return () => {
@@ -174,13 +183,21 @@ export function QnaireProvider({ children }) {
     }
   };
 
+  const handleQnaireUpdate = (data) => {
+    if (data.published !== isPublished) {
+      setIsPublished(data.published);
+    }
+  };
+
   useEffect(() => {
     qnaireSource.questionSource.subscribeDelete(handleDelete);
     qnaireSource.sectionSource.subscribeDelete(handleDelete);
+    qnaireSource.subscribeUpdate(handleQnaireUpdate);
 
     return () => {
       qnaireSource.questionSource.unsubscribeDelete(handleDelete);
       qnaireSource.sectionSource.unsubscribeDelete(handleDelete);
+      qnaireSource.unsubscribeUpdate(handleQnaireUpdate);
     };
   }, [selected]);
 
@@ -203,6 +220,7 @@ export function QnaireProvider({ children }) {
     setError,
     copy,
     paste,
+    isPublished,
   };
 
   return (
@@ -230,14 +248,7 @@ function useSelect(resource, id) {
     return {
       isSelected,
       select: () => {
-        //allow selecting a question only when the qnaire isn't published
-        const published = qnaireSource.get(qnaireSource.id).published;
-        if (
-          published &&
-          resource === Resources.QUESTIONS
-        ) {
-          setError("Nelze měnit obsah otázek, když je dotazník publikovaný.")
-        } else if (!isSelected) {
+        if (!isSelected) {
           select(resource, id);
         }
       },

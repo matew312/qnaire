@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useFormik } from "formik";
+import { Form, Formik, useFormik } from "formik";
 import * as yup from "yup";
 import { Button, TextField, Grid, Box, Typography } from "@mui/material";
 import { POST } from "../../request";
+import FTextField from "../formik/FTextField";
+
+const initialValues = {
+  username: "",
+  password: "",
+};
 
 const validationSchema = yup.object({
   username: yup
@@ -29,15 +35,6 @@ export function LoginPage({ auth }) {
       });
   }
 
-  const formik = useFormik({
-    initialValues: {
-      username: "",
-      password: "",
-    },
-    validationSchema: validationSchema,
-    onSubmit: login,
-  });
-
   useEffect(() => {
     if (auth.isAuthenticated) {
       navigate("/questionnaires/");
@@ -45,39 +42,26 @@ export function LoginPage({ auth }) {
   }, [auth.isAuthenticated]);
 
   return (
-    <div>
-      <form onSubmit={formik.handleSubmit}>
+    <Formik
+      onSubmit={login}
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+    >
+      <Form>
         <Grid container justifyContent="center">
           <Grid item xs={12} sm={8} lg={4}>
-            {" "}
-            <TextField
-              fullWidth
-              id="username"
-              name="username"
-              label="Uživatelské jméno"
-              value={formik.values.username}
-              onChange={formik.handleChange}
-              error={formik.touched.username && Boolean(formik.errors.username)}
-              helperText={formik.touched.username && formik.errors.username}
-            />
+            <FTextField name="username" label="Uživatelské jméno" />
           </Grid>
           <Box width="100%"></Box>
           <Grid item xs={12} sm={8} lg={4} mt={2}>
-            <TextField
-              fullWidth
-              id="password"
+            <FTextField
               name="password"
               label="Heslo"
               type="password"
-              value={formik.values.password}
-              onChange={formik.handleChange}
-              error={formik.touched.password && Boolean(formik.errors.password)}
-              helperText={formik.touched.password && formik.errors.password}
             />
           </Grid>
           <Box width="100%"></Box>
           <Grid item xs={12} sm={8} lg={4} mt={2}>
-            {" "}
             <Button color="primary" variant="contained" fullWidth type="submit">
               Přihlásit se
             </Button>
@@ -90,7 +74,7 @@ export function LoginPage({ auth }) {
           </Grid>
           <Box width="100%"></Box>
         </Grid>
-      </form>
-    </div>
+      </Form>
+    </Formik>
   );
 }

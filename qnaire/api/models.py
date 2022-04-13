@@ -30,7 +30,9 @@ class Questionnaire(models.Model):
     anonymous = models.BooleanField(default=True)
     private = models.BooleanField(default=False)
     published = models.BooleanField(default=False)
+    # active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
         return f'{self.name}'
