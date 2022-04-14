@@ -6,10 +6,10 @@ import {
   CardContent,
   Typography,
 } from "@mui/material";
-import { useQnaireListItemController } from "../controllers/useQnaireListItemController";
-import PublishQnaireDialog from "./PublishQnaireDialog";
-import QnaireLinkDialog from "./QnaireLinkDialog";
-import UnpublishDialogButton from "./UnpublishDialogButton";
+import { useQnaireListItemController } from "../../controllers/useQnaireListItemController";
+import PublishQnaireDialog from "../dialogs/PublishQnaireDialog";
+import QnaireLinkDialog from "../dialogs/QnaireLinkDialog";
+import UnpublishDialogButton from "../dialogs/UnpublishDialogButton";
 import { useNavigate } from "react-router-dom";
 
 function QnaireListItem({ id }) {

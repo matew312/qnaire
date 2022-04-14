@@ -4,9 +4,9 @@ import { Grid, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useAppContext } from "../../providers/AppContextProvider";
 import { useQnaireListController } from "../../controllers/useQnaireListController";
-import CreateQnaireDialog from "../CreateQnaireDialog";
+import CreateQnaireDialog from "../dialogs/CreateQnaireDialog";
 import { PageAction } from "../../PageAction";
-import QnaireListItem from "../QnaireListItem";
+import QnaireListItem from "./QnaireListItem";
 
 export function QnairesPage() {
   const { qnaires, isLoaded, create } = useQnaireListController();

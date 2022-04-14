@@ -11,13 +11,13 @@ import {
   ListItemIcon,
   MenuItem,
 } from "@mui/material";
-import { ChoiceIcon } from "./basic/ChoiceIcon";
+import { ChoiceIcon } from "../basic/ChoiceIcon";
 import Choice from "./Choice";
 import Check from "@mui/icons-material/Check";
-import { OptionMenu } from "./basic/OptionMenu";
-import { useMultipleChoiceQuestionController } from "../controllers/useMultipleChoiceQuestionController";
+import { OptionMenu } from "../basic/OptionMenu";
+import { useMultipleChoiceQuestionController } from "../../controllers/useMultipleChoiceQuestionController";
 import Question from "./Question";
-import CheckMenuItem from "./basic/CheckMenuItem";
+import CheckMenuItem from "../basic/CheckMenuItem";
 
 function Options({
   min_answers,

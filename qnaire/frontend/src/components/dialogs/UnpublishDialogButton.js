@@ -1,5 +1,5 @@
 import * as React from "react";
-import ConfirmDialogButton from "./basic/ConfirmDialogButton";
+import ConfirmDialogButton from "../basic/ConfirmDialogButton";
 
 export default function UnpublishDialogButton({ onConfirm, buttonProps }) {
   return (

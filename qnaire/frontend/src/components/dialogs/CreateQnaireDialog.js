@@ -7,11 +7,11 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { FormControlLabel, FormGroup, Switch } from "@mui/material";
-import { ErrorMessage, Field, Form, Formik, useFormik } from "formik";
-import FSwitch from "./formik/FSwitch";
-import ErrorList from "./basic/ErrorList";
 import * as yup from "yup";
-import FTextField from "./formik/FTextField";
+import { ErrorMessage, Field, Form, Formik, useFormik } from "formik";
+import ErrorList from "../basic/ErrorList";
+import FSwitch from "../formik/FSwitch";
+import FTextField from "../formik/FTextField";
 
 const initialValues = { name: "" };
 

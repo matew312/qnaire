@@ -3,10 +3,10 @@ import { render } from "react-dom";
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 import { Grid, Box, Container, CssBaseline } from "@mui/material";
 
-import { QnairesPage } from "./pages/QnairesPage";
-import { ResponsePage } from "./pages/ResponsePage";
-import { CreationPage } from "./pages/CreationPage";
-import { LoginPage } from "./pages/LoginPage";
+import { QnairesPage } from "./qnaires-page/QnairesPage";
+import { ResponsePage } from "./response-page/ResponsePage";
+import { CreationPage } from "./creation-page/CreationPage";
+import { LoginPage } from "./LoginPage";
 import { AppStructure } from "./AppStructure";
 import { useAuth } from "../auth";
 import { AuthOnlyOutlet } from "./AuthOnlyOutlet";

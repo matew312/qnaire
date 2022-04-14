@@ -8,25 +8,25 @@ import {
   Button,
   Paper,
 } from "@mui/material";
-import ConfirmDialogIconButton from "./basic/ConfirmDialogIconButton";
+import ConfirmDialogIconButton from "../basic/ConfirmDialogIconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Droppable, Draggable } from "react-beautiful-dnd";
-import { OptionMenu } from "./basic/OptionMenu";
-import { EditableText } from "./basic/EditableText";
+import { OptionMenu } from "../basic/OptionMenu";
+import { EditableText } from "../basic/EditableText";
 import Question from "./Question";
-import { useSectionController } from "../controllers/useSectionController";
+import { useSectionController } from "../../controllers/useSectionController";
 import {
   useQnaireContext,
   useSectionSelect,
-} from "../providers/QnaireProvider";
-import { getSelectedStyle } from "../style";
+} from "../../providers/QnaireProvider";
+import { getSelectedStyle } from "../../style";
 import PasteButton from "./PasteButton";
-import { QuestionTypes } from "../QuestionTypes";
-import HorizontalDragBox from "./basic/HorizontalDragBox";
-import { Resources } from "../data/Resources";
-import CollapseButton from "./basic/CollapseButton";
-import ErrorList from "./basic/ErrorList";
-import { useScrollWhenSelected } from "../hooks";
+import { QuestionTypes } from "../../QuestionTypes";
+import HorizontalDragBox from "../basic/HorizontalDragBox";
+import { Resources } from "../../data/Resources";
+import CollapseButton from "../basic/CollapseButton";
+import ErrorList from "../basic/ErrorList";
+import { useScrollWhenSelected } from "../../hooks";
 
 const Questions = React.memo(({ questions }) =>
   questions.map((q, index) => {

@@ -7,11 +7,11 @@ import {
   InputLabel,
   MenuItem,
 } from "@mui/material";
-import { EditableText } from "./basic/EditableText";
-import { ChoiceIcon } from "./basic/ChoiceIcon";
+import { EditableText } from "../basic/EditableText";
+import { ChoiceIcon } from "../basic/ChoiceIcon";
 import ClearIcon from "@mui/icons-material/Clear";
-import { useChoiceController } from "../controllers/useChoiceController";
-import ScrollableSelect from "./basic/ScrollableSelect";
+import { useChoiceController } from "../../controllers/useChoiceController";
+import ScrollableSelect from "../basic/ScrollableSelect";
 
 export default function Choice({ id, editable, checkbox, textFieldProps }) {
   const { text, skip_to_section, sections, update, destroy, error } =

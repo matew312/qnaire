@@ -8,7 +8,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { FormControlLabel, FormGroup, Switch } from "@mui/material";
 import { Form, Formik, useFormik } from "formik";
-import FSwitch from "./formik/FSwitch";
+import FSwitch from "../formik/FSwitch";
 
 export default function BasePublishQnaireDialog({
   isAnonymous,

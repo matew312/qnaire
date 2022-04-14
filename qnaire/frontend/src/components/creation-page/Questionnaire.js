@@ -13,23 +13,20 @@ import {
 import PreviewIcon from "@mui/icons-material/Preview";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
-import { EditableText } from "./basic/EditableText";
+import { EditableText } from "../basic/EditableText";
 import Section from "./Section";
-import { useQnaireController } from "../controllers/useQnaireController";
-import { useQnaireSelect } from "../providers/QnaireProvider";
-import { getSelectedStyle } from "../style";
-import { Resources } from "../data/Resources";
-import HorizontalDragBox from "./basic/HorizontalDragBox";
-import ErrorList from "./basic/ErrorList";
-import { useScrollWhenSelected } from "../hooks";
-import PublishQnaireDialog from "./PublishQnaireDialog";
-import ConfirmDialogButton from "./basic/ConfirmDialogButton";
-import ConfirmDialogIconButton from "./basic/ConfirmDialogIconButton";
-import UnpublishDialogButton from "./UnpublishDialogButton";
-import ChangeQnaireDialog from "./ChangeQnaireDialog";
-import { OptionMenu } from "./basic/OptionMenu";
-import CheckMenuItem from "./basic/CheckMenuItem";
-import QnaireLinkDialog from "./QnaireLinkDialog";
+import { useQnaireController } from "../../controllers/useQnaireController";
+import { useQnaireSelect } from "../../providers/QnaireProvider";
+import { getSelectedStyle } from "../../style";
+import { Resources } from "../../data/Resources";
+import ErrorList from "../basic/ErrorList";
+import { useScrollWhenSelected } from "../../hooks";
+import ConfirmDialogIconButton from "../basic/ConfirmDialogIconButton";
+import { OptionMenu } from "../basic/OptionMenu";
+import CheckMenuItem from "../basic/CheckMenuItem";
+import PublishQnaireDialog from "../dialogs/PublishQnaireDialog";
+import UnpublishDialogButton from "../dialogs/UnpublishDialogButton";
+import QnaireLinkDialog from "../dialogs/QnaireLinkDialog";
 
 const Sections = React.memo(({ sections }) =>
   sections.map((section, index) => (
@@ -179,7 +176,13 @@ export function Questionnaire({ id }) {
                   />
                 </Grid>
                 {isSelected && (
-                  <Grid item xs={12} container justifyContent="flex-end" sx={{pt: 1}}>
+                  <Grid
+                    item
+                    xs={12}
+                    container
+                    justifyContent="flex-end"
+                    sx={{ pt: 1 }}
+                  >
                     <Grid item xs="auto">
                       <ConfirmDialogIconButton
                         icon={DeleteIcon}

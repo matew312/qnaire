@@ -1,7 +1,7 @@
 import * as React from "react";
 import { IconButton, Tooltip } from "@mui/material";
 import ContentPasteIcon from "@mui/icons-material/ContentPaste";
-import { useQnaireContext } from "../providers/QnaireProvider";
+import { useQnaireContext } from "../../providers/QnaireProvider";
 
 export default function PasteButton({ disabled }) {
   const { paste } = useQnaireContext();

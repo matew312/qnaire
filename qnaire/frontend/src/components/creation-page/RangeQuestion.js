@@ -7,14 +7,14 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import { OptionMenu } from "./basic/OptionMenu";
+import { OptionMenu } from "../basic/OptionMenu";
 import {
   DISPLAY_TYPES,
   useRangeQuestionController,
-} from "../controllers/useRangeQuestionController";
+} from "../../controllers/useRangeQuestionController";
 import Question from "./Question";
-import ETextField from "./fields/ETextField";
-import ESelect from "./fields/ESelect";
+import ETextField from "../fields/ETextField";
+import ESelect from "../fields/ESelect";
 
 export function Options({ min, max, step, type, update, isSelected, error }) {
   return isSelected ? (

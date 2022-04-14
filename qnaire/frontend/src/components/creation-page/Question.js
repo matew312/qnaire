@@ -17,7 +17,7 @@ import {
   CardActionArea,
 } from "@mui/material";
 import * as React from "react";
-import { EditableText } from "./basic/EditableText";
+import { EditableText } from "../basic/EditableText";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ContentCutIcon from "@mui/icons-material/ContentCut";
@@ -26,15 +26,15 @@ import { Draggable } from "react-beautiful-dnd";
 import {
   useQnaireContext,
   useQuestionSelect,
-} from "../providers/QnaireProvider";
-import { getSelectedStyle } from "../style";
-import ConfirmDialogIconButton from "./basic/ConfirmDialogIconButton";
+} from "../../providers/QnaireProvider";
+import { getSelectedStyle } from "../../style";
+import ConfirmDialogIconButton from "../basic/ConfirmDialogIconButton";
 import PasteButton from "./PasteButton";
-import { QuestionTypes } from "../QuestionTypes";
-import HorizontalDragBox from "./basic/HorizontalDragBox";
-import ErrorList from "./basic/ErrorList";
-import { useScrollWhenSelected } from "../hooks";
-import ESelect from "./fields/ESelect";
+import { QuestionTypes } from "../../QuestionTypes";
+import HorizontalDragBox from "../basic/HorizontalDragBox";
+import ErrorList from "../basic/ErrorList";
+import { useScrollWhenSelected } from "../../hooks";
+import ESelect from "../fields/ESelect";
 
 function Question({
   options: QuestionOptions,

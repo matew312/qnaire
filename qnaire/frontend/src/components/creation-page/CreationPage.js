@@ -6,8 +6,8 @@ import { InputSlider } from "../basic/InputSlider";
 import { NumField } from "../basic/NumField";
 import { SmileyRating } from "../basic/SmileyRating";
 import { QnaireProvider } from "../../providers/QnaireProvider";
-import { Questionnaire } from "../Questionnaire";
-import { QnaireErrorDialog } from "../QnaireErrorDialog";
+import { Questionnaire } from "./Questionnaire";
+import { QnaireErrorDialog } from "../dialogs/QnaireErrorDialog";
 
 export function CreationPage({ auth }) {
   let { id } = useParams();

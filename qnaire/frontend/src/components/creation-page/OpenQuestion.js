@@ -1,8 +1,8 @@
 import { Grid, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
-import { useOpenQuestionController } from "../controllers/useOpenQuestionController";
-import { OptionMenu } from "./basic/OptionMenu";
-import ETextField from "./fields/ETextField";
+import { useOpenQuestionController } from "../../controllers/useOpenQuestionController";
+import { OptionMenu } from "../basic/OptionMenu";
+import ETextField from "../fields/ETextField";
 import Question from "./Question";
 
 export function Options({ min_length, max_length, isSelected, update, error }) {

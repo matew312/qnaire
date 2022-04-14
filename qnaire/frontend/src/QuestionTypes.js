@@ -1,6 +1,6 @@
-import MultipleChoiceQuestion from "./components/MultipleChoiceQuestion";
-import OpenQuestion from "./components/OpenQuestion";
-import RangeQuestion from "./components/RangeQuestion";
+import MultipleChoiceQuestion from "./components/creation-page/MultipleChoiceQuestion";
+import OpenQuestion from "./components/creation-page/OpenQuestion";
+import RangeQuestion from "./components/creation-page/RangeQuestion";
 
 export const QuestionTypes = {
     OpenQuestion: {
