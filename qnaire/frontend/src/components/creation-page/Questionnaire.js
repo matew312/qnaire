@@ -135,7 +135,7 @@ export function Questionnaire({ id }) {
                       <Grid item xs="auto">
                         <QnaireLinkDialog
                           getLink={getLink}
-                          buttonProps={{ size: "small" }}
+                          buttonProps={{ variant: "contained"}}
                         />
                       </Grid>
                     </React.Fragment>

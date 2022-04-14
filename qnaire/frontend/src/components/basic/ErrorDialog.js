@@ -5,15 +5,18 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import { Typography } from "@mui/material";
 
-export default function ErrorDialog({ open, onClose, title, text }) {
+export default function ErrorDialog({ open, onClose, title, error }) {
   return (
     <Dialog open={open} onClose={onClose}>
       {title && <DialogTitle id="error-dialog-title">{title}</DialogTitle>}
       <DialogContent>
-        <DialogContentText color="error" id="error-dialog-description">
-          {text}
-        </DialogContentText>
+        {Object.keys(error).map((key) => (
+          <Typography color="error" key={key}>
+            {error[key]}
+          </Typography>
+        ))}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} autoFocus>

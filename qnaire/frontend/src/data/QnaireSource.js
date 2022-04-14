@@ -71,7 +71,11 @@ class QnaireSource extends DataSource {
   }
 
   createPrivateId(id) {
-    return POST(`${Resources.QNAIRES}/${id}/private-id`, {});
+    return this.gateway.customCreate(id, "private-id", {});
+  }
+
+  createResponse(id, data) {
+    return this.gateway.customCreate(id, "response", data);
   }
 }
 

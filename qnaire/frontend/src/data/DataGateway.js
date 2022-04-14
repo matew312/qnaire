@@ -20,6 +20,10 @@ export class DataGateway {
     return POST(this.resource, data);
   }
 
+  customCreate(id, action, data) {
+    return POST(`${this.resource}/${id}/${action}`, data);
+  }
+
   //partial update
   update(id, updatedData) {
     return PATCH(`${this.resource}/${id}`, updatedData);

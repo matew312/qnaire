@@ -40,7 +40,7 @@ export function useQnaireController(id) {
         parseInt(destination.droppableId) //ignored in sectionSource and choiceSource
       )
       .catch((error) => {
-        setError(JSON.stringify(error));
+        setError(error);
       });
   }
 

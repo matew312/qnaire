@@ -223,8 +223,6 @@ class ChoiceViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedViewS
     queryset = Choice.objects.all()
     serializer_class = ChoiceSerializer
     serializer_action_classes = {'create': CreateChoiceSerializer}
-    # I'm not sure how much the performance will hurt from this.
-    # And it's not like allowing users to GET Choices of other users would be terrible.
     user_field = 'question__section__qnaire__creator'
     order_scope_field = 'question'
     list_serializer_class = ChoiceSerializer

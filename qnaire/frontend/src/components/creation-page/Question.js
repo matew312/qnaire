@@ -65,9 +65,10 @@ function Question({
             !isPublished
               ? select
               : () =>
-                  setError(
-                    "Nelze měnit obsah otázek, když je dotazník publikovaný."
-                  )
+                  setError({
+                    detail:
+                      "Nelze měnit obsah otázek, když je dotazník publikovaný.",
+                  })
           }
           ref={provided.innerRef}
           {...provided.draggableProps}

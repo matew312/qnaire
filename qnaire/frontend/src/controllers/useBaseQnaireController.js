@@ -28,7 +28,7 @@ export function useBaseQnaireController(id, timeout = 750) {
       anonymous: isAnonymous,
       published: true,
     }).catch((error) => {
-      setError(JSON.stringify(error));
+      setError(error);
     });
   };
 
@@ -36,7 +36,7 @@ export function useBaseQnaireController(id, timeout = 750) {
     regularDestroy()
       .then(() => navigate("/questionnaires"))
       .catch((error) => {
-        setError(JSON.stringify(error));
+        setError(error);
       });
   };
 

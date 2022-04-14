@@ -92,16 +92,22 @@ def validate_less_than(a, b, a_field, b_field):
     raise serializers.ValidationError(error)
 
 
-def raise_validation_error_if_mandatory(q):
+def raise_answer_error(q, text):
+    error_data = {}
+    error_data[q.id] = text
+    raise serializers.ValidationError(error_data)
+
+
+def raise_answer_error_if_mandatory(q):
     if q.mandatory:
-        raise serializers.ValidationError(
-            f"Question '{q}' is mandatory, but no answer was provided")
+        raise_answer_error(
+            q, "Question is mandatory, but no answer was provided")
 
 
 def raise_validation_error_if_qnaire_published(qnaire):
     if qnaire.published:
-        raise serializers.ValidationError(
-            f'The action is not allowed on a published questionnaire')
+        raise serializers.ValidationError({'detail':
+                                           f'The action is not allowed on a published questionnaire'})
 
 
 QUESTION_FIELDS = ('id', 'section', 'order_num', 'text', 'mandatory')
@@ -448,16 +454,16 @@ class OpenAnswerSerializer(AnswerSerializer):
     def validate(self, data):
         q = data['question']
         if 'text' not in data or len(data['text']) == 0:
-            raise_validation_error_if_mandatory(q)
+            raise_answer_error_if_mandatory(q)
             return data
 
         text = data['text']
         if q.min_length is not None and len(text) < q.min_length:
-            raise serializers.ValidationError(
-                f"Answer to question '{q}' must be at least {q.min_length} characters long")
+            raise raise_answer_error(
+                q, f"Answer must be at least {q.min_length} characters long")
         if q.max_length is not None and len(text) > q.max_length:
-            raise serializers.ValidationError(
-                f"Answer to question '{q}' must be shorter than {q.min_length} characters")
+            raise raise_answer_error(
+                q, f"Answer must be shorter than {q.min_length} characters")
         return data
 
 
@@ -469,19 +475,19 @@ class RangeAnswerSerializer(AnswerSerializer):
     def validate(self, data):
         q = data['question']
         if 'num' not in data:
-            raise_validation_error_if_mandatory(q)
+            raise_answer_error_if_mandatory(q)
             return data
 
         num = data['num']
         if num < q.min:
-            raise serializers.ValidationError(
-                f"Answer to question '{q}' must be greater than or equal to {q.min}")
+            raise raise_answer_error(
+                q, f"Answer must be greater than or equal to {q.min}")
         if num > q.max:
-            raise serializers.ValidationError(
-                f"Answer to question '{q}' must be less than or equal to {q.max}")
+            raise raise_answer_error(
+                q, f"Answer must be less than or equal to {q.max}")
         if q.step is not None and num % q.step != 0:
-            raise serializers.ValidationError(
-                f"Answer to question '{q}' must be divisible by {q.step}")
+            raise raise_answer_error(
+                q, f"Answer must be divisible by {q.step}")
         return data
 
 
@@ -509,21 +515,21 @@ class MultipleChoiceAnswerSerializer(AnswerSerializer):
                 total_selected_choices += 1
 
         if total_selected_choices == 0 and q.min_answers > 0:
-            raise_validation_error_if_mandatory(q)
+            raise_answer_error_if_mandatory(q)
             return data
 
         if total_selected_choices < q.min_answers:
-            raise serializers.ValidationError(
-                f"Fewer choices were selected for question '{q}' than the allowed minimum of {q.min_answers}")
+            raise raise_answer_error(
+                q, f"Fewer choices were selected than the allowed minimum of {q.min_answers}")
 
         if q.max_answers is not None and total_selected_choices > q.max_answers:
-            raise serializers.ValidationError(
-                f"More choices were selected for question '{q}' than the allowed maximum of {q.max_answers}")
+            raise raise_answer_error(
+                q, f"More choices were selected than the allowed maximum of {q.max_answers}")
 
         for choice in selected_choices:
             if choice not in choice_pool:
-                raise serializers.ValidationError(
-                    f"Invalid choice was provided as answer to question '{q}'")
+                raise raise_answer_error(
+                    q, f"Invalid choice was provided as answer")
             # remove the choice from pool to prevent duplicate choices
             choice_pool.remove(choice)
 

@@ -18,7 +18,7 @@ const QnaireContext = React.createContext();
 export function QnaireProvider({ children }) {
   const [selected, setSelected] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState({});
   const [isPublished, setIsPublished] = useState(true);
 
   const copiedQuestionId = useRef(null);
@@ -28,6 +28,13 @@ export function QnaireProvider({ children }) {
   }, []);
 
   function createSection() {
+    if (isPublished) {
+      setError({
+        detail: "Nelze vytvořit sekci, protože dotazník je publikovaný",
+      });
+      return;
+    }
+
     const sections = qnaireSource.sectionSource.getAll();
     let order_num = null;
     if (selected) {
@@ -58,11 +65,18 @@ export function QnaireProvider({ children }) {
         return data;
       })
       .catch((error) => {
-        setError(JSON.stringify(error));
+        setError(error);
       });
   }
 
   function createQuestion() {
+    if (isPublished) {
+      setError({
+        detail: "Nelze vytvořit otázku, protože dotazník je publikovaný",
+      });
+      return;
+    }
+
     const questionSource = qnaireSource.questionSource;
     const sections = qnaireSource.sectionSource.getAll();
     if (Object.keys(sections).length == 0) {
@@ -111,7 +125,7 @@ export function QnaireProvider({ children }) {
         select(Resources.QUESTIONS, data.id);
       })
       .catch((error) => {
-        setError(JSON.stringify(error));
+        setError(error);
       });
   }
 
@@ -149,7 +163,7 @@ export function QnaireProvider({ children }) {
         select(Resources.QUESTIONS, data.id);
       })
       .catch((error) => {
-        setError(JSON.stringify(error));
+        setError(error);
       });
   }
 
@@ -211,7 +225,7 @@ export function QnaireProvider({ children }) {
     ];
     setPageActions(pageActions);
     return () => setPageActions([]);
-  }, [isLoaded, selected]);
+  }, [isLoaded, selected, isPublished]); //alternatively, useCallback on createSection and createQuestion and put them in the deps here
 
   const value = {
     select,
@@ -239,7 +253,7 @@ export function useQnaireContext() {
 }
 
 function useSelect(resource, id) {
-  const { selected, select, setError } = useQnaireContext();
+  const { selected, select } = useQnaireContext();
   const isSelected = Boolean(
     selected && selected.id == id && selected.resource === resource
   );
