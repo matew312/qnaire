@@ -1,16 +1,21 @@
-import { Button, Grid, Stack, Typography } from "@mui/material";
+import { Button, Grid, LinearProgress, Stack, Typography } from "@mui/material";
 import { Box } from "@mui/system";
 import React, { useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useQnaireResponseController } from "../../controllers/useQnaireResponseController";
 import { useAppContext } from "../../providers/AppContextProvider";
 
-const QnaireInfo = ({ name, desc }) => (
-  <Box mb={4}>
+const IntroPage = ({ name, desc, goToNextSection }) => (
+  <Box>
     <Typography variant="h2" component="h1">
       {name}
     </Typography>
     <Typography>{desc}</Typography>
+    <Stack>
+      <Button sx={{ml: "auto"}} size="large" variant="contained" onClick={goToNextSection}>
+        Pustit se do vyplňování
+      </Button>
+    </Stack>
   </Box>
 );
 
@@ -34,6 +39,7 @@ export function ResponsePage() {
     isLoaded,
     qnaire,
     currentSection,
+    totalSections,
     isIntro,
     isLastSection,
     goToNextSection,
@@ -55,23 +61,32 @@ export function ResponsePage() {
     return null;
   }
 
-  if(isDone) {
-    return <Typography variant="h4" >Odpověď byla úspěšně odeslána.</Typography>
+  if (isDone) {
+    return <Typography variant="h4">Odpověď byla úspěšně odeslána.</Typography>;
+  }
+
+  if (isIntro) {
+    return <IntroPage {...qnaire} goToNextSection={goToNextSection} />;
   }
 
   return (
     <Stack spacing={2}>
-      {isIntro ? (
-        <QnaireInfo {...qnaire} />
-      ) : (
-        <SectionInfo {...currentSection} />
-      )}
-      <Stack direction="row" spacing={2} justifyContent="flex-end">
-        {!isIntro && (
-          <Button variant="outlined" onClick={goToPreviousSection}>
-            Zpět
-          </Button>
-        )}
+      <SectionInfo {...currentSection} />
+      <Stack
+        direction="row"
+        spacing={2}
+        justifyContent="flex-end"
+        alignItems="center"
+      >
+        <Button variant="outlined" onClick={goToPreviousSection}>
+          Zpět
+        </Button>
+        <Box sx={{ width: "100%" }}>
+          <LinearProgress
+            variant="determinate"
+            value={((currentSection.order_num + 1) / totalSections) * 100}
+          />
+        </Box>
         {!isLastSection ? (
           <Button variant="outlined" onClick={goToNextSection}>
             Pokračovat

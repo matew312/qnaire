@@ -32,10 +32,12 @@ export function useQnaireResponseController(id, privateId, isPreview) {
   let currentSection = null;
   let isIntro = true;
   let isLastSection = false;
+  let totalSections = null;
   // let isFirstSection = false;
   if (sections && sectionIdxStack.length > 0) {
     currentSectionIdx = sectionIdxStack[sectionIdxStack.length - 1];
     currentSection = sections[currentSectionIdx];
+    totalSections = sections.length;
     isIntro = false;
     isLastSection = currentSectionIdx === sections.length - 1;
     // isFirstSection = currentSectionIdx === 0;
@@ -75,6 +77,7 @@ export function useQnaireResponseController(id, privateId, isPreview) {
     isLoaded: Boolean(data.id) && Boolean(sections),
     submitResponse,
     currentSection,
+    totalSections,
     isLastSection,
     // isFirstSection,
     isIntro,
