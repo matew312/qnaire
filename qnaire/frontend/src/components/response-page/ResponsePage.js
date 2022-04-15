@@ -14,6 +14,7 @@ import {
   useQnaireResponseController,
 } from "../../controllers/useQnaireResponseController";
 import { useAppContext } from "../../providers/AppContextProvider";
+import ErrorList from "../basic/ErrorList";
 
 const IntroPage = ({ name, desc, goToNextSection }) => (
   <Stack spacing={1}>
@@ -125,17 +126,14 @@ export function ResponsePage() {
         justifyContent="flex-end"
         alignItems="center"
       >
-        <Button
-          variant="outlined"
-          onClick={goToPreviousSection}
-        >
+        <Button variant="outlined" onClick={goToPreviousSection}>
           Zpět
         </Button>
-          <LinearProgress
-            variant="determinate"
-            value={((currentSection.order_num + 1) / totalSections) * 100}
-            sx={{ flexGrow: 1 }}
-          />
+        <LinearProgress
+          variant="determinate"
+          value={((currentSection.order_num + 1) / totalSections) * 100}
+          sx={{ flexGrow: 1 }}
+        />
         {!isLastSection ? (
           <Button variant="outlined" onClick={goToNextSection}>
             Pokračovat
@@ -146,6 +144,7 @@ export function ResponsePage() {
           </Button>
         )}
       </Stack>
+      <ErrorList error={errors} />
     </Stack>
   );
 }

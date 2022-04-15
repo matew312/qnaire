@@ -7,6 +7,7 @@ import {
   Radio,
   Stack,
   FormGroup,
+  Box,
 } from "@mui/material";
 import * as React from "react";
 import useMultipleChoiceAnswerController from "../../controllers/useMultipleChoiceAnswerController";
@@ -25,7 +26,7 @@ function Checkboxes({
   const [otherChoiceSelected, setOtherChoiceSelected] = React.useState(false);
 
   const handleChange = (e, choice) => {
-      e.target.checked ? addChoice(choice.id) : removeChoice(choice.id);
+    e.target.checked ? addChoice(choice.id) : removeChoice(choice.id);
   };
 
   const handleOtherChoiceChange = (e) => {
@@ -41,20 +42,21 @@ function Checkboxes({
   };
 
   return (
-    <FormGroup>
+    <React.Fragment>
       {choices.map((choice) => (
-        <FormControlLabel
-          key={choice.id}
-          control={
-            <Checkbox
-              checked={Boolean(
-                answer.choices && answer.choices.includes(choice.id)
-              )}
-              onChange={(e) => handleChange(e, choice)}
-            />
-          }
-          label={choice.text}
-        />
+        <Box key={choice.id}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={Boolean(
+                  answer.choices && answer.choices.includes(choice.id)
+                )}
+                onChange={(e) => handleChange(e, choice)}
+              />
+            }
+            label={choice.text}
+          />
+        </Box>
       ))}
       {question.other_choice && (
         <Stack direction="row" alignItems="center">
@@ -73,10 +75,11 @@ function Checkboxes({
             onChange={handleOtherChoiceInputChange}
             disabled={!otherChoiceSelected}
             variant="standard"
+            sx={{ flexGrow: 1 }}
           />
         </Stack>
       )}
-    </FormGroup>
+    </React.Fragment>
   );
 }
 
@@ -111,18 +114,19 @@ function RadioButtons({
   };
 
   return (
-    <FormControl>
+    <FormControl sx={{ display: "block" }}>
       <RadioGroup value={value} onChange={handleChange}>
         {choices.map((choice) => (
-          <FormControlLabel
-            key={choice.id}
-            value={choice.id.toString()}
-            control={<Radio />}
-            label={choice.text}
-          />
+          <Box key={choice.id}>
+            <FormControlLabel
+              value={choice.id.toString()}
+              control={<Radio />}
+              label={choice.text}
+            />
+          </Box>
         ))}
         {other_choice && (
-          <Stack direction="row" alignItems="center">
+          <Box sx={{ display: "flex", alignItems: "center" }}>
             <FormControlLabel
               key="other_choice"
               value="other_choice"
@@ -134,8 +138,9 @@ function RadioButtons({
               onChange={handleOtherChoiceInputChange}
               disabled={!otherChoiceSelected}
               variant="standard"
+              sx={{ flexGrow: 1 }}
             />
-          </Stack>
+          </Box>
         )}
       </RadioGroup>
     </FormControl>
