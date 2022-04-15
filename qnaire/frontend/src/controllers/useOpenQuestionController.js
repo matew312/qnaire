@@ -7,10 +7,12 @@ const validationSchema = yup.object({
   max_length: number
     .min(1)
     .when("min_length", (min_length, schema) =>
-      schema.min(
-        min_length,
-        "Hodnota musí být větší nebo rovna minimálnímu počtu znaků odpovědi"
-      )
+      min_length !== null
+        ? schema.min(
+            min_length,
+            "Hodnota musí být větší nebo rovna minimálnímu počtu znaků odpovědi"
+          )
+        : schema
     ),
 });
 

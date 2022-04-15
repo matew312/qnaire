@@ -6,8 +6,11 @@ export function yupErrorToFieldErrors(yupError) {
     if (yupError.inner.length === 0) {
       errors[yupError.path] = yupError.message;
     } else {
+      //set the first error for each path in the array of errors
       for (let err of yupError.inner) {
-        errors[err.path] = err.message;
+        if (err.path in errors === false) {
+          errors[err.path] = err.message;
+        }
       }
     }
   }
@@ -27,6 +30,10 @@ yup.setLocale({
     max: "Hodnota musí být menší nebo rovno ${max}",
     moreThan: "Hodnota musí být větší než ${moreThan}",
     lessThan: "Hodnota musí být menší než ${lessThan}",
+  },
+  string: {
+    min: "Text musí mít alespoň ${min} znaků",
+    max: "Text musí mít nanejvýš ${max} znaků",
   },
 });
 

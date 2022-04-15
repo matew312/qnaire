@@ -2,7 +2,7 @@ import { useQuestionController } from "./useQuestionController";
 import * as yup from "yup";
 import { requiredNumber, number } from "../validation";
 
-const TYPES = {
+export const DisplayTypes = {
   ENUMERATE: 1,
   SLIDER: 2,
   FIELD: 3,
@@ -10,15 +10,16 @@ const TYPES = {
   SMILEY_RATING: 5,
 };
 
-export const DISPLAY_TYPES = {
-  1: "Výběr z možností",
-  2: "Posuvník",
-  3: "Vstupní pole",
-  4: "Hvězdičkové hodnocení",
-  5: "Smajlíkové hodnocení",
+export const DisplayTypesDescription = {
+  [DisplayTypes.ENUMERATE]: "Výběr z možností",
+  [DisplayTypes.SLIDER]: "Posuvník",
+  [DisplayTypes.FIELD]: "Vstupní pole",
+  [DisplayTypes.STAR_RATING]: "Hvězdičkové hodnocení",
+  [DisplayTypes.SMILEY_RATING]: "Smajlíkové hodnocení",
 };
 
 const MAX_SMILEYS = 5;
+const MAX_CHOICES_FOR_ENUMERATE = 100;
 
 yup.addMethod(yup.number, "integerIfStep", function (args) {
   // const { path } = this;
@@ -29,35 +30,52 @@ yup.addMethod(yup.number, "integerIfStep", function (args) {
   );
 });
 
-yup.addMethod(yup.number, "equalTo1WhenSmiley", function (args) {
-  // const { path } = this;
-  return this.when("type", (type, schema) =>
-    type === TYPES.SMILEY_RATING
-      ? schema
-          .min(
-            1,
-            `Hodnota musí být rovna 1, když je typ zobrazení ${DISPLAY_TYPES[type]}`
-          )
-          .max(
-            1,
-            `Hodnota musí být rovna 1, když je typ zobrazení ${DISPLAY_TYPES[type]}`
-          )
-      : schema
-  );
-});
+// yup.addMethod(yup.number, "equalTo1WhenSmiley", function (args) {
+//   // const { path } = this;
+//   return this.when("type", (type, schema) =>
+//     type === DisplayTypes.SMILEY_RATING
+//       ? schema
+//           .min(
+//             1,
+//             `Hodnota musí být rovna 1, když je typ zobrazení ${DisplayTypesDescription[type]}`
+//           )
+//           .max(
+//             1,
+//             `Hodnota musí být rovna 1, když je typ zobrazení ${DisplayTypesDescription[type]}`
+//           )
+//       : schema
+//   );
+// });
+
+// yup.addMethod(yup.number, "equalTo1WhenStarOrSmiley", function (args) {
+//   // const { path } = this;
+//   return this.when("type", (type, schema) =>
+//     type === DisplayTypes.SMILEY_RATING || type === DisplayTypes.STAR_RATING
+//       ? schema
+//           .min(
+//             1,
+//             `Hodnota musí být rovna 1, když je typ zobrazení ${DisplayTypesDescription[type]}`
+//           )
+//           .max(
+//             1,
+//             `Hodnota musí být rovna 1, když je typ zobrazení ${DisplayTypesDescription[type]}`
+//           )
+//       : schema
+//   );
+// });
 
 const validationSchema = yup.object({
-  min: requiredNumber.integerIfStep().equalTo1WhenSmiley(),
+  min: requiredNumber.integerIfStep(),
   max: requiredNumber
     .integerIfStep()
     .when("min", (min, schema) =>
-      schema.moreThan(min, "Hodnota musí větší než min")
+      min !== null ? schema.moreThan(min, "Hodnota musí být větší než min") : schema
     )
     .when("type", (type, schema) =>
-      type === TYPES.SMILEY_RATING
+      type === DisplayTypes.SMILEY_RATING
         ? schema.max(
             MAX_SMILEYS,
-            `Hodnota musí být menší nebo rovna ${MAX_SMILEYS}, když je typ zobrazení ${DISPLAY_TYPES[type]}`
+            `Hodnota musí být menší nebo rovna ${MAX_SMILEYS}, když je typ zobrazení ${DisplayTypesDescription[type]}`
           )
         : schema
     ),
@@ -66,20 +84,69 @@ const validationSchema = yup.object({
     .positive()
     .when("type", (type, schema) => {
       switch (type) {
-        case TYPES.ENUMERATE:
-        case TYPES.STAR_RATING:
-        case TYPES.SMILEY_RATING:
+        case DisplayTypes.ENUMERATE:
           return schema.required(
-            `Hodnota musí být definována, když je typ zobrazení ${DISPLAY_TYPES[type]}`
+            `Hodnota musí být definována, když je typ zobrazení ${DisplayTypesDescription[type]}`
           );
         default:
           return schema;
       }
     })
-    .equalTo1WhenSmiley(),
+    .test(
+      "step-leq-max-minus-min",
+      "Hodnota musí být menší nebo rovna max - min",
+      (value, context) => {
+        const { min, max, type } = context.parent;
+        console.log(context.parent);
+        if (
+          value !== null &&
+          min !== null &&
+          max !== null &&
+          //don't apply this test on star_rating because the user is not even allowed to change step (but this error can be shown instead of the "correct" one, like when max is zero, )
+          type !== DisplayTypes.STAR_RATING && 
+          type !== DisplayTypes.SMILEY_RATING
+        ) {
+          return value <= max - min;
+        }
+        return true;
+      }
+    ),
 });
 
 export function useRangeQuestionController(id) {
-  const questionController = useQuestionController(id, validationSchema);
-  return { ...questionController };
+  const {
+    update: baseUpdate,
+    max,
+    step,
+    ...questionController
+  } = useQuestionController(id, validationSchema);
+
+  const update = (updatedData) => {
+    if ("type" in updatedData) {
+      const type = updatedData.type;
+      if (type === DisplayTypes.SMILEY_RATING) {
+        updatedData = {
+          ...updatedData,
+          min: 1,
+          step: 1,
+          max: Math.min(max, MAX_SMILEYS),
+        };
+      } else if (type === DisplayTypes.STAR_RATING) {
+        updatedData = {
+          ...updatedData,
+          min: 1,
+          step: 1,
+          max: Math.min(max, MAX_CHOICES_FOR_ENUMERATE),
+        };
+      } else if (type === DisplayTypes.ENUMERATE) {
+        updatedData = {
+          ...updatedData,
+          step: step !== null ? step : 1,
+        };
+      }
+    }
+    baseUpdate(updatedData);
+  };
+
+  return { ...questionController, max, step, update };
 }

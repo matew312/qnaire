@@ -91,7 +91,7 @@ class RangeQuestion(Question):
         (SMILEY_RATING, 'Smiley rating'),
     )
 
-    MAX_CHOICES_FOR_ENUMERATE = 100
+    MAX_CHOICES_FOR_ENUMERATE = 20
     MAX_SMILEYS = 5
 
     type = models.IntegerField(choices=TYPE_CHOICES, default=2)

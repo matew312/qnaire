@@ -1,32 +1,47 @@
-import { Button, Grid, LinearProgress, Stack, Typography } from "@mui/material";
+import {
+  Button,
+  Grid,
+  LinearProgress,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { Box } from "@mui/system";
 import React, { useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { useQnaireResponseController } from "../../controllers/useQnaireResponseController";
+import {
+  QuestionAnswerMap,
+  useQnaireResponseController,
+} from "../../controllers/useQnaireResponseController";
 import { useAppContext } from "../../providers/AppContextProvider";
 
 const IntroPage = ({ name, desc, goToNextSection }) => (
-  <Box>
+  <Stack spacing={1}>
     <Typography variant="h2" component="h1">
       {name}
     </Typography>
     <Typography>{desc}</Typography>
     <Stack>
-      <Button sx={{ml: "auto"}} size="large" variant="contained" onClick={goToNextSection}>
+      <Button
+        sx={{ ml: "auto" }}
+        size="large"
+        variant="contained"
+        onClick={goToNextSection}
+      >
         Pustit se do vyplňování
       </Button>
     </Stack>
-  </Box>
+  </Stack>
 );
 
-const SectionInfo = ({ name, desc }) => (
+const SectionInfo = React.memo(({ name, desc }) => (
   <Box>
     <Typography variant="h3" component="h2">
       {name}
     </Typography>
     <Typography>{desc}</Typography>
   </Box>
-);
+));
 
 export function ResponsePage() {
   const { id, privateId } = useParams();
@@ -39,13 +54,18 @@ export function ResponsePage() {
     isLoaded,
     qnaire,
     currentSection,
+    questions,
+    errors,
+    answers,
     totalSections,
     isIntro,
     isLastSection,
+    isDone,
+    setAnswer,
     goToNextSection,
     goToPreviousSection,
     submitResponse,
-    isDone,
+    setSkipToSectionId,
   } = useQnaireResponseController(id, privateId, isPreview);
 
   const { setPageActions, setDrawerDisabled } = useAppContext();
@@ -57,12 +77,18 @@ export function ResponsePage() {
     return () => setDrawerDisabled(false);
   }, []);
 
+  let scrolledToAnswer = false;
+
   if (!isLoaded) {
     return null;
   }
 
   if (isDone) {
-    return <Typography variant="h4">Odpověď byla úspěšně odeslána.</Typography>;
+    return (
+      <Typography textAlign="center" fontSize="h6.fontSize">
+        Vaše odpověď byla úspěšně odeslána.
+      </Typography>
+    );
   }
 
   if (isIntro) {
@@ -70,23 +96,46 @@ export function ResponsePage() {
   }
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={4}>
       <SectionInfo {...currentSection} />
+      {questions.map((q) => {
+        const Answer = QuestionAnswerMap[q.resourcetype].component;
+        const error = errors[q.id];
+        const shouldScroll = Boolean(!scrolledToAnswer && error);
+        if (shouldScroll) {
+          scrolledToAnswer = true;
+        }
+
+        return (
+          <Answer
+            key={q.id}
+            question={q}
+            answer={answers[q.id]}
+            shouldScroll={shouldScroll}
+            error={error}
+            setAnswer={setAnswer}
+            setSkipToSectionId={setSkipToSectionId}
+          />
+        );
+      })}
+
       <Stack
         direction="row"
         spacing={2}
         justifyContent="flex-end"
         alignItems="center"
       >
-        <Button variant="outlined" onClick={goToPreviousSection}>
+        <Button
+          variant="outlined"
+          onClick={goToPreviousSection}
+        >
           Zpět
         </Button>
-        <Box sx={{ width: "100%" }}>
           <LinearProgress
             variant="determinate"
             value={((currentSection.order_num + 1) / totalSections) * 100}
+            sx={{ flexGrow: 1 }}
           />
-        </Box>
         {!isLastSection ? (
           <Button variant="outlined" onClick={goToNextSection}>
             Pokračovat

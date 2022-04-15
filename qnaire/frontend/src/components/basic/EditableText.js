@@ -18,6 +18,7 @@ export function EditableText(props) {
           e.target.select();
         }
       }}
+      fullWidth
     />
   );
 }

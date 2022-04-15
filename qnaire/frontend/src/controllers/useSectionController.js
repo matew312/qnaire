@@ -1,19 +1,23 @@
 import React, { useCallback, useEffect, useState } from "react";
 import qnaireSource from "../data/QnaireSource";
 import { useGenericController } from "./useGenericController";
-import * as yup from "yup"
+import * as yup from "yup";
 import { requiredString } from "../validation";
 
 const validationSchema = yup.object({
   name: requiredString,
-  desc: yup.string()
+  desc: yup.string(),
 });
 
 export function useSectionController(id) {
   const sectionSource = qnaireSource.sectionSource;
   const questionSource = qnaireSource.questionSource;
 
-  const [data, update, destroy] = useGenericController(sectionSource, id, validationSchema);
+  const [data, update, destroy] = useGenericController(
+    sectionSource,
+    id,
+    validationSchema
+  );
   const [questions, setQuestions] = useState(() => {
     return questionSource.getQuestionsForSection(id);
   });
@@ -23,7 +27,9 @@ export function useSectionController(id) {
   };
 
   useEffect(() => {
-    //this could be optimized by allowing to sub the section by id so that its notified only when change related to it happens
+    //this could be optimized by only updating state when the change concerns this particular section
+    //and further optimized by doing the specific change needed instead of getQuestionsForSection
+    //e.g. when question is deleted, then setQuestions(questions.filter((q) => q !== deleted.id))
     questionSource.subscribeMove(handleQuestionOrderChange);
     questionSource.subscribeCreate(handleQuestionOrderChange);
     questionSource.subscribeDelete(handleQuestionOrderChange);

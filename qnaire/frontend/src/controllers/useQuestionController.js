@@ -13,7 +13,7 @@ export function useQuestionController(id, validationSchema = null) {
   ? baseValidationSchema.concat(validationSchema)
   : baseValidationSchema;;
 
-  const [data, regularUpdate, destroy, cancelPendingUpdate] =
+  const [data, baseUpdate, destroy, cancelPendingUpdate] =
     useGenericController(questionSource, id, validationSchema);
   const update = (updatedData, shouldSourceUpdate = true) => {
     if ("resourcetype" in updatedData) {
@@ -22,7 +22,7 @@ export function useQuestionController(id, validationSchema = null) {
       // if the response to this one arrives before the first one, because react could have destroyed the old component by then
       questionSource.updateType(id, updatedData.resourcetype);
     } else {
-      regularUpdate(
+      baseUpdate(
         { ...updatedData, resourcetype: data.resourcetype },
         shouldSourceUpdate
       );

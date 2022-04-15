@@ -75,6 +75,17 @@ class QuestionnaireViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, Model
     serializer_class = QuestionnaireSerializer
     serializer_action_classes = {'retrieve': QuestionnaireCreationSerializer}
 
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        # what should also work is to set self.permissions_classes here and call super().get_permissions()
+        if self.action == 'retrieve':
+            permission_classes = []
+        else:
+            permission_classes = [permissions.IsAuthenticated]
+        return [permission() for permission in permission_classes]
+
     def perform_create(self, serializer):
         serializer.save(creator=self.request.user)
 
@@ -126,6 +137,7 @@ def handle_simple_move(model, src, order_num, serializer, **filters):
 
 
 class SectionViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedViewSetMixin, ModelViewSetWithValidation):
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Section.objects.all()
     serializer_class = SectionSerializer
     serializer_action_classes = {'create': CreateSectionSerializer}
@@ -157,6 +169,7 @@ class SectionViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedView
 
 
 class QuestionViewSet(UserQuerySetMixin, OrderedViewSetMixin, ModelViewSetWithValidation):
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Question.objects.all()
     serializer_class = QuestionPolymorphicSerializer
     user_field = 'section__qnaire__creator'
@@ -220,6 +233,7 @@ class QuestionViewSet(UserQuerySetMixin, OrderedViewSetMixin, ModelViewSetWithVa
 
 
 class ChoiceViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedViewSetMixin, ModelViewSetWithValidation):
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Choice.objects.all()
     serializer_class = ChoiceSerializer
     serializer_action_classes = {'create': CreateChoiceSerializer}
@@ -249,5 +263,6 @@ class ChoiceViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedViewS
 
 
 class AnswerViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
     queryset = Answer.objects.all()
     serializer_class = AnswerPolymorhicSerializer

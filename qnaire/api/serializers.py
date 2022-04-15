@@ -188,20 +188,23 @@ class RangeQuestionSerializer(QuestionSerializer):
                     {'max': 'max must be an integer when step is defined'})
             validate_less_than_or_equal(step, max - min, 'step', 'max - min')
 
-        if 'type' in data:
-            type = data['type']
-            if type in [RangeQuestion.ENUMERATE, RangeQuestion.STAR_RATING, RangeQuestion.SMILEY_RATING]:
-                type_name = dict(RangeQuestion.TYPE_CHOICES)[type]
-                if step is None:
-                    raise serializers.ValidationError(
-                        f'step must be defined for type {type_name}')
-                if (max - min) / step >= RangeQuestion.MAX_CHOICES_FOR_ENUMERATE:
-                    raise serializers.ValidationError(
-                        f'Number of choices would exceed {RangeQuestion.MAX_CHOICES_FOR_ENUMERATE}')
-            if type == RangeQuestion.SMILEY_RATING:
-                if step != 1 or min != 1 or max > RangeQuestion.MAX_SMILEYS:
-                    raise serializers.ValidationError(
-                        f'For type {type_name} these constraints must be true: step=1; min=1; 1 < max <= {RangeQuestion.MAX_SMILEYS}')
+        type = get_latest_field_value('type', data, self.instance)
+        if type in [RangeQuestion.ENUMERATE, RangeQuestion.STAR_RATING, RangeQuestion.SMILEY_RATING]:
+            type_name = dict(RangeQuestion.TYPE_CHOICES)[type]
+            if step is None:
+                raise serializers.ValidationError(
+                    f'step must be defined for type {type_name}')
+            if (max - min) / step >= RangeQuestion.MAX_CHOICES_FOR_ENUMERATE:
+                raise serializers.ValidationError(
+                    f'Number of choices would exceed {RangeQuestion.MAX_CHOICES_FOR_ENUMERATE}')
+        if type in [RangeQuestion.STAR_RATING, RangeQuestion.SMILEY_RATING]:
+            if step != 1 or min != 1:
+                raise serializers.ValidationError(
+                    f'For type {type_name} these constraints must be true: step=1; min=1')
+        if type == RangeQuestion.SMILEY_RATING:
+            if max > RangeQuestion.MAX_SMILEYS:
+                raise serializers.ValidationError(
+                    f'max must be less than or equal to {RangeQuestion.MAX_SMILEYS} for type {type_name}')
         return data
 
 
@@ -474,20 +477,20 @@ class RangeAnswerSerializer(AnswerSerializer):
 
     def validate(self, data):
         q = data['question']
-        if 'num' not in data:
+        num = data.get('num', None)
+        if num is None:
             raise_answer_error_if_mandatory(q)
             return data
 
-        num = data['num']
         if num < q.min:
             raise raise_answer_error(
                 q, f"Answer must be greater than or equal to {q.min}")
         if num > q.max:
             raise raise_answer_error(
                 q, f"Answer must be less than or equal to {q.max}")
-        if q.step is not None and num % q.step != 0:
+        if q.step is not None and (num - q.min) % q.step != 0:
             raise raise_answer_error(
-                q, f"Answer must be divisible by {q.step}")
+                q, f"Answer must be a step of {q.step}")
         return data
 
 

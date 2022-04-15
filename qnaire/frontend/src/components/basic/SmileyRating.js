@@ -6,40 +6,60 @@ import SentimentSatisfiedIcon from "@mui/icons-material/SentimentSatisfied";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAltOutlined";
 import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
 
-const customIcons = {
-  1: {
-    icon: <SentimentVeryDissatisfiedIcon />,
-    label: "Very Dissatisfied",
-  },
-  2: {
-    icon: <SentimentDissatisfiedIcon />,
-    label: "Dissatisfied",
-  },
-  3: {
-    icon: <SentimentSatisfiedIcon />,
-    label: "Neutral",
-  },
-  4: {
-    icon: <SentimentSatisfiedAltIcon />,
-    label: "Satisfied",
-  },
-  5: {
-    icon: <SentimentVerySatisfiedIcon />,
-    label: "Very Satisfied",
-  },
+const iconSize = 60;
+
+const icons5 = [
+  <SentimentVeryDissatisfiedIcon sx={{ fontSize: iconSize }} />,
+  <SentimentDissatisfiedIcon sx={{ fontSize: iconSize }} />,
+  <SentimentSatisfiedIcon sx={{ fontSize: iconSize }} />,
+  <SentimentSatisfiedAltIcon sx={{ fontSize: iconSize }} />,
+  <SentimentVerySatisfiedIcon sx={{ fontSize: iconSize }} />,
+];
+
+const icons4 = [
+  <SentimentVeryDissatisfiedIcon sx={{ fontSize: iconSize }} />,
+  <SentimentDissatisfiedIcon sx={{ fontSize: iconSize }} />,
+  <SentimentSatisfiedIcon sx={{ fontSize: iconSize }} />,
+  <SentimentSatisfiedAltIcon sx={{ fontSize: iconSize }} />,
+];
+
+const icons3 = [
+  <SentimentVeryDissatisfiedIcon sx={{ fontSize: iconSize }} />,
+  <SentimentSatisfiedIcon sx={{ fontSize: iconSize }} />,
+  <SentimentSatisfiedAltIcon sx={{ fontSize: iconSize }} />,
+];
+
+const icons2 = [
+  <SentimentVeryDissatisfiedIcon sx={{ fontSize: iconSize }} />,
+  <SentimentSatisfiedAltIcon sx={{ fontSize: iconSize }} />,
+];
+
+const icons1 = [<SentimentSatisfiedAltIcon sx={{ fontSize: iconSize }} />];
+
+const iconsMap = {
+  1: icons1,
+  2: icons2,
+  3: icons3,
+  4: icons4,
+  5: icons5,
 };
 
-function IconContainer(props) {
-  const { value, ...other } = props;
-  return <span {...other}>{customIcons[value].icon}</span>;
+function getIconContainer(max) {
+  const icons = iconsMap[max];
+  return (props) => {
+    const { value, ...other } = props;
+    return <span {...other}>{icons[value - 1]}</span>;
+  };
 }
 
-export function SmileyRating() {
+export default function SmileyRating({ onChange, ...props }) {
   return (
     <Rating
-      name="highlight-selected-only"
-      defaultValue={2}
-      IconContainerComponent={IconContainer}
+      {...props}
+      onChange={(event, value) => {
+        onChange(value);
+      }}
+      IconContainerComponent={getIconContainer(props.max)}
       highlightSelectedOnly
     />
   );

@@ -4,13 +4,13 @@ import { Typography } from "@mui/material";
 export default function ErrorList({ error }) {
   return (
     <React.Fragment>
-      {error.none_field_errors && (
-        <Typography key={key} color="error" textAlign="center">
-          {error.none_field_errors}
+      {error.non_field_errors && (
+        <Typography color="error" textAlign="center">
+          {error.non_field_errors}
         </Typography>
       )}
       {error.detail && (
-        <Typography key={key} color="error" textAlign="center">
+        <Typography color="error" textAlign="center">
           {error.detail}
         </Typography>
       )}

@@ -30,29 +30,27 @@ export const useGenericController = (
     if (!shouldSourceUpdate) {
       return;
     }
+
+    if (updateTimeoutId.current) {
+      clearTimeout(updateTimeoutId.current);
+      updateTimeoutId.current = null;
+    }
+    updatedData = { ...pendingData.current, ...updatedData };
+    pendingData.current = updatedData;
+
     if (validationSchema) {
       try {
-        if (
-          !validationSchema.isValidSync({
+        validationSchema.validateSync(
+          {
             ...data, //passing the rest of the data so that required fields don't have to be in updatedData
             ...updatedData,
-          })
-        ) {
-          validationSchema.validateSync({
-            ...data, //passing the rest of the data so that required fields don't have to be in updatedData
-            ...updatedData,
-          });
-        }
+          },
+          { abortEarly: false }
+        );
       } catch (error) {
         updateData({ error: yupErrorToFieldErrors(error) });
         return;
       }
-    }
-    if (updateTimeoutId.current) {
-      clearTimeout(updateTimeoutId.current);
-      updateTimeoutId.current = null;
-      updatedData = { ...pendingData.current, ...updatedData };
-      pendingData.current = updatedData;
     }
 
     return new Promise((resolve) => {
@@ -61,14 +59,15 @@ export const useGenericController = (
       }, timeout);
     }).then(() => {
       updateTimeoutId.current = null;
-      pendingData.current = null;
       return source
         .update(id, updatedData)
         .then((data) => {
           updateData({ ...data, error: {} });
+          pendingData.current = null;
         })
         .catch((error) => {
           updateData({ error });
+          //keep the pendingData on Error
         });
     });
   };

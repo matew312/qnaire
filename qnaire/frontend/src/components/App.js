@@ -23,7 +23,7 @@ function App() {
           <AppContextProvider>
             <CssBaseline />
             <AppStructure auth={auth}>
-              <Container maxWidth="md">
+              <Container maxWidth="md" sx={{ p: { xs: 1, sm: 2 } }}>
                 {/* <Grid container mt={2}>
                 <Grid item xs={12} md={10} lg={8} m="auto">*/}
                 <Routes>

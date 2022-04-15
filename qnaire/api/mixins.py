@@ -3,15 +3,17 @@ from django.db.models import F
 
 
 class UserQuerySetMixin():
-    # these can be overriden by the subclass
-    permission_classes = [permissions.IsAuthenticated]
+    # this can be overriden by the subclass
     user_field = 'creator'
 
     def get_queryset(self, *args, **kwargs):
-        lookup_data = {}
-        lookup_data[self.user_field] = self.request.user
-        queryset = super().get_queryset(*args, **kwargs)
-        return queryset.filter(**lookup_data)
+        if self.request.user.is_authenticated:
+            lookup_data = {}
+            lookup_data[self.user_field] = self.request.user
+            queryset = super().get_queryset(*args, **kwargs)
+            return queryset.filter(**lookup_data)
+        else:
+            return super().get_queryset(*args, **kwargs)
 
 
 class MultiSerializerViewSetMixin(object):
@@ -49,7 +51,7 @@ class OrderedViewSetMixin():
         filters = {}
         if self.order_scope_field:
             filters[self.order_scope_field] = serializer.validated_data[self.order_scope_field]
-        queryset = self.queryset
+        queryset = self.get_queryset()
         filtered_queryset = queryset.filter(
             order_num__gte=serializer.validated_data['order_num'], **filters)
         filtered_queryset.update(order_num=F('order_num') + 1)
@@ -67,8 +69,7 @@ class OrderedViewSetMixin():
 
     def do_destroy(self, obj):
         order_num = obj.order_num
-        # accessing the queryset directly so that other filters (e.g. of UserQuerySetMixin) are not unnecessarily applied
-        queryset = self.queryset
+        queryset = self.get_queryset()
         filters = {}
         if self.order_scope_field:
             filters[self.order_scope_field] = getattr(

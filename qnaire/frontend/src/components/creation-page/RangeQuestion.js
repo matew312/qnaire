@@ -6,10 +6,12 @@ import {
   MenuItem,
   Select,
   TextField,
+  typographyClasses,
 } from "@mui/material";
 import { OptionMenu } from "../basic/OptionMenu";
 import {
-  DISPLAY_TYPES,
+  DisplayTypesDescription,
+  DisplayTypes,
   useRangeQuestionController,
 } from "../../controllers/useRangeQuestionController";
 import Question from "./Question";
@@ -23,9 +25,13 @@ export function Options({ min, max, step, type, update, isSelected, error }) {
         <ETextField
           value={min !== null ? min : ""}
           error={error.min}
+          disabled={
+            type === DisplayTypes.SMILEY_RATING ||
+            type === DisplayTypes.STAR_RATING
+          }
           onChange={(e) =>
             update({
-              min: parseFloat(e.target.value) || null,
+              min: e.target.value ? parseFloat(e.target.value) : null,
             })
           }
           required
@@ -42,7 +48,7 @@ export function Options({ min, max, step, type, update, isSelected, error }) {
           error={error.max}
           onChange={(e) =>
             update({
-              max: parseFloat(e.target.value) || null,
+              max: e.target.value ? parseFloat(e.target.value) : null,
             })
           }
           required
@@ -57,9 +63,13 @@ export function Options({ min, max, step, type, update, isSelected, error }) {
         <ETextField
           value={step !== null ? step : ""}
           error={error.step}
+          disabled={
+            type === DisplayTypes.SMILEY_RATING ||
+            type === DisplayTypes.STAR_RATING
+          }
           onChange={(e) =>
             update({
-              step: parseInt(e.target.value) || null,
+              step: e.target.value ? parseInt(e.target.value) : null,
             })
           }
           label="Skok"
@@ -77,9 +87,9 @@ export function Options({ min, max, step, type, update, isSelected, error }) {
           label="Způsob zobrazení"
           required
         >
-          {Object.keys(DISPLAY_TYPES).map((type) => (
+          {Object.keys(DisplayTypesDescription).map((type) => (
             <MenuItem value={type} key={type}>
-              {DISPLAY_TYPES[type]}
+              {DisplayTypesDescription[type]}
             </MenuItem>
           ))}
         </ESelect>

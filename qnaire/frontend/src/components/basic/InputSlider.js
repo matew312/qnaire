@@ -4,34 +4,36 @@ import Slider from "@mui/material/Slider";
 import Input from "@mui/material/Input";
 import { ensurePrecision } from "../../utils";
 
-export function InputSlider({ min, max, ...props }) {
-  const isStep = Boolean(props.step);
+export default function InputSlider({
+  min,
+  max,
+  step,
+  value,
+  onChange,
+  ...props
+}) {
+  const isStep = Boolean(step);
   // make slider use 2 decimal places when step isn't defined (but the step isn't enforced in the Input)
-  const step = isStep ? props.step : 0.01;
-  const midValue = isStep
-    ? ensurePrecision(min + Math.round((max - min) / step / 2) * step, step)
-    : min + (max - min) / 2;
-  const defaultValue = props.defaultValue ? props.defaultValue : midValue;
-  const [value, setValue] = useState(defaultValue);
+  step = isStep ? step : 0.01;
 
   const handleSliderChange = (event, newValue) => {
-    setValue(newValue);
+    onChange(newValue);
   };
 
   const handleInputChange = (event) => {
-    //the value is allowed to be an empty string, so this needs to be kept in mind
-    setValue(event.target.value === "" ? "" : Number(event.target.value));
+    onChange(event.target.value === "" ? null : Number(event.target.value));
   };
 
   const handleBlur = () => {
-    if (value < min) {
-      setValue(min);
-    } else if (value > max) {
-      setValue(max);
-    } else {
-      if (isStep) {
-        //allow only multiples of step
-        setValue(ensurePrecision(value, step));
+    if (value !== null) {
+      if (value < min) {
+        onChange(min);
+      } else if (value > max) {
+        onChange(max);
+      } else if (isStep) {
+        //if step is decimal this will ensure the value will have the same numbe of decimal places as the step
+        //but it doesn't solve the equation: (value - min) % step === 0
+        onChange(ensurePrecision(value, step));
       }
     }
   };
@@ -43,7 +45,7 @@ export function InputSlider({ min, max, ...props }) {
     },
   ];
   if (isStep) {
-    let mark_value = min;
+    let mark_value = min + step;
     while (mark_value < max) {
       marks.push({
         value: mark_value,
@@ -57,7 +59,7 @@ export function InputSlider({ min, max, ...props }) {
   });
 
   return (
-    <Grid container spacing={4} alignItems="center">
+    <Grid container spacing={4} alignItems="top" sx={{px: 2}}>
       <Grid item xs>
         <Slider
           value={typeof value === "number" ? value : min}
@@ -66,12 +68,11 @@ export function InputSlider({ min, max, ...props }) {
           marks={marks}
           min={min}
           max={max}
-          aria-labelledby="input-slider"
         />
       </Grid>
       <Grid item>
         <Input
-          value={value}
+          value={typeof value === "number" ? value : ""}
           size="small"
           onChange={handleInputChange}
           onBlur={handleBlur}
@@ -80,16 +81,9 @@ export function InputSlider({ min, max, ...props }) {
             min: min,
             max: max,
             type: "number",
-            "aria-labelledby": "input-slider",
           }}
         />
       </Grid>
     </Grid>
   );
 }
-
-InputSlider.defaultProps = {
-  min: 0,
-  max: 100,
-  step: 10,
-};

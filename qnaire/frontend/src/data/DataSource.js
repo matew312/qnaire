@@ -18,6 +18,10 @@ export class DataSource {
     });
   }
 
+  setShouldAuth(shouldAuth) {
+    this.gateway.setShouldAuth(shouldAuth);
+  }
+  
   _setData(data) {
     this.data = data;
   }
