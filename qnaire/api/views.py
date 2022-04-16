@@ -17,7 +17,7 @@ class ResponseView(APIView):
         qnaire = get_object_or_404(Questionnaire, pk=kwargs['id'])
 
         private_qnaire_id = None
-        if not qnaire.anonymous:
+        if qnaire.private:
             ok = True
             private_qnaire_id_serializer = PrivateQnaireIdSerializer(
                 data=request.data)

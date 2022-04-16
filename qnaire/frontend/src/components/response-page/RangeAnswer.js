@@ -22,7 +22,7 @@ function Field({ answer, question, setAnswer, error }) {
         max: question.max,
         step: question.step,
       }}
-      sx={{ width: { xs: "100%", sm: "50%", md: "25%" } }} //or use Grid container in Answer and Grid item in here
+      sx={{ width: { xs: "100%", sm: "50%", md: "25%" } }}
     />
   );
 }

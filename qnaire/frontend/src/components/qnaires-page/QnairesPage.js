@@ -30,7 +30,7 @@ export function QnairesPage() {
 
   return (
     <React.Fragment>
-      <Typography variant="h2" mb={2}>
+      <Typography variant="h1" mb={2}>
         Moje dotazníky
       </Typography>
       <Grid container spacing={3} alignItems="stretch">

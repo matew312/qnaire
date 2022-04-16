@@ -21,7 +21,7 @@ export class DataSource {
   setShouldAuth(shouldAuth) {
     this.gateway.setShouldAuth(shouldAuth);
   }
-  
+
   _setData(data) {
     this.data = data;
   }
@@ -72,6 +72,7 @@ export class DataSource {
     this._unsubscribe(DataEvents.DELETE, callback);
   }
 
+  //get from "cache"
   get(id) {
     if (this.data && id in this.data) {
       return this.data[id];
@@ -80,6 +81,25 @@ export class DataSource {
   }
   getAll() {
     return this.data;
+  }
+
+  retrieve(id) {
+    return this.gateway.retrieve(id).then((data) => {
+      if (this.data !== null) {
+        this.data[data.id] = data;
+      } else {
+        this._setData({ [data.id]: data });
+      }
+
+      return data;
+    });
+  }
+
+  retrieveAll(params) {
+    return this.gateway.retrieveAll(params).then((data) => {
+      this._setData(data);
+      return this.data;
+    });
   }
 
   getFilteredList(filterFunc) {

@@ -4,6 +4,7 @@ import {
   LinearProgress,
   Paper,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 import { Box } from "@mui/system";
@@ -15,22 +16,52 @@ import {
 } from "../../controllers/useQnaireResponseController";
 import { useAppContext } from "../../providers/AppContextProvider";
 import ErrorList from "../basic/ErrorList";
+import ETextField from "../fields/ETextField";
+import LoadingButton from "../basic/LoadingButton";
 
-const IntroPage = ({ name, desc, goToNextSection }) => (
-  <Stack spacing={1}>
-    <Typography variant="h2" component="h1">
-      {name}
-    </Typography>
-    <Typography>{desc}</Typography>
-    <Stack>
-      <Button
-        sx={{ ml: "auto" }}
+const IntroPage = ({
+  name,
+  desc,
+  goToNextSection,
+  anonymous,
+  respondent,
+  setRespondent,
+}) => (
+  <Stack spacing={2}>
+    <Box>
+      <Typography variant="h1">
+        {name}
+      </Typography>
+      <Typography>{desc}</Typography>
+    </Box>
+    {!anonymous && (
+      <Stack spacing={1}>
+        <Typography>
+          Tento dotazník není anonymní. Zadejte identifikátor, který Vám byl
+          přidělen.
+        </Typography>
+        <ETextField
+          value={respondent.id !== null ? respondent.id : ""}
+          onChange={(e) =>
+            setRespondent((respondent) => {
+              return { ...respondent, id: e.target.value };
+            })
+          }
+          error={respondent.error}
+          label="Identifikátor"
+          fullWidth
+        />
+      </Stack>
+    )}
+    <Stack direction="row" justifyContent="flex-end">
+      <LoadingButton
+        loading={respondent.loading}
         size="large"
         variant="contained"
         onClick={goToNextSection}
       >
         Pustit se do vyplňování
-      </Button>
+      </LoadingButton>
     </Stack>
   </Stack>
 );
@@ -67,6 +98,8 @@ export function ResponsePage() {
     goToPreviousSection,
     submitResponse,
     setSkipToSectionId,
+    respondent,
+    setRespondent,
   } = useQnaireResponseController(id, privateId, isPreview);
 
   const { setPageActions, setDrawerDisabled } = useAppContext();
@@ -93,7 +126,14 @@ export function ResponsePage() {
   }
 
   if (isIntro) {
-    return <IntroPage {...qnaire} goToNextSection={goToNextSection} />;
+    return (
+      <IntroPage
+        {...qnaire}
+        goToNextSection={goToNextSection}
+        respondent={respondent}
+        setRespondent={setRespondent}
+      />
+    );
   }
 
   return (

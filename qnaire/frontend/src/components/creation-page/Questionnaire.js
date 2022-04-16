@@ -144,7 +144,7 @@ export function Questionnaire({ id }) {
                 <Grid item xs={12} mt={1}>
                   <EditableText
                     editable={isSelected}
-                    typographyProps={{ variant: "h3" }}
+                    typographyProps={{ variant: "h1" }}
                     value={name}
                     error={error.name}
                     onChange={(name) => {

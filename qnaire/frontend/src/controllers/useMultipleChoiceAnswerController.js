@@ -1,6 +1,5 @@
 import * as React from "react";
 import qnaireSource from "../data/QnaireSource";
-import useAnswerController from "./useAnswerController";
 import { shuffleArray } from "../utils";
 
 export default function useMultipleChoiceAnswerController({
@@ -19,8 +18,6 @@ export default function useMultipleChoiceAnswerController({
       return shuffleArray(sortedChoices);
     }
   }, [question]);
-
-  console.log(answer);
 
   const addChoice = (choice) => {
     const selectedChoices = answer.choices ? answer.choices : [];

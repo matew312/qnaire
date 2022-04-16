@@ -2,7 +2,7 @@ from django.db.models import F, Q
 from rest_framework import permissions, viewsets, response, status, mixins
 from rest_framework.decorators import action
 from .mixins import OrderedViewSetMixin, UserQuerySetMixin, MultiSerializerViewSetMixin
-from .models import Answer, Choice, Question, Questionnaire, Response, Section
+from .models import Answer, Choice, Question, Questionnaire, Respondent, Response, Section
 from .serializers import (
     AnswerPolymorhicSerializer,
     ChoiceSerializer,
@@ -14,6 +14,7 @@ from .serializers import (
     QuestionnaireCreationSerializer,
     QuestionnaireSerializer,
     QuestionPolymorphicSerializer,
+    RespondentSerializer,
     SectionMoveSerializer,
     SectionSerializer,
     raise_validation_error_if_qnaire_published,
@@ -260,6 +261,17 @@ class ChoiceViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedViewS
             question.max_answers = new_total_choices
             question.save()
         instance.delete()
+
+class RespondentViewSet(viewsets.ModelViewSet):
+    queryset = Respondent.objects.all()
+    serializer_class = RespondentSerializer
+
+    def get_permissions(self):
+        if self.action == 'retrieve':
+            permission_classes = []
+        else:
+            permission_classes = [permissions.IsAdminUser]
+        return [permission() for permission in permission_classes]
 
 
 class AnswerViewSet(viewsets.ModelViewSet):

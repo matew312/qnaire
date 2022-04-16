@@ -2,7 +2,7 @@ import * as React from "react";
 import { Typography } from "@mui/material";
 
 export default function ErrorList({ error }) {
-  return (
+  return error ? (
     <React.Fragment>
       {error.non_field_errors && (
         <Typography color="error" textAlign="center">
@@ -15,5 +15,5 @@ export default function ErrorList({ error }) {
         </Typography>
       )}
     </React.Fragment>
-  );
+  ) : null;
 }

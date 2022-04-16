@@ -7,6 +7,7 @@ import React, {
   useState,
 } from "react";
 import qnaireSource from "../data/QnaireSource";
+import respondentSource from "../data/RespondentSource";
 import { useBaseQnaireController } from "./useBaseQnaireController";
 import * as yup from "yup";
 import { number, yupErrorToFieldErrors } from "../validation";
@@ -103,6 +104,11 @@ export const QuestionAnswerMap = {
 
 export function useQnaireResponseController(id, privateId, isPreview) {
   const { data, update, ...baseQnaireController } = useBaseQnaireController(id);
+  const [respondent, setRespondent] = useState({
+    id: null,
+    loading: false,
+    error: "",
+  });
   const [sections, setSections] = useState(null);
   const [pageMap, setPageMap] = useState(null); //contains all needed data for each section (other than the section)
   const [sectionIdxStack, setSectionIdxStack] = useState([]);
@@ -214,13 +220,37 @@ export function useQnaireResponseController(id, privateId, isPreview) {
       return;
     }
 
-    //if data.published then error
-
     // qnaireSource.createResponse
   };
 
   const goToNextSection = () => {
-    if (!isIntro && !validate()) {
+    if (isIntro) {
+      if (data.anonymous) {
+        setSectionIdxStack([0]); //go to first section
+        return;
+      }
+      setRespondent((respondent) => {
+        return { ...respondent, loading: true };
+      });
+      respondentSource
+        .retrieve(respondent.id)
+        .then(() => {
+          setSectionIdxStack([0]); //go to first section
+          setRespondent((respondent) => {
+            return { ...respondent, loading: false, error: "" };
+          });
+        })
+        .catch((error) => {
+          setRespondent((respondent) => {
+            return {
+              ...respondent,
+              error: "Zadaný identifikátor není platný",
+              loading: false,
+            };
+          });
+        });
+      return;
+    } else if (!validate()) {
       return;
     }
 
@@ -266,5 +296,7 @@ export function useQnaireResponseController(id, privateId, isPreview) {
     submitResponse,
     setSkipToSectionId,
     setAnswer,
+    respondent,
+    setRespondent,
   };
 }

@@ -3,4 +3,5 @@ export const Resources = {
   SECTIONS: "sections",
   QUESTIONS: "questions",
   CHOICES: "choices",
+  RESPONDENTS: "respondents",
 };

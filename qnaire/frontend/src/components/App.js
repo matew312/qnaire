@@ -12,6 +12,7 @@ import { useAuth } from "../auth";
 import { AuthOnlyOutlet } from "./AuthOnlyOutlet";
 import { AppContextProvider } from "../providers/AppContextProvider";
 import { CustomThemeProvider } from "../providers/CustomThemeProvider";
+import { GET } from "../request";
 
 function App() {
   const auth = useAuth();
@@ -45,8 +46,6 @@ function App() {
                     />
                   </Route>
                 </Routes>
-                {/* </Grid>
-              </Grid> */}
               </Container>
             </AppStructure>
           </AppContextProvider>

@@ -612,10 +612,10 @@ class PrivateQnaireIdSerializer(serializers.ModelSerializer):
         model = PrivateQnaireId
         fields = ('id', )
 
-# class RespondentSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Respondent
-#         fields = ()
+class RespondentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Respondent
+        fields = ('id', )
 
 # class ComponentSerializer(serializers.ModelSerializer):
 #     class Meta:
