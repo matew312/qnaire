@@ -20,51 +20,7 @@ import ErrorList from "../basic/ErrorList";
 import ETextField from "../fields/ETextField";
 import LoadingButton from "../basic/LoadingButton";
 import UncancellableDialog from "../basic/UncancellableDialog";
-
-const IntroPage = ({
-  name,
-  desc,
-  goToNextSection,
-  anonymous,
-  respondent,
-  setRespondent,
-}) => (
-  <Stack spacing={2}>
-    <Box>
-      <Typography variant="h1">{name}</Typography>
-      <Typography>{desc}</Typography>
-    </Box>
-    {!anonymous && (
-      <Stack spacing={1}>
-        <Typography>
-          Tento dotazník není anonymní. Zadejte identifikátor, který Vám byl
-          přidělen.
-        </Typography>
-        <ETextField
-          value={respondent.id !== null ? respondent.id : ""}
-          onChange={(e) =>
-            setRespondent((respondent) => {
-              return { ...respondent, id: e.target.value };
-            })
-          }
-          error={respondent.error}
-          label="Identifikátor"
-          fullWidth
-        />
-      </Stack>
-    )}
-    <Stack direction="row" justifyContent="flex-end">
-      <LoadingButton
-        loading={respondent.loading}
-        size="large"
-        variant="contained"
-        onClick={goToNextSection}
-      >
-        Pustit se do vyplňování
-      </LoadingButton>
-    </Stack>
-  </Stack>
-);
+import QnaireIntro from "./QnaireIntro";
 
 const SectionInfo = React.memo(({ name, desc }) => (
   <Box>
@@ -103,7 +59,6 @@ export function ResponsePage() {
     submissionState,
   } = useQnaireResponseController(id, privateId, isPreview);
 
-
   const { setPageActions, setDrawerDisabled } = useAppContext();
 
   useEffect(() => {
@@ -133,7 +88,7 @@ export function ResponsePage() {
 
   if (isIntro) {
     return (
-      <IntroPage
+      <QnaireIntro
         {...qnaire}
         goToNextSection={goToNextSection}
         respondent={respondent}

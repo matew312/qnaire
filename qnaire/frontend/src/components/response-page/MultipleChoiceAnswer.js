@@ -8,6 +8,7 @@ import {
   Stack,
   FormGroup,
   Box,
+  Typography,
 } from "@mui/material";
 import * as React from "react";
 import useMultipleChoiceAnswerController from "../../controllers/useMultipleChoiceAnswerController";
@@ -48,7 +49,11 @@ function Checkboxes({
   };
 
   return (
-    <React.Fragment>
+    <Stack spacing={1}>
+      <Typography variant="body2" color="text.secondary">
+        {question.mandatory ? "Vyberte" : "Můžete vybrat"}{" "}
+        {question.min_answers} až {question.max_answers} možností.
+      </Typography>
       {choices.map((choice) => (
         <Box key={choice.id}>
           <FormControlLabel
@@ -83,7 +88,7 @@ function Checkboxes({
           />
         </Stack>
       )}
-    </React.Fragment>
+    </Stack>
   );
 }
 

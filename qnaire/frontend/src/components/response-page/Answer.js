@@ -11,7 +11,10 @@ export default function Answer({ question, shouldScroll, children }) {
       <CardContent>
         <Stack spacing={2}>
           <Typography variant="h5">
-            {question.text} {question.mandatory ? "*" : ""}
+            {question.text}
+            {question.mandatory && (
+              <Box sx={{ display: "inline", color: "error.main" }}> *</Box>
+            )}
           </Typography>
           <Box>{children}</Box>
         </Stack>

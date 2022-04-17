@@ -4,6 +4,8 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
+  Stack,
+  Typography,
 } from "@mui/material";
 import useRangeAnswerController from "../../controllers/useRangeAnswerController";
 import ETextField from "../fields/ETextField";
@@ -16,20 +18,25 @@ import { QuestionSource } from "../../data/QuestionSource";
 
 function Field({ answer, question, setAnswer, error }) {
   return (
-    <ETextField
-      value={answer !== null ? answer : ""}
-      error={error}
-      onChange={(e) =>
-        setAnswer(e.target.value ? parseFloat(e.target.value) : null)
-      }
-      type="number"
-      inputProps={{
-        min: question.min,
-        max: question.max,
-        step: question.step ? question.step : "any",
-      }}
-      sx={{ width: { xs: "100%", sm: "50%", md: "25%" } }}
-    />
+    <Stack spacing={1}>
+      <Typography variant="body2" color="text.secondary">
+        Zadejte číslo v rozmezí {question.min} až {question.max}.
+      </Typography>
+      <ETextField
+        value={answer !== null ? answer : ""}
+        error={error}
+        onChange={(e) =>
+          setAnswer(e.target.value ? parseFloat(e.target.value) : null)
+        }
+        type="number"
+        inputProps={{
+          min: question.min,
+          max: question.max,
+          step: question.step ? question.step : "any",
+        }}
+        sx={{ width: { xs: "100%", sm: "50%", md: "25%" } }}
+      />
+    </Stack>
   );
 }
 

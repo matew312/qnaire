@@ -91,16 +91,6 @@ const createMultipleChoiceAnswerSchema = (q) => {
   return schema;
 };
 
-// try {
-//   const s = createMultipleChoiceAnswerSchema({
-//     mandatory: true,
-//     min_answers: 1,
-//   });
-//   console.log(s.validateSync({ choices: null }));
-// } catch (error) {
-//   console.log(error);
-// }
-
 export const QuestionAnswerMap = {
   OpenQuestion: {
     component: OpenAnswer,
