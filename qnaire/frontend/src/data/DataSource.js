@@ -26,6 +26,13 @@ export class DataSource {
     this.data = data;
   }
 
+  _setObj(obj) {
+    if (this.data === null) {
+      this.data = {};
+    }
+    this.data[obj.id] = obj;
+  }
+
   _addEvents(eventMap) {
     Object.keys(eventMap).forEach((key) => {
       this.subscribers[eventMap[key]] = [];
@@ -84,14 +91,9 @@ export class DataSource {
   }
 
   retrieve(id) {
-    return this.gateway.retrieve(id).then((data) => {
-      if (this.data !== null) {
-        this.data[data.id] = data;
-      } else {
-        this._setData({ [data.id]: data });
-      }
-
-      return data;
+    return this.gateway.retrieve(id).then((obj) => {
+      this._setObj(obj);
+      return obj;
     });
   }
 
@@ -111,22 +113,22 @@ export class DataSource {
     }, []);
   }
 
-  create(data) {
-    return this.gateway.create(data).then((data) => {
-      this.data[data.id] = data;
-      this._notify(DataEvents.CREATE, data);
-      return data;
+  create(obj) {
+    return this.gateway.create(obj).then((obj) => {
+      this._setObj(obj);
+      this._notify(DataEvents.CREATE, obj);
+      return obj;
     });
   }
 
   //partial update
   update(id, updatedData, notify = true) {
-    return this.gateway.update(id, updatedData).then((data) => {
-      this.data[data.id] = data;
+    return this.gateway.update(id, updatedData).then((obj) => {
+      this._setObj(obj);
       if (notify) {
-        this._notify(DataEvents.UPDATE, data);
+        this._notify(DataEvents.UPDATE, obj);
       }
-      return data;
+      return obj;
     });
   }
 
@@ -135,5 +137,9 @@ export class DataSource {
       delete this.data[id];
       this._notify(DataEvents.DELETE, id);
     });
+  }
+
+  deleteFromCache(id) {
+    delete this.data[id];
   }
 }

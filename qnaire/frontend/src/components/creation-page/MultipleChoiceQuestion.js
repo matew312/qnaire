@@ -30,14 +30,26 @@ function Options({
   choices,
   createChoice,
 }) {
-  const totalChoices = choices.length;
+  let totalChoices = choices.length;
+  if (other_choice) {
+    totalChoices++;
+  }
   const checkbox = max_answers > 1;
+
+  const marks = [];
+  for (let i = min_answers; i <= totalChoices; i++) {
+    marks.push({ value: i, label: i.toString() });
+  }
 
   return (
     <Grid container spacing={isSelected ? 1 : 0}>
       {choices.map((choice) => (
         <Grid item xs={12} key={choice.id}>
-          <Choice id={choice.id} editable={isSelected} checkbox={checkbox} />
+          <Choice
+            id={choice.id}
+            editable={isSelected}
+            checkbox={checkbox}
+          />
         </Grid>
       ))}
       {isSelected ? (
@@ -74,12 +86,9 @@ function Options({
             <Box width="100%" />
             <Grid item xs={12} sm={6} px={2} m="auto">
               <Slider
-                value={[
-                  min_answers,
-                  max_answers !== null ? max_answers : totalChoices,
-                ]}
-                min={0}
-                max={totalChoices}
+                value={[min_answers, max_answers]}
+                min={1}
+                max={Math.max(totalChoices, 1)}
                 step={1}
                 onChange={(e) => {
                   const [min, max] = e.target.value;
@@ -88,9 +97,7 @@ function Options({
                     max_answers: max,
                   });
                 }}
-                marks={[...Array(totalChoices + 1).keys()].map((i) => {
-                  return { value: i, label: i.toString() };
-                })}
+                marks={marks}
                 valueLabelDisplay="auto"
               />
             </Grid>

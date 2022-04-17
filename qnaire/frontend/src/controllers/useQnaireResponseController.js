@@ -10,10 +10,22 @@ import qnaireSource from "../data/QnaireSource";
 import respondentSource from "../data/RespondentSource";
 import { useBaseQnaireController } from "./useBaseQnaireController";
 import * as yup from "yup";
-import { number, yupErrorToFieldErrors } from "../validation";
+import { number, yupErrorToTopLevelFieldErrors } from "../validation";
 import OpenAnswer from "../components/response-page/OpenAnswer";
 import RangeAnswer from "../components/response-page/RangeAnswer";
 import MultipleChoiceAnswer from "../components/response-page/MultipleChoiceAnswer";
+import privateQnaireIdSource from "../data/PrivateQnaireIdSource";
+
+const INVALID_PRIVATE_ID_ERROR = "Byl zadán neplatný odkaz na dotazník.";
+const NOT_PUBLISHED_ERROR =
+  "Tento dotazník aktuálně není dostupný pro vyplňování";
+
+export const SubmissionState = {
+  NOT_SENT: 0,
+  WAITING: 1,
+  ERROR: 2,
+  SUCCESS: 3,
+};
 
 const requiredIfMandatory = (q, schema) =>
   q.mandatory ? schema.required("Odpověd na tuto otázku je povinná") : schema;
@@ -28,7 +40,11 @@ const createOpenAnswerSchema = (q) => {
   if (q.max_length !== null) {
     schema = schema.max(q.max_length);
   }
-  return schema;
+  return yup.object({
+    text: schema,
+    question: yup.number().default(q.id),
+    resourcetype: yup.string().default("OpenAnswer"),
+  });
 };
 
 const createRangeAnswerSchema = (q) => {
@@ -38,40 +54,38 @@ const createRangeAnswerSchema = (q) => {
     schema = schema.test(
       "step-of",
       `Hodnota musí být rovno ${q.min} + k * ${q.step}, kde k je přirozené číslo`,
-      (value, context) => (value - q.min) % q.step === 0
+      (value, context) => value === null || (value - q.min) % q.step === 0
     );
   }
-  return schema;
+  return yup.object({
+    num: schema,
+    question: yup.number().default(q.id),
+    resourcetype: yup.string().default("RangeAnswer"),
+  });
 };
 
 const createMultipleChoiceAnswerSchema = (q) => {
-  let choicesSchema = yup
-    .array()
-    // .ensure() //there would have to be custom test if I used this (number of choices would need to be within min and max if mandatory or if array not empty )
-    .nullable()
-    .default(null)
-    .min(q.min_answers, "Musí být vybráno alespoň ${min} odpovědí");
-  if (q.max_answers) {
-    choicesSchema = choicesSchema.max(
-      q.max_answers,
-      "Musí být vybráno nanejvýše ${max} odpovědí"
-    );
-  }
+  let choicesSchema = yup.array().ensure();
+  choicesSchema = choicesSchema.test(
+    "min-max-if-required-or-not-empty",
+    `Musí být vybráno alespoň ${q.min_answers} odpovědí  a nanejvýš ${q.max_answers} odpovědí`,
+    (value, context) => {
+      const { other_choice_text } = context.parent;
+      let totalSelectedChoices = value.length;
+      if (other_choice_text) {
+        totalSelectedChoices++;
+      }
+      return q.required || totalSelectedChoices > 0
+        ? totalSelectedChoices >= q.min_answers && totalSelectedChoices <= q.max_answers
+        : true;
+    }
+  );
   let otherChoiceSchema = yup.string().default("");
-  if (q.mandatory && q.min_answers > 0) {
-    choicesSchema = choicesSchema.when(
-      "other_choice_text",
-      (other_choice_text, schema) =>
-        !other_choice_text
-          ? schema.required(
-              `Musí být vybráno alespoň ${q.min_answers} odpovědí`
-            )
-          : schema
-    );
-  }
   let schema = yup.object({
     choices: choicesSchema,
     other_choice_text: otherChoiceSchema,
+    question: yup.number().default(q.id),
+    resourcetype: yup.string().default("MultipleChoiceAnswer"),
   });
 
   return schema;
@@ -104,6 +118,7 @@ export const QuestionAnswerMap = {
 
 export function useQnaireResponseController(id, privateId, isPreview) {
   const { data, update, ...baseQnaireController } = useBaseQnaireController(id);
+  const [globalError, setGlobalError] = useState(null);
   const [respondent, setRespondent] = useState({
     id: null,
     loading: false,
@@ -112,8 +127,10 @@ export function useQnaireResponseController(id, privateId, isPreview) {
   const [sections, setSections] = useState(null);
   const [pageMap, setPageMap] = useState(null); //contains all needed data for each section (other than the section)
   const [sectionIdxStack, setSectionIdxStack] = useState([]);
-  const [isDone, setIsDone] = useState(false); // if the response was successfully submited
-  const skipToSectionId = useRef(null);
+  const [submissionState, setSubmissionState] = useState(
+    SubmissionState.NOT_SENT
+  );
+  const skipToSectionListMap = useRef(null);
 
   useEffect(() => {
     qnaireSource.setShouldAuth(false);
@@ -122,6 +139,7 @@ export function useQnaireResponseController(id, privateId, isPreview) {
       const sectionSource = qnaireSource.sectionSource;
       const sections = sectionSource.getSortedSections();
 
+      skipToSectionListMap.current = {};
       const pageMap = sections.reduce((pageMap, section) => {
         const questions = qnaireSource.questionSource.getQuestionsForSection(
           section.id
@@ -135,12 +153,35 @@ export function useQnaireResponseController(id, privateId, isPreview) {
         const validationSchema = yup.object(schemaObj);
         answers = validationSchema.cast(answers);
 
+        skipToSectionListMap.current[section.id] = [];
+
         pageMap[section.id] = { questions, answers, validationSchema, errors };
         return pageMap;
       }, {});
 
       setSections(sections);
       setPageMap(pageMap);
+
+      if (!data.published && !isPreview) {
+        setGlobalError(NOT_PUBLISHED_ERROR);
+        return;
+      }
+
+      if (data.private && !isPreview) {
+        if (!privateId) {
+          setGlobalError(INVALID_PRIVATE_ID_ERROR);
+        } else {
+          privateQnaireIdSource
+            .retrieve(privateId)
+            .then((privateQnaireId) => {
+              if (data.id !== privateQnaireId.qnaire) {
+                setGlobalError(INVALID_PRIVATE_ID_ERROR);
+              }
+            })
+            .catch(() => setGlobalError(INVALID_PRIVATE_ID_ERROR));
+        }
+        return;
+      }
     });
   }, [id]);
 
@@ -150,6 +191,7 @@ export function useQnaireResponseController(id, privateId, isPreview) {
   let isLastSection = false;
   let totalSections = null;
   let currentPage = null;
+  let currentSkipToSectionList = null;
   // let isFirstSection = false;
   if (sections && pageMap && sectionIdxStack.length > 0) {
     currentSectionIdx = sectionIdxStack[sectionIdxStack.length - 1];
@@ -159,6 +201,7 @@ export function useQnaireResponseController(id, privateId, isPreview) {
     isLastSection = currentSectionIdx === sections.length - 1;
     // isFirstSection = currentSectionIdx === 0;
     currentPage = pageMap[currentSection.id];
+    currentSkipToSectionList = skipToSectionListMap.current[currentSection.id];
   }
 
   const setAnswer = useCallback((question, value) => {
@@ -169,7 +212,10 @@ export function useQnaireResponseController(id, privateId, isPreview) {
           ...pageMap[question.section],
           answers: {
             ...pageMap[question.section].answers,
-            [question.id]: value,
+            [question.id]: {
+              ...pageMap[question.section].answers[question.id],
+              ...value,
+            },
           },
         },
       };
@@ -192,9 +238,29 @@ export function useQnaireResponseController(id, privateId, isPreview) {
   );
 
   const setSkipToSectionId = useCallback(
-    (id) => (skipToSectionId.current = id),
-    []
+    (question, id) => {
+      const prevIdx = currentSkipToSectionList.findIndex(
+        (obj) => obj.question === question
+      );
+      if (prevIdx !== -1) {
+        currentSkipToSectionList.splice(prevIdx, 1);
+      }
+      if( id !== null) {
+        currentSkipToSectionList.push({ id, question });
+      }
+    },
+    [currentSkipToSectionList]
   );
+
+  const getSkipToSectionId = () => {
+    const best = currentSkipToSectionList.reduce((best, curr) => {
+      if (best === null || curr.question.order_num > best.question.order_num) {
+        return curr;
+      }
+      return best;
+    }, null);
+    return best !== null ? best.id : null;
+  };
 
   const validate = () => {
     try {
@@ -205,7 +271,7 @@ export function useQnaireResponseController(id, privateId, isPreview) {
       return true;
     } catch (error) {
       console.log(error.inner);
-      setError(yupErrorToFieldErrors(error));
+      setError(yupErrorToTopLevelFieldErrors(error));
       return false;
     }
   };
@@ -216,16 +282,35 @@ export function useQnaireResponseController(id, privateId, isPreview) {
     }
 
     if (isPreview) {
-      setIsDone(true);
+      setSubmissionState({ state: SubmissionState.SUCCESS, error: null });
       return;
     }
 
-    // qnaireSource.createResponse
+    const answers = Object.values(pageMap).reduce((answers, page) => {
+      return answers.concat(Object.values(page.answers));
+    }, []);
+    const response = {
+      answers,
+      private_qnaire_id: privateId,
+      respondent: respondent.id,
+    };
+    console.log(response);
+    setSubmissionState((submissionState) => {
+      return { ...submissionState, state: SubmissionState.WAITING };
+    });
+    qnaireSource
+      .createResponse(id, response)
+      .then(() => {
+        setSubmissionState({ state: SubmissionState.SUCCESS, error: null });
+      })
+      .catch((error) => {
+        setSubmissionState({ state: SubmissionState.ERROR, error });
+      });
   };
 
   const goToNextSection = () => {
     if (isIntro) {
-      if (data.anonymous) {
+      if (data.anonymous || isPreview) {
         setSectionIdxStack([0]); //go to first section
         return;
       }
@@ -254,7 +339,8 @@ export function useQnaireResponseController(id, privateId, isPreview) {
       return;
     }
 
-    if (!skipToSectionId.current) {
+    const skipToSectionId = getSkipToSectionId();
+    if (skipToSectionId === null) {
       setSectionIdxStack((sectionIdxStack) => {
         if (sectionIdxStack.length > 0) {
           const nextSectionIdx =
@@ -267,7 +353,7 @@ export function useQnaireResponseController(id, privateId, isPreview) {
     } else {
       setSectionIdxStack((sectionIdxStack) => [
         ...sectionIdxStack,
-        sections.findIndex((section) => section.id === skipToSectionId.current),
+        sections.findIndex((section) => section.id === skipToSectionId),
       ]);
     }
   };
@@ -290,7 +376,6 @@ export function useQnaireResponseController(id, privateId, isPreview) {
     isLastSection,
     // isFirstSection,
     isIntro,
-    isDone,
     goToNextSection,
     goToPreviousSection,
     submitResponse,
@@ -298,5 +383,7 @@ export function useQnaireResponseController(id, privateId, isPreview) {
     setAnswer,
     respondent,
     setRespondent,
+    globalError,
+    submissionState,
   };
 }

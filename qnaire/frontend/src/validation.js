@@ -17,6 +17,26 @@ export function yupErrorToFieldErrors(yupError) {
   return errors;
 }
 
+//in the case of object schema nested in another object schema, the path is "parentkey.childkey", so return object of errors
+//where keys will will be just "parentkey"
+export function yupErrorToTopLevelFieldErrors(yupError) {
+  let errors = {};
+  if (yupError.inner) {
+    if (yupError.inner.length === 0) {
+      errors[yupError.path.split(".")[0]] = yupError.message;
+    } else {
+      //set the first error for each path in the array of errors
+      for (let err of yupError.inner) {
+        const path = err.path.split(".")[0];
+        if (path in errors === false) {
+          errors[path] = err.message;
+        }
+      }
+    }
+  }
+  return errors;
+}
+
 yup.setLocale({
   mixed: {
     default: "Neplatný vstup",

@@ -23,10 +23,16 @@ function Checkboxes({
   addOtherChoice,
   removeOtherChoice,
 }) {
-  const [otherChoiceSelected, setOtherChoiceSelected] = React.useState(false);
+  const [otherChoiceSelected, setOtherChoiceSelected] = React.useState(
+    Boolean(answer.other_choice_text)
+  );
 
   const handleChange = (e, choice) => {
-    e.target.checked ? addChoice(choice.id) : removeChoice(choice.id);
+    if (e.target.checked) {
+      addChoice(choice.id);
+    } else {
+      removeChoice(choice.id);
+    }
   };
 
   const handleOtherChoiceChange = (e) => {
@@ -48,9 +54,7 @@ function Checkboxes({
           <FormControlLabel
             control={
               <Checkbox
-                checked={Boolean(
-                  answer.choices && answer.choices.includes(choice.id)
-                )}
+                checked={answer.choices.includes(choice.id)}
                 onChange={(e) => handleChange(e, choice)}
               />
             }
@@ -88,11 +92,13 @@ function RadioButtons({
   setChoice,
   setSkipToSectionId,
   answer,
-  question: { other_choice },
+  question,
 }) {
-  const [otherChoiceSelected, setOtherChoiceSelected] = React.useState(false);
+  const [otherChoiceSelected, setOtherChoiceSelected] = React.useState(
+    Boolean(answer.other_choice_text)
+  );
   let value = "";
-  if (answer.choices !== null) {
+  if (answer.choices.length > 0) {
     value = answer.choices[0];
   } else if (otherChoiceSelected) {
     value = "other_choice";
@@ -101,11 +107,15 @@ function RadioButtons({
   const handleChange = (e) => {
     const value = e.target.value;
     if (value !== "other_choice") {
-      setChoice(parseInt(value), false);
+      const choiceId = parseInt(value);
+      const choice = choices.find((choice) => choice.id === choiceId);
+      setChoice(choice.id, false);
+      setSkipToSectionId(question, choice.skip_to_section);
       setOtherChoiceSelected(false);
     } else {
       setOtherChoiceSelected(true);
       setChoice("", true); //alternatively call "removeChoice" on current answer if any
+      setSkipToSectionId(question, null);
     }
   };
 
@@ -125,7 +135,7 @@ function RadioButtons({
             />
           </Box>
         ))}
-        {other_choice && (
+        {question.other_choice && (
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <FormControlLabel
               key="other_choice"
@@ -176,7 +186,7 @@ function MultipleChoiceAnswer(props) {
         answer={answer}
         setSkipToSectionId={setSkipToSectionId}
       />
-      <ErrorText error={error} />
+      <ErrorText error={error} sx={{ mt: 1 }} />
     </Answer>
   );
 }

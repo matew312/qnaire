@@ -198,6 +198,7 @@ export function QnaireProvider({ children }) {
   };
 
   const handleQnaireUpdate = (data) => {
+    console.log(data);
     if (data.published !== isPublished) {
       setIsPublished(data.published);
     }

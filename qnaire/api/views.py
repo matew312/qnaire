@@ -4,7 +4,7 @@ from rest_framework import response
 from rest_framework.views import APIView
 from django.db.models import Q
 
-from .serializers import ChoiceSerializer, PrivateQnaireIdSerializer, QuestionPolymorphicSerializer, QuestionnaireSerializer, ResponseSerializer, SectionSerializer
+from .serializers import ChoiceSerializer, PrivateQnaireIdResponseSerializer, PrivateQnaireIdSerializer, QuestionPolymorphicSerializer, QuestionnaireSerializer, ResponseSerializer, SectionSerializer
 
 from .models import Answer, Choice, PrivateQnaireId, Question, Questionnaire, Response, Section
 
@@ -15,36 +15,26 @@ class ResponseView(APIView):
 
     def post(self, request, **kwargs):
         qnaire = get_object_or_404(Questionnaire, pk=kwargs['id'])
-
         private_qnaire_id = None
         if qnaire.private:
-            ok = True
-            private_qnaire_id_serializer = PrivateQnaireIdSerializer(
+            private_qnaire_id_serializer = PrivateQnaireIdResponseSerializer(
                 data=request.data)
-            if private_qnaire_id_serializer.is_valid():
-                queryset = PrivateQnaireId.objects.filter(
-                    pk=private_qnaire_id_serializer.validated_data['id'], qnaire=qnaire)
-                if queryset.exists():
-                    private_qnaire_id = queryset[0]
-                else:
-                    ok = False
+            private_qnaire_id_serializer.is_valid(raise_exception=True)
+            queryset = PrivateQnaireId.objects.filter(
+                pk=private_qnaire_id_serializer.validated_data['id'], qnaire=qnaire)
+            if queryset:
+                private_qnaire_id = queryset[0]
             else:
-                ok = False
-
-            if not ok:
                 return response.Response(
-                    data={'detail': 'No private id has been provided, but the questionnaire is not anonymous'}, status=status.HTTP_400_BAD_REQUEST)
+                    data={'detail': 'Invalid private_qnaire_id'}, status=status.HTTP_400_BAD_REQUEST)
 
         response_serializer = ResponseSerializer(
             data=request.data, context={'qnaire': qnaire})
-        if response_serializer.is_valid():
-            # I could pass the qnaire to the save method if it was in the Response Model
-            response_serializer.save()
-            if private_qnaire_id is not None:
-                private_qnaire_id.delete()
-            return response.Response(data=response_serializer.data, status=status.HTTP_200_OK)
-        else:
-            return response.Response(data={'detail': response_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        response_serializer.is_valid(raise_exception=True)
+        response_serializer.save()
+        if private_qnaire_id is not None:
+            private_qnaire_id.delete()
+        return response.Response(data=response_serializer.data, status=status.HTTP_200_OK)
 
 
 def forbidden_if_not_owning_qnaire(qnaire, request):
@@ -98,16 +88,16 @@ class ResultView(APIView):
                                   })
 
 
-class PrivateQnaireIdView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+# class PrivateQnaireIdView(APIView):
+#     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request, **kwargs):
-        qnaire = get_object_or_404(Questionnaire, pk=kwargs['id'])
-        forbidden = forbidden_if_not_owning_qnaire(qnaire, request)
-        if forbidden:
-            return forbidden
+#     def post(self, request, **kwargs):
+#         qnaire = get_object_or_404(Questionnaire, pk=kwargs['id'])
+#         forbidden = forbidden_if_not_owning_qnaire(qnaire, request)
+#         if forbidden:
+#             return forbidden
 
-        private_qnaire_id = PrivateQnaireId.objects.create(qnaire=qnaire)
-        serializer = PrivateQnaireIdSerializer(private_qnaire_id)
+#         private_qnaire_id = PrivateQnaireId.objects.create(qnaire=qnaire)
+#         serializer = PrivateQnaireIdSerializer(private_qnaire_id)
 
-        return response.Response(data=serializer.data, status=status.HTTP_200_OK)
+#         return response.Response(data=serializer.data, status=status.HTTP_200_OK)

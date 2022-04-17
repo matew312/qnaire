@@ -7,11 +7,13 @@ import React, {
 } from "react";
 import { yupErrorToFieldErrors } from "../validation";
 
+export const DEFAULT_TIMEOUT = 600;
+
 export const useGenericController = (
   source,
   id,
   validationSchema = null,
-  timeout = 750
+  timeout = DEFAULT_TIMEOUT
 ) => {
   const [data, setData] = useState(() => {
     return { ...source.get(id), error: {} };

@@ -1,11 +1,11 @@
 import { Box, TextField } from "@mui/material";
 import * as React from "react";
-import useAnswerController from "../../controllers/useAnswerController";
+import useOpenAnswerController from "../../controllers/useOpenAnswerController";
 import ETextField from "../fields/ETextField";
 import Answer from "./Answer";
 
 function OpenAnswer(props) {
-  const { answer, setAnswer, question, error } = useAnswerController(props);
+  const { answer, setAnswer, question, error } = useOpenAnswerController(props);
   const minRows =
     question.min_length && question.min_length >= 200 ? 3 : undefined;
 

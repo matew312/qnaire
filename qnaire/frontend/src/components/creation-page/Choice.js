@@ -13,7 +13,12 @@ import ClearIcon from "@mui/icons-material/Clear";
 import { useChoiceController } from "../../controllers/useChoiceController";
 import ScrollableSelect from "../basic/ScrollableSelect";
 
-export default function Choice({ id, editable, checkbox, textFieldProps }) {
+export default function Choice({
+  id,
+  editable,
+  checkbox,
+  textFieldProps,
+}) {
   const { text, skip_to_section, sections, update, destroy, error } =
     useChoiceController(id);
 
@@ -32,7 +37,7 @@ export default function Choice({ id, editable, checkbox, textFieldProps }) {
           textFieldProps={{ ...textFieldProps }}
         />
       </Grid>
-      {editable && (
+      {editable && !checkbox && (
         <Grid item xs={3} sx={{ mb: "auto" }}>
           <FormControl fullWidth size="small" variant="standard">
             <InputLabel id="skip-to-section-label">Přeskočit na</InputLabel>

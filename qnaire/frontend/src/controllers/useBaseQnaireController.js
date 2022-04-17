@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useReducer, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import qnaireSource from "../data/QnaireSource";
+import privateQnaireIdSource from "../data/PrivateQnaireIdSource"
 import { useQnaireContext } from "../providers/QnaireProvider";
-import { useGenericController } from "./useGenericController";
+import { DEFAULT_TIMEOUT, useGenericController } from "./useGenericController";
 import * as yup from "yup";
 import { requiredString } from "../validation";
 import { downloadTextFile } from "../utils";
@@ -12,7 +13,7 @@ const validationSchema = yup.object({
   desc: yup.string(),
 });
 
-export function useBaseQnaireController(id, timeout = 750) {
+export function useBaseQnaireController(id, timeout = DEFAULT_TIMEOUT) {
   const [data, update, regularDestroy] = useGenericController(
     qnaireSource,
     id,
@@ -51,7 +52,7 @@ export function useBaseQnaireController(id, timeout = 750) {
   const getLink = () => {
     const baseUrl = `${location.host}/questionnaires/${id}/response/`;
     if (data.private) {
-      return qnaireSource.createPrivateId(id).then((data) => {
+      return privateQnaireIdSource.create({ qnaire: id }).then((data) => {
         return `${baseUrl}${data.id}/`;
       });
     }

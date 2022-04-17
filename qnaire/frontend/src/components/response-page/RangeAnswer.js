@@ -1,12 +1,18 @@
 import * as React from "react";
-import useAnswerController from "../../controllers/useAnswerController";
+import {
+  FormControl,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+} from "@mui/material";
+import useRangeAnswerController from "../../controllers/useRangeAnswerController";
 import ETextField from "../fields/ETextField";
 import Answer from "./Answer";
 import InputSlider from "../basic/InputSlider";
 import ErrorText from "../basic/ErrorText";
 import StarRatingInput from "../basic/StarRating";
 import SmileyRatingInput from "../basic/SmileyRating";
-import { FormControl, FormControlLabel, Radio, RadioGroup } from "@mui/material";
+import { QuestionSource } from "../../data/QuestionSource";
 
 function Field({ answer, question, setAnswer, error }) {
   return (
@@ -20,7 +26,7 @@ function Field({ answer, question, setAnswer, error }) {
       inputProps={{
         min: question.min,
         max: question.max,
-        step: question.step,
+        step: question.step ? question.step : "any",
       }}
       sx={{ width: { xs: "100%", sm: "50%", md: "25%" } }}
     />
@@ -48,7 +54,10 @@ function Enumerate({ answer, question: { min, max, step }, setAnswer, error }) {
 
   return (
     <FormControl>
-      <RadioGroup value={answer !== null ? answer.toString() : ""} onChange={handleChange}>
+      <RadioGroup
+        value={answer !== null ? answer.toString() : ""}
+        onChange={handleChange}
+      >
         {radioButtons}
       </RadioGroup>
     </FormControl>
@@ -102,7 +111,8 @@ const AnswerDisplayTypeMap = {
 };
 
 function RangeAnswer(props) {
-  const { answer, setAnswer, question, error } = useAnswerController(props);
+  const { answer, setAnswer, question, error } =
+    useRangeAnswerController(props);
   const Component = AnswerDisplayTypeMap[question.type];
   return (
     <Answer question={question} shouldScroll={props.shouldScroll}>

@@ -2,12 +2,13 @@ from django.db.models import F, Q
 from rest_framework import permissions, viewsets, response, status, mixins
 from rest_framework.decorators import action
 from .mixins import OrderedViewSetMixin, UserQuerySetMixin, MultiSerializerViewSetMixin
-from .models import Answer, Choice, Question, Questionnaire, Respondent, Response, Section
+from .models import Answer, Choice, PrivateQnaireId, Question, Questionnaire, Respondent, Response, Section
 from .serializers import (
     AnswerPolymorhicSerializer,
     ChoiceSerializer,
     CreateChoiceSerializer,
     CreateSectionSerializer,
+    PrivateQnaireIdSerializer,
     QuestionMoveSerializer,
     QuestionSerializer,
     QuestionTypePolymorphicSerializer,
@@ -257,7 +258,9 @@ class ChoiceViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedViewS
     def perform_destroy(self, instance):
         question = instance.question
         new_total_choices = question.choice_set.count()
-        if question.max_answers is not None and question.max_answers > new_total_choices:
+        if question.other_choice:
+            new_total_choices += 1
+        if question.max_answers > new_total_choices:
             question.max_answers = new_total_choices
             question.save()
         instance.delete()
@@ -271,6 +274,19 @@ class RespondentViewSet(viewsets.ModelViewSet):
             permission_classes = []
         else:
             permission_classes = [permissions.IsAdminUser]
+        return [permission() for permission in permission_classes]
+
+
+class PrivateQnaireIdViewSet(UserQuerySetMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+    queryset = PrivateQnaireId.objects.all()
+    serializer_class = PrivateQnaireIdSerializer
+    user_field = 'qnaire__creator'
+
+    def get_permissions(self):
+        if self.action == 'retrieve':
+            permission_classes = []
+        else:
+            permission_classes = [permissions.IsAuthenticated]
         return [permission() for permission in permission_classes]
 
 

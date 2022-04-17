@@ -52,7 +52,7 @@ class QnaireSource extends DataSource {
       this.sectionSource._setData(sections);
       this.questionSource._setData(questions);
       this.choiceSource._setData(choices);
-      this._setData({ [qnaire.id]: qnaire });
+      this._setObj(qnaire);
       this._notify(QnaireEvents.LOAD, qnaire);
       return qnaire;
     });
@@ -68,10 +68,6 @@ class QnaireSource extends DataSource {
 
   retrieveResult(id) {
     return this.gateway.customRetrieve(id, "result");
-  }
-
-  createPrivateId(id) {
-    return this.gateway.customCreate(id, "private-id", {});
   }
 
   createResponse(id, data) {

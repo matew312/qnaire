@@ -12,12 +12,14 @@ import React, { useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import {
   QuestionAnswerMap,
+  SubmissionState,
   useQnaireResponseController,
 } from "../../controllers/useQnaireResponseController";
 import { useAppContext } from "../../providers/AppContextProvider";
 import ErrorList from "../basic/ErrorList";
 import ETextField from "../fields/ETextField";
 import LoadingButton from "../basic/LoadingButton";
+import UncancellableDialog from "../basic/UncancellableDialog";
 
 const IntroPage = ({
   name,
@@ -29,9 +31,7 @@ const IntroPage = ({
 }) => (
   <Stack spacing={2}>
     <Box>
-      <Typography variant="h1">
-        {name}
-      </Typography>
+      <Typography variant="h1">{name}</Typography>
       <Typography>{desc}</Typography>
     </Box>
     {!anonymous && (
@@ -92,7 +92,6 @@ export function ResponsePage() {
     totalSections,
     isIntro,
     isLastSection,
-    isDone,
     setAnswer,
     goToNextSection,
     goToPreviousSection,
@@ -100,7 +99,10 @@ export function ResponsePage() {
     setSkipToSectionId,
     respondent,
     setRespondent,
+    globalError,
+    submissionState,
   } = useQnaireResponseController(id, privateId, isPreview);
+
 
   const { setPageActions, setDrawerDisabled } = useAppContext();
 
@@ -117,7 +119,11 @@ export function ResponsePage() {
     return null;
   }
 
-  if (isDone) {
+  if (globalError) {
+    return <UncancellableDialog title={globalError} />;
+  }
+
+  if (submissionState.state === SubmissionState.SUCCESS) {
     return (
       <Typography textAlign="center" fontSize="h6.fontSize">
         Vaše odpověď byla úspěšně odeslána.
@@ -179,12 +185,17 @@ export function ResponsePage() {
             Pokračovat
           </Button>
         ) : (
-          <Button variant="contained" onClick={submitResponse}>
+          <LoadingButton
+            loading={submissionState.state === SubmissionState.WAITING}
+            variant="contained"
+            onClick={submitResponse}
+          >
             Odeslat
-          </Button>
+          </LoadingButton>
         )}
       </Stack>
       <ErrorList error={errors} />
+      <ErrorList error={submissionState.error} />
     </Stack>
   );
 }

@@ -20,10 +20,9 @@ export default function useMultipleChoiceAnswerController({
   }, [question]);
 
   const addChoice = (choice) => {
-    const selectedChoices = answer.choices ? answer.choices : [];
     setAnswer(question, {
       ...answer,
-      choices: [...selectedChoices, choice],
+      choices: [...answer.choices, choice],
     });
   };
 
@@ -55,7 +54,7 @@ export default function useMultipleChoiceAnswerController({
       });
     } else {
       setAnswer(question, {
-        choices: null,
+        choices: [],
         other_choice_text: choice,
       });
     }

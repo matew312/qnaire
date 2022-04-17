@@ -4,4 +4,5 @@ export const Resources = {
   QUESTIONS: "questions",
   CHOICES: "choices",
   RESPONDENTS: "respondents",
+  PRIVATE_QNAIRE_IDS: "private-qnaire-ids",
 };

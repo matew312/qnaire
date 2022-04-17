@@ -9,6 +9,8 @@ from .validators import GreaterThanValidator
 # Create your models here.
 
 # needed because of a bug in django-polymorphic
+
+
 def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
     return models.CASCADE(collector, field, sub_objs.non_polymorphic(), using)
 
@@ -104,9 +106,9 @@ class RangeQuestion(Question):
 class MultipleChoiceQuestion(Question):
     # min_answers=0 is allowed (it means that chosing nothing will be OK even if required=true)
     min_answers = models.IntegerField(
-        validators=[MinValueValidator(0)], default=0)
+        validators=[MinValueValidator(1)], default=1)
     max_answers = models.IntegerField(
-        null=True, validators=[MinValueValidator(0)])
+        validators=[MinValueValidator(1)], default=1)
     other_choice = models.BooleanField(default=False)
     random_order = models.BooleanField(default=False)
 

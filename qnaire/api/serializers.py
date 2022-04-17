@@ -145,7 +145,6 @@ class QuestionSerializer(serializers.ModelSerializer):
 
         return self.do_validate(data)
 
-    # template method
     @ abc.abstractmethod
     def do_validate(self, data):
         pass
@@ -234,7 +233,6 @@ class ChoiceSerializer(serializers.ModelSerializer):
                 f"skip_to_section belongs to a different questionnaire than the choice.")
         return data
 
-    # template method
     def do_validate(self, data, qnaire, request):
         return data
 
@@ -272,17 +270,17 @@ class MultipleChoiceQuestionSerializer(QuestionSerializer):
             min_answers, max_answers, 'min_answers', 'max_answers')
 
         # make sure min_answers and max_answers doesn't exceed total number of choices
-        if self.instance is None:
-            validate_less_than_or_equal(
-                min_answers, 0, 'min_answers', 'total number of choices')
-        else:
+        if self.instance is not None:
             total_choices = Choice.objects.filter(
                 question=self.instance).count()
-            validate_less_than_or_equal(
-                min_answers, total_choices, 'min_answers', 'total number of choices')
-            if max_answers is not None:
+            if self.instance.other_choice:
+                total_choices += 1
+            if total_choices > 0:
                 validate_less_than_or_equal(
-                    max_answers, total_choices, 'max_answers', 'total number of choices')
+                    min_answers, total_choices, 'min_answers', 'total number of choices')
+                if max_answers is not None:
+                    validate_less_than_or_equal(
+                        max_answers, total_choices, 'max_answers', 'total number of choices')
 
         return data
 
@@ -358,10 +356,6 @@ class SectionSerializer(serializers.ModelSerializer):
     def validate(self, data):
         return self.do_validate(data)
 
-        # extra_kwargs = {'qnaire': {'write_only': True}} <-- This wasn't enough, because I want qnaire only for CREATE requests.
-        # If there was just one Serializer I would need to check if 'qnaire' in data and self.instance is not None then data['qnaire'] == self.instance.qnaire
-
-    # template method
     def do_validate(self, data):
         return data
 
@@ -498,7 +492,7 @@ class MultipleChoiceAnswerSerializer(AnswerSerializer):
     class Meta:
         model = MultipleChoiceAnswer
         fields = ANSWER_FIELDS + ('question', 'choices', 'other_choice_text')
-        extra_kwargs = {'choices': {'required': False}}
+        extra_kwargs = {'choices': {'required': False, 'allow_empty': True}}
 
     def validate(self, data):
         q = data['question']
@@ -517,7 +511,7 @@ class MultipleChoiceAnswerSerializer(AnswerSerializer):
             else:
                 total_selected_choices += 1
 
-        if total_selected_choices == 0 and q.min_answers > 0:
+        if total_selected_choices == 0:
             raise_answer_error_if_mandatory(q)
             return data
 
@@ -525,7 +519,7 @@ class MultipleChoiceAnswerSerializer(AnswerSerializer):
             raise raise_answer_error(
                 q, f"Fewer choices were selected than the allowed minimum of {q.min_answers}")
 
-        if q.max_answers is not None and total_selected_choices > q.max_answers:
+        if total_selected_choices > q.max_answers:
             raise raise_answer_error(
                 q, f"More choices were selected than the allowed maximum of {q.max_answers}")
 
@@ -579,7 +573,7 @@ class ResponseSerializer(serializers.ModelSerializer):
                 questions.remove(answer['question'])
         if len(questions) != 0:
             raise serializers.ValidationError(
-                'Answers were not provide for every question of the questionnaire')
+                'Answers were not provided for every question of the questionnaire')
 
         return data
 
@@ -610,7 +604,16 @@ class ResponseSerializer(serializers.ModelSerializer):
 class PrivateQnaireIdSerializer(serializers.ModelSerializer):
     class Meta:
         model = PrivateQnaireId
-        fields = ('id', )
+        fields = ('id', 'qnaire')
+
+
+class PrivateQnaireIdResponseSerializer(serializers.ModelSerializer):
+    private_qnaire_id = serializers.CharField(source='id')
+
+    class Meta:
+        model = PrivateQnaireId
+        fields = ('private_qnaire_id',)
+
 
 class RespondentSerializer(serializers.ModelSerializer):
     class Meta:

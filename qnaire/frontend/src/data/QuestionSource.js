@@ -28,10 +28,10 @@ export class QuestionSource extends OrderedSource {
   updateType(id, resourcetype) {
     return this.gateway
       .customUpdate(id, "type", { resourcetype })
-      .then((data) => {
-        this.data[data.id] = data;
-        this._notify(QuestionEvents.TYPE, data);
-        return data;
+      .then((obj) => {
+        this._setObj(obj);
+        this._notify(QuestionEvents.TYPE, obj);
+        return obj;
       });
   }
 
