@@ -76,7 +76,8 @@ const createMultipleChoiceAnswerSchema = (q) => {
         totalSelectedChoices++;
       }
       return q.required || totalSelectedChoices > 0
-        ? totalSelectedChoices >= q.min_answers && totalSelectedChoices <= q.max_answers
+        ? totalSelectedChoices >= q.min_answers &&
+            totalSelectedChoices <= q.max_answers
         : true;
     }
   );
@@ -152,12 +153,13 @@ export function useQnaireResponseController(id, privateId, isPreview) {
       setSections(sections);
       setPageMap(pageMap);
 
-      if (!data.published && !isPreview) {
-        setGlobalError(NOT_PUBLISHED_ERROR);
+      if (isPreview) {
         return;
       }
 
-      if (data.private && !isPreview) {
+      if (!data.published) {
+        setGlobalError(NOT_PUBLISHED_ERROR);
+      } else if (data.private) {
         if (!privateId) {
           setGlobalError(INVALID_PRIVATE_ID_ERROR);
         } else {
@@ -170,9 +172,13 @@ export function useQnaireResponseController(id, privateId, isPreview) {
             })
             .catch(() => setGlobalError(INVALID_PRIVATE_ID_ERROR));
         }
-        return;
       }
     });
+
+    return () => {
+      //setting it back to true on unmount here instead of having to set it to true on every other page
+      qnaireSource.setShouldAuth(true);
+    };
   }, [id]);
 
   let currentSectionIdx = null;
@@ -235,7 +241,7 @@ export function useQnaireResponseController(id, privateId, isPreview) {
       if (prevIdx !== -1) {
         currentSkipToSectionList.splice(prevIdx, 1);
       }
-      if( id !== null) {
+      if (id !== null) {
         currentSkipToSectionList.push({ id, question });
       }
     },
