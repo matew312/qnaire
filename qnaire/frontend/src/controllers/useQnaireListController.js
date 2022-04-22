@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useReducer, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import qnaireSource from "../data/QnaireSource";
-import { useGenericController } from "./useGenericController";
 
 export function useQnaireListController() {
   const [qnaires, setQnaires] = useState(null);

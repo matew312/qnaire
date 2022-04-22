@@ -4,14 +4,25 @@ import qnaireSource from "../data/QnaireSource";
 import { useQnaireContext } from "../providers/QnaireProvider";
 import { useBaseQnaireController } from "./useBaseQnaireController";
 
-
 export function useQnaireController(id) {
-  const { data, update, updateData, ...baseQnaireController } = useBaseQnaireController(id);
+  const {
+    data,
+    update,
+    updateData,
+    destroy: baseDestroy,
+    ...baseQnaireController
+  } = useBaseQnaireController(id);
   const { setError } = useQnaireContext();
   const navigate = useNavigate();
 
   //technically, just the ids are needed, but there is no reason to not keep object references
   const [sections, setSections] = useState(null);
+
+  const destroy = () => {
+    baseDestroy().then(() => {
+      navigate("/questionnaires");
+    });
+  };
 
   const handleSectionOrderChange = () => {
     setSections(qnaireSource.sectionSource.getSortedSections());
@@ -47,26 +58,20 @@ export function useQnaireController(id) {
   }
 
   useEffect(() => {
+    const sectionSource = qnaireSource.sectionSource;
     qnaireSource.retrieve(id).then((data) => {
-      updateData(data);
-      const sectionSource = qnaireSource.sectionSource;
       setSections(sectionSource.getSortedSections());
+      updateData(data);
       sectionSource.subscribeMove(handleSectionOrderChange);
       sectionSource.subscribeCreate(handleSectionOrderChange);
       sectionSource.subscribeDelete(handleSectionOrderChange);
-
-      //there is not really a need to unsub because qnaire never gets deleted while this component is alive
-      return () => {
-        sectionSource.unsubscribeMove(handleSectionOrderChange);
-        sectionSource.unsubscribeCreate(handleSectionOrderChange);
-        sectionSource.unsubscribeDelete(handleSectionOrderChange);
-      };
     });
 
     return () => {
-      navigate("/questionnaires")
-    }
-
+      sectionSource.unsubscribeMove(handleSectionOrderChange);
+      sectionSource.unsubscribeCreate(handleSectionOrderChange);
+      sectionSource.unsubscribeDelete(handleSectionOrderChange);
+    };
   }, [id]);
 
   return {
@@ -76,5 +81,6 @@ export function useQnaireController(id) {
     sections,
     isLoaded: Boolean(data.id) && Boolean(sections),
     handleDragEnd,
+    destroy,
   };
 }
