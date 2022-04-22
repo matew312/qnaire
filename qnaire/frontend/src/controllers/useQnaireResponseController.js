@@ -108,7 +108,7 @@ export const QuestionAnswerMap = {
 };
 
 export function useQnaireResponseController(id, privateId, isPreview) {
-  const { data, update, ...baseQnaireController } = useBaseQnaireController(id);
+  const { data, update, updateData, ...baseQnaireController } = useBaseQnaireController(id);
   const [globalError, setGlobalError] = useState(null);
   const [respondent, setRespondent] = useState({
     id: null,
@@ -126,7 +126,7 @@ export function useQnaireResponseController(id, privateId, isPreview) {
   useEffect(() => {
     qnaireSource.setShouldAuth(false);
     qnaireSource.retrieve(id).then((data) => {
-      update(data, false); //passed shouldSourceUpdate=false to prevent unnecessary api call
+      updateData(data);
       const sectionSource = qnaireSource.sectionSource;
       const sections = sectionSource.getSortedSections();
 

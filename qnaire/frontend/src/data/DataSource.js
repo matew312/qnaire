@@ -61,8 +61,8 @@ export class DataSource {
     this._subscribe(DataEvents.DELETE, callback);
   }
 
-  _unsubscribe(resource, callback) {
-    this.subscribers[resource] = this.subscribers[resource].filter(
+  _unsubscribe(event, callback) {
+    this.subscribers[event] = this.subscribers[event].filter(
       (sub) => sub !== callback
     );
   }

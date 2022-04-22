@@ -28,22 +28,21 @@ import CollapseButton from "../basic/CollapseButton";
 import ErrorList from "../basic/ErrorList";
 import { useScrollWhenSelected } from "../../hooks";
 
-const Questions = React.memo(({ questions }) =>
+const Questions = React.memo(({ questions, isPublished }) =>
   questions.map((q, index) => {
     const Question = QuestionTypes[q.resourcetype].component;
     return (
       <Grid item xs={12} key={q.id}>
-        <Question id={q.id} index={index} />
+        <Question id={q.id} index={index} isPublished={isPublished} />
       </Grid>
     );
   })
 );
 
-function Section({ id, index }) {
+function Section({ id, index, isPublished }) {
   const { name, desc, order_num, questions, update, destroy, error } =
     useSectionController(id);
   const { isSelected, select } = useSectionSelect(id);
-  const { isPublished } = useQnaireContext();
   const [showQuestions, setShowQuestions] = useState(true);
   const scrollRef = useRef(null);
   useScrollWhenSelected(isSelected, scrollRef);
@@ -109,7 +108,7 @@ function Section({ id, index }) {
                           value={name}
                           error={error.name}
                           onChange={(name) => {
-                            update({ name }); 
+                            update({ name });
                           }}
                           selectOnFocus={true}
                           typographyProps={{ variant: "h4" }}
@@ -176,7 +175,10 @@ function Section({ id, index }) {
                   sx={{ ...style, display: showQuestions ? "block" : "none" }}
                 >
                   <Grid container spacing={2}>
-                    <Questions questions={questions} />
+                    <Questions
+                      questions={questions}
+                      isPublished={isPublished}
+                    />
                   </Grid>
                 </Box>
                 {placeholder}

@@ -102,12 +102,12 @@ export function Menu(props) {
   return <OptionMenu></OptionMenu>;
 }
 
-function RangeQuestion({ id, index }) {
+function RangeQuestion({ id, ...props }) {
   const questionController = useRangeQuestionController(id);
 
   return (
     <Question
-      index={index}
+      {...props}
       options={Options}
       menu={Menu}
       {...questionController}

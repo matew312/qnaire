@@ -37,6 +37,13 @@ class QnaireSource extends DataSource {
     }
   }
 
+  getQnaire() {
+    if (this.id !== null) {
+      return this.get(this.id);
+    }
+    return null;
+  }
+
   subscribeLoad(callback) {
     this._subscribe(QnaireEvents.LOAD, callback);
   }

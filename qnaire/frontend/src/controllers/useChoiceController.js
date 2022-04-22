@@ -11,7 +11,7 @@ const validationSchema = yup.object({
 export function useChoiceController(id) {
   const choiceSource = qnaireSource.choiceSource;
   const sectionSource = qnaireSource.sectionSource;
-  const [data, update, destroy] = useGenericController(
+  const { data, update, destroy } = useGenericController(
     choiceSource,
     id,
     validationSchema

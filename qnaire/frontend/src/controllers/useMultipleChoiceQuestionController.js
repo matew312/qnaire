@@ -68,7 +68,7 @@ export function useMultipleChoiceQuestionController(id) {
     if (questionController.other_choice) {
       totalChoices++;
     }
-    if (questionController.max_answers > totalChoices) {
+    if (questionController.max_answers > Math.max(totalChoices, 1)) {
       //the server already updated the question during the deletion of the choice,
       // but I will do shouldSourceUpdate to true so that I keep the local DataSource in a consistent state
       // (thought it's not strictly necessary right now)

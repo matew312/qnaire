@@ -49,12 +49,12 @@ export function Menu(props) {
   return <OptionMenu></OptionMenu>;
 }
 
-function OpenQuestion({ id, index }) {
+function OpenQuestion({ id, ...props }) {
   const questionController = useOpenQuestionController(id);
 
   return (
     <Question
-      index={index}
+      {...props}
       options={Options}
       menu={Menu}
       {...questionController}

@@ -19,7 +19,6 @@ export function QnaireProvider({ children }) {
   const [selected, setSelected] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState({});
-  const [isPublished, setIsPublished] = useState(true);
 
   const copiedQuestionId = useRef(null);
 
@@ -28,7 +27,7 @@ export function QnaireProvider({ children }) {
   }, []);
 
   function createSection() {
-    if (isPublished) {
+    if (qnaireSource.getQnaire().published) {
       setError({
         detail: "Nelze vytvořit sekci, protože dotazník je publikovaný",
       });
@@ -70,7 +69,7 @@ export function QnaireProvider({ children }) {
   }
 
   function createQuestion() {
-    if (isPublished) {
+    if (qnaireSource.getQnaire().published) {
       setError({
         detail: "Nelze vytvořit otázku, protože dotazník je publikovaný",
       });
@@ -172,7 +171,6 @@ export function QnaireProvider({ children }) {
   useEffect(() => {
     const handleLoad = (data) => {
       setIsLoaded(true);
-      setIsPublished(data.published);
     };
     qnaireSource.subscribeLoad(handleLoad);
 
@@ -197,22 +195,13 @@ export function QnaireProvider({ children }) {
     }
   };
 
-  const handleQnaireUpdate = (data) => {
-    console.log(data);
-    if (data.published !== isPublished) {
-      setIsPublished(data.published);
-    }
-  };
-
   useEffect(() => {
     qnaireSource.questionSource.subscribeDelete(handleDelete);
     qnaireSource.sectionSource.subscribeDelete(handleDelete);
-    qnaireSource.subscribeUpdate(handleQnaireUpdate);
 
     return () => {
       qnaireSource.questionSource.unsubscribeDelete(handleDelete);
       qnaireSource.sectionSource.unsubscribeDelete(handleDelete);
-      qnaireSource.unsubscribeUpdate(handleQnaireUpdate);
     };
   }, [selected]);
 
@@ -226,7 +215,7 @@ export function QnaireProvider({ children }) {
     ];
     setPageActions(pageActions);
     return () => setPageActions([]);
-  }, [isLoaded, selected, isPublished]); //alternatively, useCallback on createSection and createQuestion and put them in the deps here
+  }, [isLoaded, selected]); //alternatively, useCallback on createSection and createQuestion and put them in the deps here
 
   const value = {
     select,
@@ -235,7 +224,6 @@ export function QnaireProvider({ children }) {
     setError,
     copy,
     paste,
-    isPublished,
   };
 
   return (

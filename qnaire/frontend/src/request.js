@@ -11,7 +11,7 @@ function handleErrors(response) {
 
   if (!response.ok) {
     if (response.status >= 500) {
-      window.location = "/500";
+      //window.location = "/500";
       return;
     }
     promise = promise.then((data) => {

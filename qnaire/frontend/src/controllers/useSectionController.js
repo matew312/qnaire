@@ -13,7 +13,7 @@ export function useSectionController(id) {
   const sectionSource = qnaireSource.sectionSource;
   const questionSource = qnaireSource.questionSource;
 
-  const [data, update, destroy] = useGenericController(
+  const { data, update, destroy } = useGenericController(
     sectionSource,
     id,
     validationSchema

@@ -48,10 +48,11 @@ function Question({
   error,
   update,
   destroy,
+  isPublished,
   ...data
 }) {
   const { isSelected, select } = useQuestionSelect(id);
-  const { copy, isPublished, setError } = useQnaireContext();
+  const { copy, setError } = useQnaireContext();
   const scrollRef = React.useRef(null);
   useScrollWhenSelected(isSelected, scrollRef);
 

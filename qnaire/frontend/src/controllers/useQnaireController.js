@@ -4,9 +4,11 @@ import qnaireSource from "../data/QnaireSource";
 import { useQnaireContext } from "../providers/QnaireProvider";
 import { useBaseQnaireController } from "./useBaseQnaireController";
 
+
 export function useQnaireController(id) {
-  const { data, update, ...baseQnaireController } = useBaseQnaireController(id);
+  const { data, update, updateData, ...baseQnaireController } = useBaseQnaireController(id);
   const { setError } = useQnaireContext();
+  const navigate = useNavigate();
 
   //technically, just the ids are needed, but there is no reason to not keep object references
   const [sections, setSections] = useState(null);
@@ -46,7 +48,7 @@ export function useQnaireController(id) {
 
   useEffect(() => {
     qnaireSource.retrieve(id).then((data) => {
-      update(data, false); //passed shouldSourceUpdate=false to prevent unnecessary api call
+      updateData(data);
       const sectionSource = qnaireSource.sectionSource;
       setSections(sectionSource.getSortedSections());
       sectionSource.subscribeMove(handleSectionOrderChange);
@@ -60,6 +62,11 @@ export function useQnaireController(id) {
         sectionSource.unsubscribeDelete(handleSectionOrderChange);
       };
     });
+
+    return () => {
+      navigate("/questionnaires")
+    }
+
   }, [id]);
 
   return {

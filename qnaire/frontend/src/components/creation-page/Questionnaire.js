@@ -28,10 +28,10 @@ import PublishQnaireDialog from "../dialogs/PublishQnaireDialog";
 import UnpublishDialogButton from "../dialogs/UnpublishDialogButton";
 import QnaireLinkDialog from "../dialogs/QnaireLinkDialog";
 
-const Sections = React.memo(({ sections }) =>
+const Sections = React.memo(({ sections, isPublished }) =>
   sections.map((section, index) => (
     <Grid item xs={12} key={section.id}>
-      <Section id={section.id} index={index} />
+      <Section id={section.id} index={index} isPublished={isPublished} />
     </Grid>
   ))
 );
@@ -135,7 +135,7 @@ export function Questionnaire({ id }) {
                       <Grid item xs="auto">
                         <QnaireLinkDialog
                           getLink={getLink}
-                          buttonProps={{ variant: "contained"}}
+                          buttonProps={{ variant: "contained" }}
                         />
                       </Grid>
                     </React.Fragment>
@@ -217,7 +217,7 @@ export function Questionnaire({ id }) {
               </Grid>
             </Paper>
             <Grid container mt={1} spacing={4}>
-              <Sections sections={sections} />
+              <Sections sections={sections} isPublished={isPublished} />
             </Grid>
             {provided.placeholder}
           </Box>

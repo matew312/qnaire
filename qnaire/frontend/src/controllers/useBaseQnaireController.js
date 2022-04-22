@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useReducer, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import qnaireSource from "../data/QnaireSource";
-import privateQnaireIdSource from "../data/PrivateQnaireIdSource"
+import privateQnaireIdSource from "../data/PrivateQnaireIdSource";
 import { useQnaireContext } from "../providers/QnaireProvider";
 import { DEFAULT_TIMEOUT, useGenericController } from "./useGenericController";
 import * as yup from "yup";
@@ -14,31 +13,19 @@ const validationSchema = yup.object({
 });
 
 export function useBaseQnaireController(id, timeout = DEFAULT_TIMEOUT) {
-  const [data, update, regularDestroy] = useGenericController(
+  const { data, update, destroy, updateData } = useGenericController(
     qnaireSource,
     id,
     validationSchema,
     timeout
   );
 
-  const navigate = useNavigate();
-
   const publish = ({ isPrivate, isAnonymous }) => {
     return update({
       private: isPrivate,
       anonymous: isAnonymous,
       published: true,
-    }).catch((error) => {
-      setError(error);
     });
-  };
-
-  const destroy = () => {
-    regularDestroy()
-      .then(() => navigate("/questionnaires"))
-      .catch((error) => {
-        setError(error);
-      });
   };
 
   const exportResult = () => {
@@ -67,5 +54,6 @@ export function useBaseQnaireController(id, timeout = DEFAULT_TIMEOUT) {
     previewLink,
     exportResult,
     getLink,
+    updateData,
   };
 }

@@ -18,8 +18,9 @@ export const useGenericController = (
   const [data, setData] = useState(() => {
     return { ...source.get(id), error: {} };
   });
-  const updateTimeoutId = useRef(null);
   const pendingData = useRef(null);
+  const shouldSourceUpdate = useRef(false);
+  const updateTimeoutId = useRef(null);
 
   const updateData = (updatedData) => {
     setData((data) => {
@@ -27,16 +28,7 @@ export const useGenericController = (
     });
   };
 
-  const update = (updatedData, shouldSourceUpdate = true) => {
-    updateData(updatedData);
-    if (!shouldSourceUpdate) {
-      return;
-    }
-
-    if (updateTimeoutId.current) {
-      clearTimeout(updateTimeoutId.current);
-      updateTimeoutId.current = null;
-    }
+  const update = (updatedData) => {
     updatedData = { ...pendingData.current, ...updatedData };
     pendingData.current = updatedData;
 
@@ -49,39 +41,62 @@ export const useGenericController = (
           },
           { abortEarly: false }
         );
+        shouldSourceUpdate.current = true;
+        updateData(updatedData);
       } catch (error) {
         const errors = yupErrorToFieldErrors(error);
         console.log(errors);
-        updateData({ error: errors });
-        return;
+        shouldSourceUpdate.current = false;
+        updateData({ ...updatedData, error: errors });
       }
     }
+  };
 
-    return new Promise((resolve) => {
+  const cancelUpdate = () => {
+    if (updateTimeoutId.current) {
+      clearTimeout(updateTimeoutId.current);
+      updateTimeoutId.current = null;
+    }
+  };
+
+  useEffect(() => {
+    if (!shouldSourceUpdate.current || !pendingData.current) {
+      return;
+    }
+
+    let isCancelled = false;
+    console.log(pendingData.current);
+
+    new Promise((resolve) => {
       updateTimeoutId.current = setTimeout(() => {
         resolve();
       }, timeout);
     }).then(() => {
       updateTimeoutId.current = null;
       return source
-        .update(id, updatedData)
+        .update(id, pendingData.current)
         .then((data) => {
-          updateData({ ...data, error: {} });
-          pendingData.current = null;
+          if (!isCancelled) {
+            shouldSourceUpdate.current = false;
+            updateData({ ...data, error: {} });
+            pendingData.current = null;
+          }
         })
         .catch((error) => {
-          updateData({ error });
-          //keep the pendingData on Error
+          if (!isCancelled) {
+            shouldSourceUpdate.current = false;
+            updateData({ error });
+            //keep the pendingData on Error
+          }
         });
     });
-  };
-  const cancelUpdate = () => {
-    if (updateTimeoutId.current) {
-      clearTimeout(updateTimeoutId.current);
-      updateTimeoutId.current = null;
-      pendingData.current = null;
-    }
-  };
+
+    //cancel update on "rerender/unmount"
+    return () => {
+      isCancelled = true;
+      cancelUpdate();
+    };
+  });
 
   const destroy = () => {
     return source.delete(id).catch((error) => {
@@ -90,6 +105,6 @@ export const useGenericController = (
   };
 
   return useMemo(() => {
-    return [data, update, destroy, cancelUpdate];
+    return { data, update, destroy, cancelUpdate, updateData };
   }, [data]); //the id never changes so the functions don't have to be in deps
 };
