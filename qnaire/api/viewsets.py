@@ -129,7 +129,6 @@ def handle_simple_move(model, src, order_num, serializer, **filters):
 
 
 class SectionViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedViewSetMixin, ModelViewSetWithValidation):
-    permission_classes = [permissions.IsAuthenticated]
     queryset = Section.objects.all()
     serializer_class = SectionSerializer
     serializer_action_classes = {'create': CreateSectionSerializer}
@@ -161,7 +160,6 @@ class SectionViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedView
 
 
 class QuestionViewSet(UserQuerySetMixin, OrderedViewSetMixin, ModelViewSetWithValidation):
-    permission_classes = [permissions.IsAuthenticated]
     queryset = Question.objects.all()
     serializer_class = QuestionPolymorphicSerializer
     user_field = 'section__qnaire__creator'
@@ -225,7 +223,6 @@ class QuestionViewSet(UserQuerySetMixin, OrderedViewSetMixin, ModelViewSetWithVa
 
 
 class ChoiceViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedViewSetMixin, ModelViewSetWithValidation):
-    permission_classes = [permissions.IsAuthenticated]
     queryset = Choice.objects.all()
     serializer_class = ChoiceSerializer
     serializer_action_classes = {'create': CreateChoiceSerializer}
