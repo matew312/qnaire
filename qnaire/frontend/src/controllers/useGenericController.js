@@ -50,7 +50,9 @@ export const useGenericController = (
           { abortEarly: false }
         );
       } catch (error) {
-        updateData({ error: yupErrorToFieldErrors(error) });
+        const errors = yupErrorToFieldErrors(error);
+        console.log(errors);
+        updateData({ error: errors });
         return;
       }
     }

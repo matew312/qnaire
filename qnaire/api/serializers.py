@@ -220,9 +220,7 @@ class ChoiceSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         question = get_original_field_value('question', data, self.instance)
-
         request = self.context.get('request')
-        question = self.instance.question if self.instance else data['question']
         qnaire = question.section.qnaire
 
         data = self.do_validate(data, qnaire, request)

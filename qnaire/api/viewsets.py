@@ -76,17 +76,7 @@ class QuestionnaireViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, Model
     queryset = Questionnaire.objects.all()
     serializer_class = QuestionnaireSerializer
     serializer_action_classes = {'retrieve': QuestionnaireCreationSerializer}
-
-    def get_permissions(self):
-        """
-        Instantiates and returns the list of permissions that this view requires.
-        """
-        # what should also work is to set self.permissions_classes here and call super().get_permissions()
-        if self.action == 'retrieve':
-            permission_classes = []
-        else:
-            permission_classes = [permissions.IsAuthenticated]
-        return [permission() for permission in permission_classes]
+    no_auth_actions = ['retrieve']
 
     def perform_create(self, serializer):
         serializer.save(creator=self.request.user)
@@ -261,9 +251,11 @@ class ChoiceViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, OrderedViewS
         if question.other_choice:
             new_total_choices += 1
         if question.max_answers > new_total_choices:
-            question.max_answers = new_total_choices
+            question.max_answers = max(new_total_choices, 1)
+            question.min_answers = min(question.min_answers, question.max_answers)
             question.save()
         instance.delete()
+
 
 class RespondentViewSet(viewsets.ModelViewSet):
     queryset = Respondent.objects.all()
@@ -281,13 +273,7 @@ class PrivateQnaireIdViewSet(UserQuerySetMixin, mixins.RetrieveModelMixin, mixin
     queryset = PrivateQnaireId.objects.all()
     serializer_class = PrivateQnaireIdSerializer
     user_field = 'qnaire__creator'
-
-    def get_permissions(self):
-        if self.action == 'retrieve':
-            permission_classes = []
-        else:
-            permission_classes = [permissions.IsAuthenticated]
-        return [permission() for permission in permission_classes]
+    no_auth_actions = ['retrieve']
 
 
 class AnswerViewSet(viewsets.ModelViewSet):

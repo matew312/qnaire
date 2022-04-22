@@ -6,11 +6,7 @@ from secrets import token_urlsafe
 
 from .validators import GreaterThanValidator
 
-# Create your models here.
-
 # needed because of a bug in django-polymorphic
-
-
 def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
     return models.CASCADE(collector, field, sub_objs.non_polymorphic(), using)
 
@@ -57,7 +53,6 @@ class Section(models.Model):
 
 class Question(PolymorphicModel):
     section = models.ForeignKey(Section, on_delete=NON_POLYMORPHIC_CASCADE)
-    # maybe make question text a CharField and add new TextField called description
     text = models.TextField()
     mandatory = models.BooleanField(default=False)
     order_num = models.IntegerField(validators=[MinValueValidator(0)])
@@ -99,12 +94,11 @@ class RangeQuestion(Question):
     type = models.IntegerField(choices=TYPE_CHOICES, default=2)
     min = models.FloatField(default=1)
     max = models.FloatField(default=5)
-    # only integer step will be allowed (the alternative is make all field decimal so that it would be possible to validate the step)
+    # only integer step will be allowed (the alternative is make all fields decimal so that it would be possible to validate the step)
     step = models.IntegerField(null=True, validators=[GreaterThanValidator(0)])
 
 
 class MultipleChoiceQuestion(Question):
-    # min_answers=0 is allowed (it means that chosing nothing will be OK even if required=true)
     min_answers = models.IntegerField(
         validators=[MinValueValidator(1)], default=1)
     max_answers = models.IntegerField(

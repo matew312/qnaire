@@ -4,10 +4,17 @@ from django.db.models import F
 
 class UserQuerySetMixin():
     # this can be overriden by the subclass
+    permission_classes = [permissions.IsAuthenticated]
     user_field = 'creator'
+    no_auth_actions = [] # actions in this list won't require authentication and won't be filtered
+
+    def get_permissions(self):
+        if self.action in self.no_auth_actions:
+            self.permission_classes = []
+        return super().get_permissions()
 
     def get_queryset(self, *args, **kwargs):
-        if self.request.user.is_authenticated:
+        if permissions.IsAuthenticated in self.permission_classes:
             lookup_data = {}
             lookup_data[self.user_field] = self.request.user
             queryset = super().get_queryset(*args, **kwargs)
@@ -16,7 +23,7 @@ class UserQuerySetMixin():
             return super().get_queryset(*args, **kwargs)
 
 
-class MultiSerializerViewSetMixin(object):
+class MultiSerializerViewSetMixin():
     def get_serializer_class(self):
         """
         Look for serializer class in self.serializer_action_classes, which
@@ -85,15 +92,3 @@ class OrderedViewSetMixin():
             }, status=status.HTTP_200_OK)
         else:
             return response.Response(status=status.HTTP_204_NO_CONTENT)
-
-
-# class PublishedQnaireQuerySetMixin():
-#     allow_update = False
-#     qnaire_field = None
-
-#     def get_queryset(self, *args, **kwargs):
-#         method = self.request.method
-#         queryset = super().get_queryset(*args, **kwargs)
-#         if method in ['POST', 'DELETE'] or (not self.allow_update and method in ['PUT', 'PATCH']):
-#             queryset = queryset.filter(**{qnaire_field: })
-#         return queryset

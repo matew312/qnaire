@@ -72,7 +72,11 @@ export function useMultipleChoiceQuestionController(id) {
       //the server already updated the question during the deletion of the choice,
       // but I will do shouldSourceUpdate to true so that I keep the local DataSource in a consistent state
       // (thought it's not strictly necessary right now)
-      update({ max_answers: totalChoices });
+      const max_answers = Math.max(totalChoices, 1);
+      update({
+        max_answers,
+        min_answers: Math.min(max_answers, questionController.min_answers),
+      });
     }
   }, [choices.length, questionController.other_choice]);
 
