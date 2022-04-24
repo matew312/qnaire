@@ -74,6 +74,10 @@ function fetchWithContent(method, endpoint, values, auth = true) {
     },
     body: JSON.stringify(values),
   })
+    .catch((error) => {
+      console.log(error);
+      return Promise.reject({ detail: "Nepodařilo se připojit na server" });
+    })
     .then(handleErrors)
     .then((data) => {
       console.log(data);
