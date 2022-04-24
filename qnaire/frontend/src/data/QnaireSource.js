@@ -17,7 +17,7 @@ class QnaireSource extends DataSource {
     this.sectionSource = new SectionSource();
     this.questionSource = new QuestionSource();
     this.choiceSource = new ChoiceSource();
-    this.subscribers[QnaireEvents.LOAD] = [];
+    this._addEvents(QnaireEvents);
   }
 
   //The sources could've been in a map, but I normally want them to be used explicitly.

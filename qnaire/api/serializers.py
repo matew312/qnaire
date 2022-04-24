@@ -411,8 +411,7 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
         return data
 
 
-# serializer for the Creation Page
-class QuestionnaireCreationSerializer(serializers.ModelSerializer):
+class QuestionnaireRetrieveSerializer(serializers.ModelSerializer):
     sections = SectionSerializer(many=True, source='section_set')
     questions = serializers.SerializerMethodField()
     choices = serializers.SerializerMethodField()

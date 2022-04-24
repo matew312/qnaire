@@ -12,7 +12,7 @@ from .serializers import (
     QuestionMoveSerializer,
     QuestionSerializer,
     QuestionTypePolymorphicSerializer,
-    QuestionnaireCreationSerializer,
+    QuestionnaireRetrieveSerializer,
     QuestionnaireSerializer,
     QuestionPolymorphicSerializer,
     RespondentSerializer,
@@ -75,7 +75,7 @@ class ModelViewSetWithValidation(viewsets.ModelViewSet):
 class QuestionnaireViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, ModelViewSetWithValidation):
     queryset = Questionnaire.objects.all()
     serializer_class = QuestionnaireSerializer
-    serializer_action_classes = {'retrieve': QuestionnaireCreationSerializer}
+    serializer_action_classes = {'retrieve': QuestionnaireRetrieveSerializer}
     no_auth_actions = ['retrieve']
 
     def perform_create(self, serializer):
