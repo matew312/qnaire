@@ -31,11 +31,11 @@ export function useQnaireListController() {
         )
       );
       qnaireSource.subscribeUpdate(handleUpdate);
-
-      return () => {
-        qnaireSource.unsubscribeUpdate(handleUpdate);
-      };
     });
+
+    return () => {
+      qnaireSource.unsubscribeUpdate(handleUpdate);
+    };
   }, []);
 
   return {
