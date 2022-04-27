@@ -6,9 +6,10 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import { FormControlLabel, FormGroup, Switch } from "@mui/material";
+import { FormControlLabel, FormGroup, Stack, Switch } from "@mui/material";
 import { Form, Formik, useFormik } from "formik";
 import FSwitch from "../formik/FSwitch";
+import HelpTooltip from "../basic/HelpTooltip";
 
 export default function BasePublishQnaireDialog({
   isAnonymous,
@@ -46,10 +47,15 @@ export default function BasePublishQnaireDialog({
               {/* <DialogContentText>
           
         </DialogContentText> */}
-              <FormGroup>
+              <Stack direction="row" alignItems="center">
                 <FSwitch name="isPrivate" label="Soukromý" />
+                <HelpTooltip title="Pro soukromý dotazník bude každý vygenerovaný odkaz platný pouze pro jedno úspěšné vyplnění." />
+              </Stack>
+
+              <Stack direction="row" alignItems="center">
                 <FSwitch name="isAnonymous" label="Anonymní" />
-              </FormGroup>
+                <HelpTooltip title="Anonymní dotazník může vyplnit kdokoliv. Neanonymní dotazník mohou vyplnit pouze respondenti s validním identifikátorem respondenta." />
+              </Stack>
             </DialogContent>
             <DialogActions>
               <Button onClick={handleClose}>Zrušit</Button>

@@ -65,7 +65,7 @@ export const useGenericController = (
     }
 
     let isCancelled = false;
-    console.log(pendingData.current);
+    // console.log(pendingData.current);
 
     new Promise((resolve) => {
       updateTimeoutId.current = setTimeout(() => {

@@ -6,13 +6,12 @@ import { Grid, Box, Container, CssBaseline } from "@mui/material";
 import { QnairesPage } from "./qnaires-page/QnairesPage";
 import { ResponsePage } from "./response-page/ResponsePage";
 import { CreationPage } from "./creation-page/CreationPage";
-import { LoginPage } from "./LoginPage";
+import { LoginPage } from "./login-page/LoginPage";
 import { AppStructure } from "./AppStructure";
 import { useAuth } from "../auth";
 import { AuthOnlyOutlet } from "./AuthOnlyOutlet";
 import { AppContextProvider } from "../providers/AppContextProvider";
 import { CustomThemeProvider } from "../providers/CustomThemeProvider";
-import { GET } from "../request";
 
 function App() {
   const auth = useAuth();

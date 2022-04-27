@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Form, Formik, useFormik } from "formik";
 import * as yup from "yup";
 import { Button, TextField, Grid, Box, Typography } from "@mui/material";
-import { POST } from "../request";
-import FTextField from "./formik/FTextField";
-import { useAppContext } from "../providers/AppContextProvider";
+import { POST } from "../../request";
+import FTextField from "../formik/FTextField";
+import { useAppContext } from "../../providers/AppContextProvider";
 
 const initialValues = {
   username: "",
