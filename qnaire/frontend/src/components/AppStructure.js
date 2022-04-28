@@ -73,19 +73,6 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 }));
 
 export function AppStructure({ auth, children }) {
-  const loginOrLogoutItem = auth.isAuthenticated
-    ? {
-        name: "Odhlásit se",
-        callback: (navigate) => {
-          auth.annulAuthentication();
-          navigate("/login");
-        },
-      }
-    : {
-        name: "Příhlasit se",
-        path: "/login",
-      };
-
   function performAction(item) {
     if (!item) {
       return;
@@ -99,7 +86,26 @@ export function AppStructure({ auth, children }) {
   }
   const navigate = useNavigate();
   const navActions = [{ name: "Moje dotazníky", path: "/questionnaires" }];
-  const settings = [loginOrLogoutItem];
+  const settings = auth.isAuthenticated
+    ? [
+        {
+          name: "Odhlásit",
+          callback: (navigate) => {
+            auth.annulAuthentication();
+            navigate("/login");
+          },
+        },
+      ]
+    : [
+        {
+          name: "Přihlásit",
+          path: "/login",
+        },
+        {
+          name: "Registrovat",
+          path: "/register",
+        },
+      ];
   const { pageActions, drawerDisabled } = useAppContext();
 
   const theme = useTheme();

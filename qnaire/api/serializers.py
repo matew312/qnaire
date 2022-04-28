@@ -1,5 +1,6 @@
 import abc
-from random import choices
+from django.contrib.auth.password_validation import validate_password
+from django import forms
 from rest_framework import serializers
 from rest_polymorphic.serializers import PolymorphicSerializer
 from .models import (
@@ -621,3 +622,27 @@ class RespondentSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = Component
 #         fields = ()
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'password', 'email', 'date_joined')
+        extra_kwargs = {'password': {'write_only': True},
+                        'date_joined': {'read_only': True}}
+    def validate(self, data):
+        try:
+            validate_password(data['password'])
+        except forms.ValidationError as e:
+            raise serializers.ValidationError({'password': e.messages})
+
+        return data
+
+    def create(self, validated_data):
+        user = User(
+            username=validated_data['username'],
+            email=validated_data['email']
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+        return user

@@ -1,8 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { Form, Formik, useFormik } from "formik";
 import * as yup from "yup";
-import { Button, TextField, Grid, Box, Typography } from "@mui/material";
+import {
+  Button,
+  TextField,
+  Grid,
+  Box,
+  Typography,
+  Link,
+  Container,
+  Stack,
+} from "@mui/material";
 import { POST } from "../../request";
 import FTextField from "../formik/FTextField";
 import { useAppContext } from "../../providers/AppContextProvider";
@@ -33,7 +42,7 @@ export function LoginPage({ auth }) {
 
     return () => {
       setDrawerDisabled(false);
-    }
+    };
   }, []);
 
   function login(values) {
@@ -59,28 +68,21 @@ export function LoginPage({ auth }) {
       validationSchema={validationSchema}
     >
       <Form>
-        <Grid container justifyContent="center">
-          <Grid item xs={12} sm={8} lg={4}>
+        <Container maxWidth="xs">
+          <Stack spacing={2}>
             <FTextField name="username" label="Uživatelské jméno" />
-          </Grid>
-          <Box width="100%"></Box>
-          <Grid item xs={12} sm={8} lg={4} mt={2}>
             <FTextField name="password" label="Heslo" type="password" />
-          </Grid>
-          <Box width="100%"></Box>
-          <Grid item xs={12} sm={8} lg={4} mt={2}>
             <Button color="primary" variant="contained" fullWidth type="submit">
-              Přihlásit se
+              Přihlásit
             </Button>
-          </Grid>
-          <Box width="100%"></Box>
-          <Grid item xs={12} sm={8} lg={4} mt={2}>
+            <Link component={RouterLink} to="/register" variant="body2">
+              Ještě nemáte účet? Registrujte se.
+            </Link>
             <Typography color="error" textAlign="center">
               {errorText}
             </Typography>
-          </Grid>
-          <Box width="100%"></Box>
-        </Grid>
+          </Stack>
+        </Container>
       </Form>
     </Formik>
   );

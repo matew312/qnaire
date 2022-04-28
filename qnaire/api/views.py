@@ -4,8 +4,10 @@ from rest_framework import response
 from rest_framework.views import APIView
 from django.db.models import Q, Value, functions
 
+from accounts.models import User
 
-from .serializers import ChoiceSerializer, PrivateQnaireIdResponseSerializer, PrivateQnaireIdSerializer, QuestionPolymorphicSerializer, QuestionnaireSerializer, ResponseSerializer, SectionSerializer
+
+from .serializers import ChoiceSerializer, PrivateQnaireIdResponseSerializer, PrivateQnaireIdSerializer, QuestionPolymorphicSerializer, QuestionnaireSerializer, ResponseSerializer, SectionSerializer, UserSerializer
 
 from .models import Answer, Choice, PrivateQnaireId, Question, Questionnaire, Response, Section
 
@@ -161,7 +163,6 @@ class ResultStatsView(APIView):
                                   'last_response_timestamp': last_response_timestamp
                                   })
 
-
 # class PrivateQnaireIdView(APIView):
 #     permission_classes = [permissions.IsAuthenticated]
 
@@ -175,3 +176,9 @@ class ResultStatsView(APIView):
 #         serializer = PrivateQnaireIdSerializer(private_qnaire_id)
 
 #         return response.Response(data=serializer.data, status=status.HTTP_200_OK)
+
+class CreateUserView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    

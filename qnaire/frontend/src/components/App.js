@@ -6,7 +6,8 @@ import { Grid, Box, Container, CssBaseline } from "@mui/material";
 import { QnairesPage } from "./qnaires-page/QnairesPage";
 import { ResponsePage } from "./response-page/ResponsePage";
 import { CreationPage } from "./creation-page/CreationPage";
-import { LoginPage } from "./login-page/LoginPage";
+import { LoginPage } from "./user-pages/LoginPage";
+import { RegisterPage } from "./user-pages/RegisterPage";
 import { AppStructure } from "./AppStructure";
 import { useAuth } from "../auth";
 import { AuthOnlyOutlet } from "./AuthOnlyOutlet";
@@ -28,6 +29,10 @@ function App() {
                 <Grid item xs={12} md={10} lg={8} m="auto">*/}
                 <Routes>
                   <Route path="login" element={<LoginPage auth={auth} />} />
+                  <Route
+                    path="register"
+                    element={<RegisterPage auth={auth} />}
+                  />
                   <Route
                     path="questionnaires/:id/response"
                     element={<ResponsePage />}

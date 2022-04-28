@@ -1,6 +1,7 @@
 from django.db.models import F, Q
 from rest_framework import permissions, viewsets, response, status, mixins
 from rest_framework.decorators import action
+
 from .mixins import OrderedViewSetMixin, UserQuerySetMixin, MultiSerializerViewSetMixin
 from .models import Answer, Choice, PrivateQnaireId, Question, Questionnaire, Respondent, Response, Section
 from .serializers import (
@@ -18,6 +19,7 @@ from .serializers import (
     RespondentSerializer,
     SectionMoveSerializer,
     SectionSerializer,
+    UserSerializer,
     raise_validation_error_if_qnaire_published,
 )
 
