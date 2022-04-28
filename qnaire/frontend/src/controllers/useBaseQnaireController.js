@@ -28,9 +28,11 @@ export function useBaseQnaireController(id, timeout = DEFAULT_TIMEOUT) {
     });
   };
 
-  const exportResult = () => {
-    qnaireSource.retrieveResult(id).then((data) => {
-      downloadTextFile(JSON.stringify(data, undefined, 2), `odpovědi.json`); //pretty printing the json
+  const exportResult = (format = "json") => {
+    qnaireSource.retrieveResult(id, format).then((data) => {
+      const text =
+        format === "json" ? JSON.stringify(data, undefined, 2) : data;
+      downloadTextFile(text, `odpovědi.${format}`); //pretty printing the json
     });
   };
 
@@ -48,7 +50,7 @@ export function useBaseQnaireController(id, timeout = DEFAULT_TIMEOUT) {
 
   const getStats = () => {
     return qnaireSource.retrieveStats(id);
-  }
+  };
 
   return {
     data,

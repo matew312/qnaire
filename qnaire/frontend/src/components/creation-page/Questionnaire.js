@@ -28,6 +28,7 @@ import PublishQnaireDialog from "../dialogs/PublishQnaireDialog";
 import UnpublishDialogButton from "../dialogs/UnpublishDialogButton";
 import QnaireLinkDialog from "../dialogs/QnaireLinkDialog";
 import QnaireStatsDialog from "../dialogs/QnaireStatsDialog";
+import QnaireExportDialog from "../dialogs/QnaireExportDialog";
 
 const Sections = React.memo(({ sections, isPublished }) =>
   sections.map((section, index) => (
@@ -136,9 +137,10 @@ export function Questionnaire({ id }) {
                         />
                       </Grid>
                       <Grid item xs="auto">
-                        <Button variant="contained" onClick={exportResult}>
-                          Exportovat odpovědi
-                        </Button>
+                        <QnaireExportDialog
+                          exportResult={exportResult}
+                          buttonProps={{ variant: "contained" }}
+                        />
                       </Grid>
                       <Grid item xs="auto">
                         <QnaireLinkDialog

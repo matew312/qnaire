@@ -1,3 +1,4 @@
+import abc
 from django.db import models
 from django.core.validators import MinValueValidator
 from polymorphic.models import PolymorphicModel
@@ -62,6 +63,10 @@ class Question(PolymorphicModel):
             models.Index(fields=['section', 'order_num']),
         ]
 
+    @abc.abstractmethod
+    def get_answer_set(self):
+        return
+
     def __str__(self) -> str:
         return f'{self.text}'
 
@@ -71,6 +76,9 @@ class OpenQuestion(Question):
         null=True, validators=[MinValueValidator(1)])
     max_length = models.IntegerField(
         null=True, validators=[MinValueValidator(1)])
+
+    def get_answer_set(self):
+        return self.openanswer_set
 
 
 class RangeQuestion(Question):
@@ -97,6 +105,8 @@ class RangeQuestion(Question):
     # only integer step will be allowed (the alternative is make all fields decimal so that it would be possible to validate the step)
     step = models.IntegerField(null=True, validators=[GreaterThanValidator(0)])
 
+    def get_answer_set(self):
+        return self.rangeanswer_set
 
 class MultipleChoiceQuestion(Question):
     min_answers = models.IntegerField(
@@ -106,6 +116,8 @@ class MultipleChoiceQuestion(Question):
     other_choice = models.BooleanField(default=False)
     random_order = models.BooleanField(default=False)
 
+    def get_answer_set(self):
+        return self.multiplechoiceanswer_set
 
 class Choice(models.Model):
     question = models.ForeignKey(
@@ -128,16 +140,26 @@ class Choice(models.Model):
 class Answer(PolymorphicModel):
     response = models.ForeignKey(Response, on_delete=NON_POLYMORPHIC_CASCADE)
 
+    @abc.abstractmethod
+    def get_value_str(self):
+        return
+
+
 
 class OpenAnswer(Answer):
     question = models.ForeignKey(OpenQuestion, on_delete=models.PROTECT)
     text = models.TextField(blank=True)
+
+    def get_value_str(self):
+        return self.text
 
 
 class RangeAnswer(Answer):
     question = models.ForeignKey(RangeQuestion, on_delete=models.PROTECT)
     num = models.FloatField(null=True)
 
+    def get_value_str(self):
+        return str(self.num) if self.num is not None else ''
 
 class MultipleChoiceAnswer(Answer):
     question = models.ForeignKey(
@@ -145,6 +167,13 @@ class MultipleChoiceAnswer(Answer):
     # saves me from having to create an "association table"
     choices = models.ManyToManyField(Choice)
     other_choice_text = models.TextField(blank=True)
+
+    def get_value_str(self):
+        choices = [str(choice) for choice in self.choices.all()]
+        if self.other_choice_text:
+            choices.append(self.other_choice_text)
+        return ','.join(choices)
+        
 
 
 class Component(models.Model):

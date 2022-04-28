@@ -73,8 +73,8 @@ class QnaireSource extends DataSource {
     });
   }
 
-  retrieveResult(id) {
-    return this.gateway.customRetrieve(id, "result");
+  retrieveResult(id, format='json') {
+    return this.gateway.customRetrieve(id, `result.${format}`);
   }
 
   createResponse(id, data) {

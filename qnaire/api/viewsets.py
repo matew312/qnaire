@@ -90,7 +90,7 @@ class QuestionnaireViewSet(UserQuerySetMixin, MultiSerializerViewSetMixin, Model
         Response.objects.filter(pk__in=responses_pks).delete()
 
     def do_update(self, instance, serializer):
-        published = serializer.validated_data.get('published', None)
+        published = serializer.validated_data.get('published', instance.published)
         if not published and instance.published:
             self.delete_responses(instance)
             instance.privateqnaireid_set.all().delete()

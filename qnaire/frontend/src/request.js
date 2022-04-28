@@ -4,10 +4,12 @@ import { getAuthHeader, getToken } from "./auth";
 const BASE_PATH = "/api/";
 
 function handleErrors(response) {
-  //not using response.json(), because it wouldn't work if no content was returned from server
-  let promise = response
-    .text()
-    .then((text) => (text.length ? JSON.parse(text) : {}));
+  let promise = response.text().then((text) => {
+    if (response.headers.get("Content-Type") === "application/json") {
+      return text.length ? JSON.parse(text) : {};
+    }
+    return text;
+  });
 
   if (!response.ok) {
     if (response.status >= 500) {
