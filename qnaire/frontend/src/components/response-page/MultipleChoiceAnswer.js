@@ -49,7 +49,7 @@ function Checkboxes({
   };
 
   return (
-    <Stack spacing={1}>
+    <Stack>
       <Typography variant="body2" color="text.secondary">
         {question.mandatory ? "Vyberte" : "Můžete vybrat"}{" "}
         {question.min_answers} až {question.max_answers} možností.
