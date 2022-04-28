@@ -46,6 +46,10 @@ export function useBaseQnaireController(id, timeout = DEFAULT_TIMEOUT) {
     return Promise.resolve(baseUrl);
   };
 
+  const getStats = () => {
+    return qnaireSource.retrieveStats(id);
+  }
+
   return {
     data,
     update,
@@ -54,6 +58,7 @@ export function useBaseQnaireController(id, timeout = DEFAULT_TIMEOUT) {
     previewLink,
     exportResult,
     getLink,
+    getStats,
     updateData,
   };
 }

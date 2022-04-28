@@ -11,6 +11,7 @@ import PublishQnaireDialog from "../dialogs/PublishQnaireDialog";
 import QnaireLinkDialog from "../dialogs/QnaireLinkDialog";
 import UnpublishDialogButton from "../dialogs/UnpublishDialogButton";
 import { useNavigate } from "react-router-dom";
+import QnaireStatsDialog from "../dialogs/QnaireStatsDialog";
 
 function QnaireListItem({ id }) {
   const {
@@ -20,6 +21,7 @@ function QnaireListItem({ id }) {
     private: isPrivate,
     anonymous: isAnonymous,
     getLink,
+    getStats,
     update,
   } = useQnaireListItemController(id);
 
@@ -55,6 +57,7 @@ function QnaireListItem({ id }) {
             onConfirm={() => update({ published: false })}
           />
           <QnaireLinkDialog getLink={getLink} buttonProps={{ size: "small" }} />
+          <QnaireStatsDialog getStats={getStats} buttonProps={{ size: "small" }} />
         </CardActions>
       ) : (
         <CardActions>

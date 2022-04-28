@@ -70,7 +70,7 @@ class ResultView(APIView):
         #     Q(MultipleChoiceAnswer___question__in=questions))
         # answer_serializer = AnswerPolymorhicSerializer(answers, many=True)
 
-        # TODO: OPTIMIZE THIS TO RETRIEVE IT IN ONE GO IF POSSIBLE (there are issues with select_related with polymorhic models)
+        # TODO: OPTIMIZE THIS TO RETRIEVE RESPONSES IN ONE GO IF POSSIBLE (there are issues with select_related with polymorhic models)
         # Alternative solution is to include field 'qnaire' in Response. Then I could just do Response.objects.filter(qnaire=qnaire)
         responses_pks = Answer.objects.filter(
             (Q(OpenAnswer___question__in=questions) |
@@ -86,6 +86,35 @@ class ResultView(APIView):
                                   # 'answers': answer_serializer.data,
                                   'responses': response_serializer.data
                                   })
+
+
+
+class ResultStatsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, **kwargs):
+        qnaire = get_object_or_404(Questionnaire, pk=kwargs['id'])
+        forbidden = forbidden_if_not_owning_qnaire(qnaire, request)
+        if forbidden:
+            return forbidden
+
+        qnaire_serializer = QuestionnaireSerializer(qnaire)
+
+        responses_pks = Answer.objects.filter(
+            (Q(OpenAnswer___question__section__qnaire=qnaire) |
+             Q(RangeAnswer___question__section__qnaire=qnaire) |
+             Q(MultipleChoiceAnswer___question__section__qnaire=qnaire))).values_list('response', flat=True).distinct()
+        total_responses = len(responses_pks)
+        last_response_timestamp = None
+        if total_responses > 0:
+            last_response = Response.objects.filter(pk__in=responses_pks).latest('submit_timestamp')
+            last_response_timestamp = last_response.submit_timestamp
+
+        return response.Response({**qnaire_serializer.data,
+                                  'total_responses': total_responses,
+                                  'last_response_timestamp': last_response_timestamp
+                                  })
+
 
 
 # class PrivateQnaireIdView(APIView):

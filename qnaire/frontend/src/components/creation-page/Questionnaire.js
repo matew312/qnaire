@@ -27,6 +27,7 @@ import CheckMenuItem from "../basic/CheckMenuItem";
 import PublishQnaireDialog from "../dialogs/PublishQnaireDialog";
 import UnpublishDialogButton from "../dialogs/UnpublishDialogButton";
 import QnaireLinkDialog from "../dialogs/QnaireLinkDialog";
+import QnaireStatsDialog from "../dialogs/QnaireStatsDialog";
 
 const Sections = React.memo(({ sections, isPublished }) =>
   sections.map((section, index) => (
@@ -53,6 +54,7 @@ export function Questionnaire({ id }) {
     previewLink,
     exportResult,
     getLink,
+    getStats,
   } = useQnaireController(id);
   const { isSelected, select } = useQnaireSelect(id);
   const scrollRef = useRef(null);
@@ -125,6 +127,12 @@ export function Questionnaire({ id }) {
                             variant: "outlined",
                           }}
                           onConfirm={() => update({ published: false })}
+                        />
+                      </Grid>
+                      <Grid item xs="auto">
+                        <QnaireStatsDialog
+                          getStats={getStats}
+                          buttonProps={{ variant: "outlined" }}
                         />
                       </Grid>
                       <Grid item xs="auto">

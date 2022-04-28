@@ -80,6 +80,10 @@ class QnaireSource extends DataSource {
   createResponse(id, data) {
     return this.gateway.customCreate(id, "response", data);
   }
+
+  retrieveStats(id) {
+    return this.gateway.customRetrieve(id, "stats");
+  }
 }
 
 //singleton

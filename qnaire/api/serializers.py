@@ -387,7 +387,7 @@ class SectionMoveSerializer(serializers.ModelSerializer):
 
 
 QUESTIONNAIRE_FIELDS = ('id', 'name', 'desc', 'anonymous',
-                        'private', 'published', 'last_modified', 'created_at')  # 'active'
+                        'private', 'published', 'last_modified', 'created_at')
 
 
 class QuestionnaireSerializer(serializers.ModelSerializer):
