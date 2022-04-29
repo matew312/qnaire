@@ -98,11 +98,11 @@ export function AppStructure({ auth, children }) {
       ]
     : [
         {
-          name: "Přihlásit",
+          name: "Přihlášení",
           path: "/login",
         },
         {
-          name: "Registrovat",
+          name: "Registrace",
           path: "/register",
         },
       ];
