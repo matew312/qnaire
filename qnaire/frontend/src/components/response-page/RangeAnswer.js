@@ -60,14 +60,17 @@ function Enumerate({ answer, question: { min, max, step }, setAnswer, error }) {
   };
 
   return (
-    <FormControl>
-      <RadioGroup
-        value={answer !== null ? answer.toString() : ""}
-        onChange={handleChange}
-      >
-        {radioButtons}
-      </RadioGroup>
-    </FormControl>
+    <React.Fragment>
+      <FormControl>
+        <RadioGroup
+          value={answer !== null ? answer.toString() : ""}
+          onChange={handleChange}
+        >
+          {radioButtons}
+        </RadioGroup>
+      </FormControl>
+      <ErrorText error={error} sx={{ mt: 1 }} />
+    </React.Fragment>
   );
 }
 
