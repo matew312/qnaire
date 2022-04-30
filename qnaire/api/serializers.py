@@ -630,6 +630,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('username', 'password', 'email', 'date_joined')
         extra_kwargs = {'password': {'write_only': True},
                         'date_joined': {'read_only': True}}
+
     def validate(self, data):
         try:
             validate_password(data['password'])

@@ -97,7 +97,6 @@ const validationSchema = yup.object({
       "Hodnota musí být menší nebo rovna max - min",
       (value, context) => {
         const { min, max, type } = context.parent;
-        console.log(context.parent);
         if (
           value !== null &&
           min !== null &&

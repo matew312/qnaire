@@ -131,7 +131,6 @@ class ResultView(APIView):
         cols.insert(0, respondents)
 
         rows = [list(row) for row in zip(*cols)]
-        print(rows)
 
         return response.Response(data=rows)
 

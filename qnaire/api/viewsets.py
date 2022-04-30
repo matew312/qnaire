@@ -220,7 +220,6 @@ class QuestionViewSet(UserQuerySetMixin, OrderedViewSetMixin, ModelViewSetWithVa
                         'order_num': question.order_num, 'text': question.text, 'mandatory': question.mandatory}
         question.delete()
         new_question = serializer.save(**field_values)
-        print(serializer)
         return response.Response(QuestionPolymorphicSerializer(new_question).data, status=status.HTTP_200_OK)
 
 
