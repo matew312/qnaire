@@ -35,7 +35,11 @@ const createOpenAnswerSchema = (q) => {
   schema = requiredIfMandatory(q, schema);
   //it seems to work correctly even if I pass null to the method, but I didn't see any mention of it in docs
   if (q.min_length !== null) {
-    schema = schema.min(q.min_length);
+    schema = schema.test(
+      "min_length_allow_empty",
+      `Text musí být dlouhý alespoň ${q.min_length} znaků`,
+      (value) => (value.trim().length > 0 ? value.length >= q.min_length : true)
+    );
   }
   if (q.max_length !== null) {
     schema = schema.max(q.max_length);
@@ -108,7 +112,8 @@ export const QuestionAnswerMap = {
 };
 
 export function useQnaireResponseController(id, privateId, isPreview) {
-  const { data, update, updateData, ...baseQnaireController } = useBaseQnaireController(id);
+  const { data, update, updateData, ...baseQnaireController } =
+    useBaseQnaireController(id);
   const [globalError, setGlobalError] = useState(null);
   const [respondent, setRespondent] = useState({
     id: null,
