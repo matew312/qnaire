@@ -12,6 +12,7 @@ import { ErrorMessage, Field, Form, Formik, useFormik } from "formik";
 import ErrorList from "../basic/ErrorList";
 import FSwitch from "../formik/FSwitch";
 import FTextField from "../formik/FTextField";
+import ErrorText from "../basic/ErrorText";
 
 const initialValues = { name: "" };
 
@@ -45,7 +46,7 @@ export default function CreateQnaireDialog({
           <DialogContent>
             {/* <DialogContentText></DialogContentText> */}
             <FTextField margin="dense" autoFocus name="name" label={"Jméno"} />
-
+            {error && <ErrorText error={error.name} />}
             {error && <ErrorList error={error} />}
           </DialogContent>
           <DialogActions>

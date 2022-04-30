@@ -8,7 +8,14 @@ import {
 } from "@mui/material";
 
 //required prop: name
-export default function ESelect({ required, label, error, children, ...props }) {
+export default function ESelect({
+  required,
+  label,
+  error,
+  children,
+  ...props
+}) {
+  error = Array.isArray(error) ? error.join("\n") : error;
   return (
     <FormControl fullWidth required={required}>
       <InputLabel id={`${label}-select-label`}>{label}</InputLabel>
