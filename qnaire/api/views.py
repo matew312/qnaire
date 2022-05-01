@@ -51,7 +51,8 @@ class CSVRenderer(renderers.BaseRenderer):
     format = 'csv'
 
     def render(self, data, accepted_media_type=None, renderer_context=None):
-        return '\n'.join([';'.join(row) for row in data])
+        # replace separator in cells, then join cells of each row with separator, then join rows with newline
+        return '\n'.join([';'.join((cell.replace(';', ',') for cell in row)) for row in data])
 
 
 class ResultView(APIView):
@@ -118,7 +119,7 @@ class ResultView(APIView):
             col = [a.get_value_str() for a in answers]  # answer values
             col.insert(0, q.text)  # header
             cols.append(col)
-        
+
         # now the respondent for each response has to be retrieved
         responses_pks = Answer.objects.filter(
             (Q(OpenAnswer___question__section__qnaire=qnaire) |
@@ -130,6 +131,7 @@ class ResultView(APIView):
             respondents.append(r.respondent.id if r.respondent else '')
         cols.insert(0, respondents)
 
+        # transformation to rows takes some time but I can then use string.join instead of manually concatenating the strings
         rows = [list(row) for row in zip(*cols)]
 
         return response.Response(data=rows)
@@ -176,8 +178,7 @@ class ResultStatsView(APIView):
 
 #         return response.Response(data=serializer.data, status=status.HTTP_200_OK)
 
+
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-
-    
