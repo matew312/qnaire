@@ -119,6 +119,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = QUESTION_FIELDS
+        extra_kwargs = {'text': {'trim_whitespace': False}}
 
     def validate(self, data):
         section = get_original_field_value('section', data, self.instance)
@@ -216,7 +217,8 @@ class ChoiceSerializer(serializers.ModelSerializer):
         model = Choice
         fields = CHOICE_FIELDS
         extra_kwargs = {'question': {'read_only': True},
-                        'order_num': {'read_only': True}}
+                        'order_num': {'read_only': True},
+                        'text': {'trim_whitespace': False}}
         list_serializer_class = DictSerializer
 
     def validate(self, data):
@@ -349,7 +351,9 @@ class SectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Section
         fields = SECTION_FIELDS
-        extra_kwargs = {'order_num': {'read_only': True}}
+        extra_kwargs = {'order_num': {'read_only': True},
+                        'name': {'trim_whitespace': False},
+                        'desc': {'trim_whitespace': False}}
         list_serializer_class = DictSerializer
 
     def validate(self, data):
@@ -395,6 +399,8 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
     class Meta:
         model = Questionnaire
         fields = QUESTIONNAIRE_FIELDS
+        extra_kwargs = {'name': {'trim_whitespace': False},
+                        'desc': {'trim_whitespace': False}}
         list_serializer_class = DictSerializer
 
     def validate(self, data):
